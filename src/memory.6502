@@ -1,0 +1,69 @@
+\ ***************************************************************************
+\ REDSHIFT - where things live, outside the code.
+\
+\ Zero page &00-ZP_FIXED-1 is baron's allocator pool (ZA_AUTO); ZP_FIXED up
+\ to &8F holds what lives for the whole game, or that the interrupt shares.
+\ The OS keeps &90 up: its IRQ entry saves A at &FC, which irq_handler
+\ reads back.
+\
+\ Once the game has the interrupts and reads the keyboard itself, the OS's
+\ pages 4-12 are free (porting-to-the-beeb.md, "Memory"): the 100Hz
+\ interrupt that rewrites page 8 is stopped, and nothing else touches them.
+\ Page 13 (the NMI and a Master's extended vectors) is left alone. Nothing
+\ in these sections is in the file: start-up and the room set them up.
+\ ***************************************************************************
+
+ZP_FIXED = &60
+
+SECTION ZeroPage, org = ZP_FIXED, guard = &90, virtual = TRUE
+\ Shared with the interrupt.
+.vsyncs     SKIP 1          ; VSyncs since start-up (irq.6502)
+.irq_split  SKIP 1          ; T1 interrupts since this VSync
+.blackout   SKIP 1          ; non-zero: every palette entry black (room changes)
+\ The game's state.
+.phase      SKIP 1          ; 0: the Red Phase, 1: the Blue
+.room       SKIP 1          ; the room we're in
+.room_ptr   SKIP 2          ; its record (rooms.6502)
+.tile_ptrs  SKIP 2          ; this phase's tile pointer table: lo bytes, then hi
+.frame      SKIP 1          ; game frames (25 a second)
+.rng        SKIP 2
+ENDSECTION
+
+SECTION LowPages, org = &0400, guard = &0D00, virtual = TRUE
+\ The room's map: a tile number per cell, MAP_W to a row.
+.map        SKIP MAP_W * MAP_H
+
+\ The palette program the interrupt plays (irq.6502, bands.6502). In one
+\ page, so no indexed read takes the extra cycle that would move a split.
+    ALIGN 256
+.irq_tables
+.status_ula SKIP 6          ; the status bar's six entries (logical 0 and 1)
+.room_ula   SKIP 16         ; the playfield's top: ten entries, then the six
+MAXEV = 8                   ; palette changes in a room, below its top
+.ev_u0      SKIP MAXEV      ; each change's four &FE21 writes
+.ev_u1      SKIP MAXEV
+.ev_u2      SKIP MAXEV
+.ev_u3      SKIP MAXEV
+.lat_first  SKIP 2          ; T1's latch from VSync: the status split to change 0
+.lat_lo     SKIP MAXEV + 1  ; ... and the latch each split sets: fire j sets
+.lat_hi     SKIP MAXEV + 1  ; the period from fire j + 1 to fire j + 2
+.irq_tables_end
+    ASSERT HI(irq_tables) = HI(irq_tables_end - 1)
+
+\ The room's bands as the room gives them (bands.6502): the line, the
+\ logical colour, the Red Phase's colour and the Blue's.
+.band_n     SKIP 1
+.band_line  SKIP MAXEV
+.band_log   SKIP MAXEV
+.band_red   SKIP MAXEV
+.band_blue  SKIP MAXEV
+.top_red    SKIP 4          ; logical 0-3 at the top of the playfield
+.top_blue   SKIP 4
+
+\ The compose buffer (render.6502): a rectangle of the screen is put
+\ together here, then copied out, so each screen byte is written once.
+    ALIGN 256
+.cbuf       SKIP 1024
+CBUF_SIZE = 1024
+.low_end
+ENDSECTION

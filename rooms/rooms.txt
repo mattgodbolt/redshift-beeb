@@ -1,0 +1,49 @@
+# REDSHIFT's rooms. Edit by hand, or with the level editor (editor/index.html).
+#
+# room <id>                   starts a room; ids are single words
+# name <text>                 shown in the status bar
+# exits left=<id> right=<id> up=<id> down=<id>    (- for none)
+# start <x> <y>               where a new game starts (the first room only),
+#                             in tiles: the player's feet stand on row y + 1
+# colours <c1> <c2> <c3>      logical colours 1-3 at the top of the room
+# band <line> <logical> <c>   from playfield line 0-175 down, logical 1-3
+#                             shows colour c (at most 8; 2 lines apart)
+# map                         then 22 lines of up to 32 tiles (gfx/tiles.txt)
+# thing <type> <x> <y> ...    an enemy or object, in tiles
+#
+# A colour is black red green yellow blue magenta cyan white: the Red Phase's.
+# The Blue Phase's is its opposite (red-blue, yellow-cyan, magenta-green)
+# unless given after a slash, as in red/white.
+
+room landing
+name LANDING ZONE
+exits left=- right=- up=- down=-
+start 2 16
+colours red yellow white
+band 40 1 magenta
+band 96 1 red
+band 144 1 green
+band 152 2 green
+map
+################################
+######  : ::######   :  ::######
+###  :      :  ##   :     :  ###
+#  :    :         :    :       ##
+#    :       :       :     :    #
+  :   |   :     :     :   |  :
+      |  :   :     :      |
+------|------    :   -----|------
+  :   |    :     :    :   |   :
+      |  :    :     :     |
+   :  |     :     :   :   |  :
+      |   :    :     :    |
+ :  =========  : =====^^====  :
+      |      :     :     R     :
+   :  |   :     :      : R   :
+      |     :     :      R
+  v   |  :     :     :   R    v
+ vv v |     :      :     R   vvv
+____________BBBBBBBB____________
+HHHHHHHHHHHH~~~~~~~~HHHHHHHHHHHH
+HHHHHHHHHHHHwwwwwwwwHHHHHHHHHHHH
+HHHHHHHHHHHHwwwwwwwwHHHHHHHHHHHH

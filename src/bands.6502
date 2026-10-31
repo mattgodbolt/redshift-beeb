@@ -1,0 +1,116 @@
+\ ***************************************************************************
+\ Palette bands: the room's colours, turned into the palette program the
+\ interrupt plays (irq.6502). The room (rooms.6502) gives logical colours
+\ 1-3 at the top of the playfield and up to MAXEV bands below, each from a
+\ line down showing another colour for one logical colour; every colour has
+\ a Red Phase and a Blue Phase value. set_timing works out T1's periods
+\ from the bands' lines (once a room); set_colours writes the entries for
+\ the phase we're in (and again at each phase shift).
+\ ***************************************************************************
+
+\ The status bar's text colour (logical 1) in each phase.
+.status_ink EQUB YELLOW, CYAN
+
+\ The playfield's sixteen entries in room_ula's order (irq.6502): the ten
+\ the status bar never shows, then the six it does, logical 0 and 1 beside
+\ neighbours 0, 1 and 3. Each as its entry number << 4, and its logical colour.
+STATUS_SET = {{0, 0}, {0, 1}, {0, 3}, {1, 0}, {1, 1}, {1, 3}}
+FUNCTION shown(l, n) = (l < 2) AND (n != 2)
+.room_idx
+FOR l = 0..3 : FOR n = 0..3
+    IF NOT(shown(l, n)) : EQUB ula_index(l, n) * 16 : ENDIF
+NEXT : NEXT
+FOR p = STATUS_SET : EQUB ula_index(p[0], p[1]) * 16 : NEXT
+.room_log
+FOR l = 0..3 : FOR n = 0..3
+    IF NOT(shown(l, n)) : EQUB l : ENDIF
+NEXT : NEXT
+FOR p = STATUS_SET : EQUB p[0] : NEXT
+ASSERT P% - room_log = 16
+\ Logical colour l's four entry numbers << 4, at 4l.
+.log_idx
+FOR l = 0..3 : FOR n = 0..3 : EQUB ula_index(l, n) * 16 : NEXT : NEXT
+
+\ T1's periods for the room's bands (irq.6502's lat_first, lat_lo and
+\ lat_hi): from the status split to band 0 is its line * 64us + BAND_ADJ,
+\ band to band their lines' difference * 64us; a free-running period is
+\ the latch + 2. After the last, &FFFF, which VSync comes before.
+.set_timing
+{
+    LDA #&FF
+    LDX #MAXEV
+.none
+    STA lat_lo,X : STA lat_hi,X
+    DEX : BPL none
+    STA lat_first : STA lat_first+1
+    LDX band_n : BEQ done
+    \ line * 64 = (line AND 3) << 6, line >> 2
+    LDA band_line : AND #3 : LSR A : ROR A : ROR A : CLC
+    ADC #LO(BAND_ADJ - 2) : STA lat_first
+    LDA band_line : LSR A : LSR A
+    ADC #HI(BAND_ADJ - 2) : STA lat_first+1
+    \ lat[j] = (line[j+1] - line[j]) * 64 - 2, for j + 1 < band_n.
+    LDX #0
+.next
+    INX : CPX band_n : BCS done
+    LDA band_line,X : SEC : SBC band_line-1,X     ; the gap, in lines
+    PHA
+    AND #3 : LSR A : ROR A : ROR A : CLC
+    ADC #LO(-2) : STA lat_lo-1,X
+    PLA : LSR A : LSR A
+    ADC #HI(-2) : STA lat_hi-1,X
+    JMP next
+.done
+    RTS
+}
+
+\ The irq tables for this phase, from the room's colours and bands.
+.set_colours
+{
+    ZA_AUTO 4, phys                 ; logical 0-3's colours at the top
+    ZA_AUTO1 ink, boff
+    \ The phase picks top_red or top_blue, band_red or band_blue.
+    ASSERT top_blue = top_red + 4 AND band_blue = band_red + MAXEV
+    LDY #0 : STY boff
+    LDA phase : BEQ red
+    LDY #4
+    LDA #MAXEV : STA boff
+.red
+    LDX #0
+.top
+    LDA top_red,Y : EOR #7 : STA phys,X     ; (as the ULA wants it)
+    ZA_INDEXEDBY 0..3
+    INY : INX : CPX #4 : BNE top
+    \ The status bar: black paper, the phase's ink.
+    LDX phase : LDA status_ink,X : EOR #7 : STA ink
+    LDX #5
+.status
+    LDA room_idx + 10,X : ORA #7    ; (logical 0: black)
+    LDY room_log + 10,X : BEQ paper
+    EOR #7 : ORA ink
+.paper
+    STA status_ula,X
+    DEX : BPL status
+    \ The playfield's top.
+    LDX #15
+.room
+    LDY room_log,X
+    LDA phys,Y
+    ZA_INDEXEDBY 0..3
+    ORA room_idx,X : STA room_ula,X
+    DEX : BPL room
+    \ Each band: its logical colour's four entries in its colour.
+    LDX band_n : BEQ done
+    DEX
+.band
+    TXA : CLC : ADC boff : TAY
+    LDA band_red,Y : EOR #7 : STA ink
+    LDA band_log,X : ASL A : ASL A : TAY    ; log_idx + 4l
+    LDA log_idx,Y : ORA ink : STA ev_u0,X
+    LDA log_idx+1,Y : ORA ink : STA ev_u1,X
+    LDA log_idx+2,Y : ORA ink : STA ev_u2,X
+    LDA log_idx+3,Y : ORA ink : STA ev_u3,X
+    DEX : BPL band
+.done
+    RTS
+}

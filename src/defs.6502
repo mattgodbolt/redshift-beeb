@@ -1,0 +1,88 @@
+\ ***************************************************************************
+\ REDSHIFT - shared constants: the OS, the hardware, the screen, the keys.
+\ ***************************************************************************
+
+\ --- OS entry points (used only by the loader and start-up) ---------------
+
+osword  = &FFF1
+osbyte  = &FFF4
+oscli   = &FFF7
+
+\ --- Hardware -------------------------------------------------------------
+
+crtc_reg    = &FE00
+crtc_data   = &FE01
+ula_ctrl    = &FE20         ; the video ULA's control register
+ula_pal     = &FE21         ; write (entry << 4) | (physical EOR 7)
+CRTC_BLANK  = &30           ; R8: display enable skewed off, so nothing shows
+CRTC_SHOW   = &00           ; R8: shown, no interlace
+sysvia_orb  = &FE40         ; the addressable latch: bit 3 is keyboard enable
+sysvia_ddra = &FE43
+sysvia_ifr  = &FE4D
+sysvia_ier  = &FE4E         ; write bit 7 clear to disable the bits set
+sysvia_ora_nh = &FE4F       ; port A without handshake: the keyboard, the sound chip
+usrvia_t1cl = &FE64         ; reading it acknowledges T1
+usrvia_t1ch = &FE65         ; writing it starts the count
+usrvia_t1ll = &FE66         ; T1's latch: the next period, free-running
+usrvia_t1lh = &FE67
+usrvia_t2cl = &FE68
+usrvia_t2ch = &FE69
+usrvia_acr  = &FE6B
+usrvia_ifr  = &FE6D
+usrvia_ier  = &FE6E
+SL          = 64            ; a scanline: 64us, 64 ticks of a VIA timer
+irq1v       = &0204
+
+\ --- The screen -----------------------------------------------------------
+\ MODE 1's pixels (2 bits each, four to a byte) with the CRTC narrowed to
+\ 256x192 (after chuckie-egg-2-beeb): 64 CRTC columns by 24 character rows.
+\ A character row is 512 bytes, so row r starts at screen + r * &200.
+\ Rows 0-1 are the status bar (logical colours 0 and 1 only: irq.6502),
+\ rows 2-23 the playfield.
+SCREEN_COLS = 32                    ; 8-pixel cells across
+SCREEN_ROWS = 24
+ROW_BYTES   = SCREEN_COLS * 16
+screen      = &8000 - SCREEN_ROWS * ROW_BYTES
+STATUS_ROWS = 2
+PLAY_ROW    = STATUS_ROWS           ; the playfield's first character row
+play_screen = screen + PLAY_ROW * ROW_BYTES
+MAP_W       = 32                    ; the room: 32 x 22 tiles of 8 x 8 pixels
+MAP_H       = SCREEN_ROWS - STATUS_ROWS
+PLAY_LINES  = MAP_H * 8
+
+\ A byte with all four pixels in logical colour c: MODE 1 keeps a pixel's
+\ high bit in the top nibble and its low bit in the bottom one.
+FUNCTION cbyte(c) = (c AND 2) * &78 + (c AND 1) * &0F
+
+\ The ULA's palette entry for logical colour l beside "neighbour" n showing
+\ physical colour phys (see irq.6502 for why a MODE 1 colour has four).
+FUNCTION ula_index(l, n) = (l AND 2) * 4 + (n AND 2) * 2 + (l AND 1) * 2 + (n AND 1)
+FUNCTION ula_entry(l, n, phys) = ula_index(l, n) * 16 + (phys EOR 7)
+
+\ Physical colours.
+BLACK = 0 : RED = 1 : GREEN = 2 : YELLOW = 3
+BLUE = 4 : MAGENTA = 5 : CYAN = 6 : WHITE = 7
+
+\ --- Keys: internal key numbers (key_down in system.6502) ------------------
+
+K_SHIFT  = &00
+K_Z      = &61
+K_X      = &42
+K_COLON  = &48
+K_SLASH  = &68
+K_RETURN = &49
+K_SPACE  = &62
+K_LEFT   = &19
+K_RIGHT  = &79
+K_UP     = &39
+K_DOWN   = &29
+K_ESCAPE = &70
+K_P      = &37
+
+\ Long branches, for when a routine outgrows the 6502's reach.
+MACRO JNE target
+    BEQ @+ : JMP target : .@
+ENDMACRO
+MACRO JEQ target
+    BNE @+ : JMP target : .@
+ENDMACRO

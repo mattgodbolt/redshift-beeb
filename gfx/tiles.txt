@@ -1,0 +1,165 @@
+# REDSHIFT's tiles: 8x8 pixels each, in MODE 1's logical colours.
+#
+#   tile <key> <name> [flags...]      then 8 lines of 8 pixels
+#
+# The key is the character that stands for the tile in rooms/rooms.txt
+# ("space" for the empty tile, which must come first). Pixels are '.' (0,
+# black) and '1', '2', '3': what physical colour each shows depends on the
+# room's palette bands, so draw with roles, not colours:
+#   1  the main colour of the scenery
+#   2  its second colour
+#   3  highlights (white in most rooms, and the player's armour)
+# Flags: solid (stands you up and stops you), hazard (kills), breakable
+# (a grenade clears it), red / blue (only there in that phase: out of phase
+# it's drawn as a dotted outline, and it's neither solid nor a hazard).
+# A comment is a whole line starting with '#'.
+
+tile space empty
+........
+........
+........
+........
+........
+........
+........
+........
+
+tile # stone solid
+2222222.
+2111111.
+2112111.
+2111111.
+2111121.
+2111111.
+2111111.
+........
+
+tile H panel solid
+3333333.
+3222222.
+3211112.
+3213312.
+3213312.
+3211112.
+3222222.
+........
+
+tile = girder solid
+33333333
+22222222
+2..22..2
+.22..22.
+2..22..2
+22222222
+11111111
+........
+
+tile _ floor solid
+33333333
+21212121
+11111111
+1.1111.1
+11111111
+22222222
+........
+........
+
+tile % cracked solid breakable
+2222222.
+21121.1.
+2121111.
+2.11211.
+2111.21.
+2121111.
+21.1121.
+........
+
+tile R redblock solid red
+1111111.
+1333331.
+1311131.
+1313131.
+1311131.
+1333331.
+1111111.
+........
+
+tile B blueblock solid blue
+2222222.
+2223222.
+2232322.
+2322232.
+2232322.
+2223222.
+2222222.
+........
+
+tile ^ spikes hazard
+........
+...3...3
+..33..33
+..32..32
+.332.332
+.321.321
+3321332.
+22112211
+
+tile ~ acidtop hazard
+........
+........
+.33...33
+3223.322
+22222222
+21212121
+12121212
+11111111
+
+tile w acid hazard
+11111111
+12111111
+11111211
+11111111
+11211111
+11111112
+11111111
+11121111
+
+tile | pipe
+..2332..
+..2312..
+..2312..
+..2312..
+.233312.
+..2312..
+..2312..
+..2312..
+
+tile - hpipe
+........
+22222222
+33333333
+11111111
+11111111
+22222222
+........
+........
+
+tile : dots
+1.......
+........
+........
+........
+....1...
+........
+........
+........
+
+tile v weed
+.2...2..
+.2..22..
+..2.2...
+..222.2.
+2..2.22.
+22.222..
+.2222...
+...2....

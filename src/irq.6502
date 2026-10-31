@@ -1,0 +1,110 @@
+\ ***************************************************************************
+\ The interrupt handler. It owns IRQ1V outright (after chuckie-egg-2-beeb's
+\ irq.6502): nothing goes to the OS, so the OS's 100Hz tick, sound and
+\ keyboard interrupt stop, and pages 4-12 stay still.
+\
+\ Two sources: VSync (System VIA CA1) and the User VIA's T1, which plays
+\ the room's palette program: first the split between the status bar
+\ (rows 0-1) and the playfield, then each of the room's bands (bands.6502),
+\ a change of one logical colour on a given scan line. T1 runs free: VSync
+\ starts it and sets its latch to the period after, and each split sets
+\ the one after that, so only VSync's latency moves the splits.
+\
+\ In MODE 1 a palette entry is picked by more than the pixel's own colour.
+\ The ULA forms the entry number from bits 7, 5, 3 and 1 of a shift
+\ register that moves one bit a pixel, so each logical colour l has four
+\ entries, one for each "neighbour" n (ula_index in defs.6502). The status
+\ bar, colours 0 and 1 only, shows six entries: logical 0 and 1 beside
+\ neighbours 0, 1 and 3. At VSync those six get the status bar's colours
+\ and the other ten the playfield's; at the first T1 interrupt, just before
+\ row 2, the six get the playfield's. Only four writes fit one horizontal
+\ blank, so each band changes one logical colour (its four entries).
+\
+\ The timing is chuckie-egg-2-beeb's, measured there (its docs/journal.md):
+\ the same CRTC set-up, and the same instructions up to each write.
+\ ***************************************************************************
+
+\ The status split: T1 is started in the VSync interrupt and fires in the
+\ last scan line of row 1, so that its last four writes land in the
+\ horizontal blank before row 2. (-D SPLIT_SWEEP=n moves it, to measure.)
+IF DEFINED(SPLIT_SWEEP)
+    SPLIT_ADJ = SPLIT_SWEEP
+ELSE
+    SPLIT_ADJ = 98
+ENDIF
+SPLIT_T1 = 83 * SL - 2 + SPLIT_ADJ
+\ A band's split fires this much later in its line than the status bar's
+\ (microseconds; -D BAND_SWEEP=n to measure).
+IF DEFINED(BAND_SWEEP)
+    BAND_ADJ = BAND_SWEEP
+ELSE
+    BAND_ADJ = -4
+ENDIF
+
+.irq_handler
+{
+    ZA_INTERRUPT
+    TXA : PHA
+    BIT usrvia_ifr : BVC not_t1     ; (T1's flag is bit 6)
+    LDA usrvia_t1cl                 ; acknowledge
+    LDX irq_split : BNE band
+    \ The status bar's split: the playfield's six.
+    FOR i = 10..15
+        LDA room_ula + i : STA ula_pal
+    NEXT
+    LDA lat_lo : STA usrvia_t1ll
+    LDA lat_hi : STA usrvia_t1lh
+    INC irq_split
+    BNE done                        ; (always)
+    ZA_UNREACHABLE
+.band
+    \ Change X - 1: one logical colour's four entries.
+    LDA ev_u0 - 1,X : STA ula_pal
+    LDA ev_u1 - 1,X : STA ula_pal
+    LDA ev_u2 - 1,X : STA ula_pal
+    LDA ev_u3 - 1,X : STA ula_pal
+    LDA lat_lo,X : STA usrvia_t1ll
+    LDA lat_hi,X : STA usrvia_t1lh
+    INC irq_split
+    BNE done                        ; (always)
+    ZA_UNREACHABLE
+.not_t1
+    LDA sysvia_ifr : AND #2 : BEQ done
+    STA sysvia_ifr                  ; acknowledge
+    INC vsyncs
+    LDA blackout : BNE dark
+    LDA #LO(SPLIT_T1) : STA usrvia_t1cl
+    LDA #HI(SPLIT_T1) : STA usrvia_t1ch     ; starts the count
+    LDA lat_first : STA usrvia_t1ll         ; ... then from the status
+    LDA lat_first+1 : STA usrvia_t1lh       ; split to the first band
+    ASSERT room_ula = status_ula + 6
+    LDX #15
+.entries
+    LDA status_ula,X : STA ula_pal  ; room_ula's ten, then the status bar's
+    DEX : BPL entries
+    INX : STX irq_split             ; 0
+    JSR sound_tick
+.done
+    PLA : TAX
+    LDA &FC                         ; the interrupted A, saved by the OS
+    RTI
+.dark
+    \ Every entry black, and T1 put off past the next VSync.
+    LDA #&FF : STA usrvia_t1ll : STA usrvia_t1lh
+    STA usrvia_t1cl : STA usrvia_t1ch
+    LDA #7                          ; entry 0, black (EOR 7)
+.black
+    STA ula_pal
+    CLC : ADC #16 : BCC black
+    JSR sound_tick
+    JMP done
+}
+
+\ Wait for the next VSync.
+.wait_vsync
+{
+    LDA vsyncs
+.wait
+    CMP vsyncs : BEQ wait
+    RTS
+}
