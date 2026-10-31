@@ -33,10 +33,10 @@ map
 #|    |#########################
 #|    |#########################
  |    |#########################
-======== #####L ##|##  L #######
- |    |   ### |  :|        #####
- |    |    L  |   |      :   ###
- |    |----------------------###
+======== #####L ## ##  L #######
+ |    |   ### |  :         #####
+ |    |    L  |          :   ###
+ |    |--------       -------###
  |    |          ===  |
  |  : |       :       |
  |    |  :   *        |    :
@@ -47,43 +47,43 @@ map
  |    |      !              :
  |    |    : !   ====
  |    |      !    |      HHHH
- |    |vv   v!    |    vvHHHH vv
-_________~~~eeee~~~~~~~_________
+ |    |vv   eeee  |    vvHHHH vv
+_________~~~HHHH~~~~~~~_________
 HHHHHHHHHwwwHHHHwwwwwwwHHHHHHHHH
 HHHHHHHHHwwwHHHHwwwwwwwHHHHHHHHH
 HHHHHHHHHwwwHHHHwwwwwwwHHHHHHHHH
 thing cell 18 6
-thing crawler 29 16
+thing crawler 13 15 1
 
 room pump
 name PUMP HOUSE
 exits left=- right=vatrow up=- down=-
 start 1 17
-colours magenta/magenta yellow white
+colours magenta/blue yellow white
 map
 ################################
 ################################
-#    |  L    ###################
-#    |       ###################
-#  ----------########## L | L ##
-#    |     | ##########   |   ##
-#   BBB    | ##########  :|   ##
-     |  :  | ##########   |   ##
-     |     |   ########:  |     
-     |     |   ########   |     
-     |     |  :########   |     
- BB  | :   |   ########   |  ===
-     |     |   ########   |  ###
-  :  |     |   ########   | :###
-     |     |     PP      === ###
-    HHH  HHHH    PP          ###
-    HHH()HHHH    PP          ###
-    HHH[]HHHH    PP          ###
+#            ###################
+#            ###################
+#            ##########12 8   ##
+#            ##########12 8   ##
+#   BBB      ##########34 8   ##
+             ##########12 8   ##
+      {NGN}    ########12 8
+     {\ l /}   ########12 8
+     W \l/ E  :########12 8
+ BB  DhhOhhK   ########12 8  ===
+     W /l\ E   ########12 8  ###
+     </ l \>   ########34 8  ###
+      <SZS>      PP    12=== ###
+    HHH !HHHH    PP    12    ###
+    HHH !HHHH          12    ###
+    HHH !HHHH          12    ###
 ________________________________
 HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-thing drone 13 13 1
+thing drone 22 15
 thing grenades 5 5
 
 room vatrow
@@ -124,7 +124,7 @@ room jar
 name THE PICKLE JAR
 exits left=- right=tanks up=- down=-
 start 28 6
-colours magenta/magenta cyan white
+colours magenta/blue cyan white
 band 104 3 green/green
 band 112 3 white
 map
@@ -150,7 +150,7 @@ map
 ################################
 ################################
 ################################
-thing drone 12 7
+thing drone 12 7 1
 thing crawler 29 16
 
 room tanks
@@ -163,27 +163,27 @@ map
 ################################
 ################################
 ################################
-#####   ####   #################
-#--------------------###########
-#  L  |   |  L  |  L ###########
-#     |   |     |    ###########
-#     |   |     |    ###########
-#     | : |{}   |:   ###########
-# :   |   |<>   |    ###########
-#     |   |   : |    ###########
-#     |   |     |    ###########
-#     |   |     | :  ###########
-#  :  |   |     |    ###########
-#     =====     |      %    L
-                |      %
-    H       HH     H   %
-    H       HH     H   #########
-____H~~~~~~~H___~~~____#########
-####HwwwwwwwH###www#############
-####HwwwwwwwH###www#############
-####HwwwwwwwH###www#############
+#####  8####   #################
+#      8 8           ###########
+#      8 8 {NNN}     ###########
+#      8 8 WayqE     ###########
+#      8 8 WjQkE     ###########
+#      8 8 W:::E     ###########
+#      8 8 <SSS>     ###########
+#      8 8   |       ###########
+#      8 8   |       ###########
+#      8 8   |       ###########
+#      8 8   |       ###########
+#     =====  |         %    L
+             |         %
+    H       HH  HH H   %
+    H       HH  HH H   #########
+____H~~~~~~~H___HH~____#########
+####HwwwwwwwH###HHw#############
+####HwwwwwwwH###HHw#############
+####HwwwwwwwH###HHw#############
 thing grenades 14 17
-thing drone 13 11
+thing crawler 27 15
 
 room hut
 name FOREMAN'S HUT
@@ -221,26 +221,26 @@ room catwalks
 name THE CATWALKS
 exits left=- right=- up=- down=slurry
 start 0 16
-colours magenta/magenta yellow white
+colours magenta/blue yellow white
 band 160 3 green/green
 map
 ################################
 ################################
-#### |       |       |         #
-####---------------------------#
-#### |   L   |   L   |       L #
-#### |       |       |         #
-#### |       | :     |  :      #
-#### |    :  |       |    YY   #
-#### |       |       |    ==   #
-#### |       |  :    |    ##   #
-#### |:      |       |    ##   #
-#### |       |       PP   ##   #
-#### |      PPP           ## : #
-#### |  :                 ##   #
-     |            :     PP##   #
-  :  |                    ##   #
-    Y|YY            YY    ##   #
+####    Mm                     #
+####    88                     #
+####    88                     #
+####    88                     #
+####    88                     #
+####    88                YY   #
+####    88                ==   #
+####    Uu                ##   #
+####    Jg                ##   #
+####    Xp           PP   ##   #
+####        PPP           ##   #
+####                      ##   #
+                        PP##   #
+  :                       ##   #
+    YYYY            YY    ##   #
 ____====bbbbbbbbbbbb====  ##:  #
 ####  !              !    ##   #
 ####  !    :         !    ##   #
@@ -261,35 +261,35 @@ map
 ############################   #
 ############################   #
 #                     ######   #
-#-------------------------##   #
-#  L    |   L    |    L  ###   #
-#       |        |       ###   #
-#       |        |             #
-#    :  |        |  :          #
-#       |        |             #
-#       |     :  |             #
-#       |        |             #
-#       |        |       :     #
-# :     | :      | :           #
-#       |        |             #
-#       |        |             #
+#                         ##   #
+#                        ###   #
+#                        ###   #
+#                        12    #
+#                        12    #
+#                        12    #
+#                        12    #
+#                        34    #
+#                        12    #
+#                        12    #
+#                        12    #
+#                        12    #
 #   PPPPPPP====bbbbbbb=========#
-#           HH         H---c H #
-#           HH         H   s H #
+#           HH         H c5  H #
+#           HH         H s6  H #
 #   ~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #   wwwwwwwwwwwwwwwwwwwwwwwwwww#
 #   wwwwwwwwwwwwwwwwwwwwwwwwwww#
 #   wwwwwwwwwwwwwwwwwwwwwwwwwww#
 thing crawler 5 13
 thing cell 13 14
-thing shard 2 12
-thing shard 5 13
+thing shard 14 13
+thing shard 15 11
 
 room skip
 name SKIP SHAFT
 exits left=- right=- up=- down=engine_shed
 start 1 5
-colours magenta/magenta yellow white
+colours magenta/blue yellow white
 band 146 3 green/green
 map
 #   ############################

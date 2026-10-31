@@ -1,9 +1,10 @@
 \ ***************************************************************************
 \ The status bar: the score, then an icon and a count each for phase cells,
-\ fracture charges and lives; under them the room's name, over a dotted
-\ rule (print_at draws it) that keeps the bar off the playfield.
+\ fracture charges and lives, and the phase by name; under them the room's
+\ name, over a rule (print_at draws it) that keeps the bar off the
+\ playfield.
 \
-\   SCORE 000000         c5  g5  l5
+\   SCORE 000000  RED    c5  g5  l5
 \             LANDING ZONE
 \ ***************************************************************************
 
@@ -27,6 +28,7 @@ COL_CELL = 21 : COL_GREN = 25 : COL_LIFE = 29
     LDA #SCREEN_COLS : SEC : SBC ds_len : LSR A : TAX
     LDY #1 : JSR print_at
     JSR show_score
+    JSR show_phase
     JMP show_counts
 .top_text   EQUS "SCORE 000000         "
 .top_icons  EQUB ICON_CELL, '5', ' ', ' ', ICON_GREN, '5', ' ', ' ', ICON_LIFE, '5', ' ', 0
@@ -52,6 +54,21 @@ ASSERT top_icons - top_text = COL_CELL AND COL_GREN = COL_CELL + 4 AND COL_LIFE 
     RTS
 .sd_x EQUB 0
 }
+
+\ The phase Ash is in, by name, so a shift shows in the bar as well.
+COL_PHASE = 14
+.show_phase
+{
+    LDA phase : BNE blue
+    PRINT_AT COL_PHASE, 0, red_text
+    RTS
+.blue
+    PRINT_AT COL_PHASE, 0, blue_text
+    RTS
+.red_text  EQUS "RED ", 0
+.blue_text EQUS "BLUE", 0
+}
+ASSERT COL_PHASE + 4 <= COL_CELL
 
 \ Cells, grenades and lives: a digit each, after its icon.
 .show_counts

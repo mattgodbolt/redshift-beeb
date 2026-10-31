@@ -30,7 +30,7 @@ ROOMDEF  = $(if $(ROOM),-D START_ROOM=$(ROOM))
 BUILD   := $(shell date -u '+%Y-%m-%d %H:%M') $(shell git rev-parse --short HEAD 2>/dev/null || echo NOGIT)$(shell git diff --quiet HEAD -- . ':(exclude)$(DISC)' 2>/dev/null || echo +)
 
 .DELETE_ON_ERROR:
-.PHONY: all run check disc ship clean music-preview FORCE
+.PHONY: all run check disc ship clean music-preview playthrough readme-shots FORCE
 
 all: $(TARGET)
 
@@ -67,6 +67,16 @@ check: $(TARGET)
 	node editor/check.mjs > build/editor-check.txt || { cat build/editor-check.txt; exit 1; }
 
 # Always from a clean tree, so the stamp names the commit the disc holds.
+# The whole of Sector 1, played to the Engine Shed (tools/playthrough.mjs).
+playthrough: $(TARGET)
+	node tools/playthrough.mjs
+
+# The README's screenshots, from a playthrough.
+README_SHOTS = title landing pump_red pump_blue jar tanks hut skip
+readme-shots: $(TARGET)
+	node tools/playthrough.mjs --shots build/shots
+	for n in $(README_SHOTS); do cp build/shots/$$n.png docs/media/; done
+
 disc:
 	@git diff --quiet HEAD -- . ':(exclude)$(DISC)' || { echo "commit first: the stamp would say +"; exit 1; }
 	rm -f $(TARGET)

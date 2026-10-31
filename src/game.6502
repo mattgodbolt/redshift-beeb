@@ -165,6 +165,7 @@ FLASH_FRAMES = 8                ; a refused shift's red, in frames
     JSR wait_vsync
     JSR set_colours
     JSR draw_room_phase
+    JSR show_phase
     \ The enemies' bolts belong to the phase they were fired in.
     LDX #EB0
 .bolts

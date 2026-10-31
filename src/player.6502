@@ -423,6 +423,7 @@ SPARK_FRAMES = 4
 \ Losing a life: the player flickers for a while, then starts again where
 \ they came into the room.
 DIE_FRAMES = 25
+DIE_BURST = 9                   ; pl_dead when the burst starts (die_look)
 \ After that, a while that enemies and their bolts can't hurt, to get
 \ away from whatever was there (decision 14). Hazards still kill.
 SAFE_FRAMES = 50
@@ -439,22 +440,35 @@ SAFE_FRAMES = 50
     STX pd_x : STY pd_y
     JSR show_counts
     JSR sound_die
+    JSR sound_fall
     LDX pd_x : LDY pd_y
 .done
     RTS
 .pd_x EQUB 0
 .pd_y EQUB 0
 }
+\ What Ash looks like as they die, by pl_dead (counting down): their
+\ dotted outline flickering in, then only it, then the burst, then nothing.
+.die_look
+    EQUB &FF, &FF, &FF
+    EQUB SPR_BOOM1, SPR_BOOM1, SPR_BOOM1, SPR_BOOM1
+    EQUB SPR_BOOM0, SPR_BOOM0, SPR_BOOM0
+    EQUB SPR_ASH_FADE1, SPR_ASH_FADE1, SPR_ASH_FADE0, SPR_ASH_FADE0
+    EQUB SPR_ASH_FADE1, SPR_ASH_FADE1, SPR_ASH_FADE0
+    EQUB SPR_ASH_STAND, SPR_ASH_FADE1, SPR_ASH_STAND, SPR_ASH_FADE0
+    EQUB SPR_ASH_STAND, SPR_ASH_STAND, SPR_ASH_FADE1, SPR_ASH_STAND
+ASSERT P% - die_look = DIE_FRAMES      ; (the burst starts at DIE_BURST: its first SPR_BOOM0)
 .player_dying
 {
     DEC pl_dead : BEQ again
-    \ Flash: shown on odd frames, gone on even.
-    LDA pl_dead : AND #2 : BEQ hide
-    LDA #SPR_ASH_STAND : BNE set
-.hide
-    LDA #&FF
-.set
-    STA obj_spr + PL
+    \ The harness failing (decision 34): Ash flickers between themself and
+    \ their dotted outline, comes apart into it, and bursts, the burst a
+    \ little down, about their middle.
+    LDX pl_dead
+    CPX #DIE_BURST : BNE look
+    LDA obj_y + PL : CLC : ADC #4 : STA obj_y + PL
+.look
+    LDA die_look,X : STA obj_spr + PL
     LDA obj_st + PL : ORA #OS_CHANGED : STA obj_st + PL
     RTS
 .again

@@ -18,6 +18,8 @@ make              # build/redshift.ssd, symbols build/redshift.json, previews in
 make ROOM=n       # a test build that starts in room n (0 first) at its `start`
 make run          # boot it, shots/run.png
 make ship         # the disc from HEAD (a scratch worktree), copied to redshift.ssd and committed
+make playthrough  # plays the whole of Sector 1 to the Engine Shed: the end-to-end test
+make readme-shots # retakes the README's screenshots (docs/media) from a playthrough
 make music-preview  # each piece of music as a WAV in build/preview/music, from the scores
 node tools/musiccap.mjs [dir] [--quick]  # what the game writes to the chip for each piece, checked against the scores, as WAVs
 ```

@@ -192,7 +192,40 @@ Matt was away is marked *provisional* until reviewed.
     and an `ASSERT` says if it does. `tools/musiccap.mjs` records what the
     game writes to the chip for each piece and checks it, frame by frame,
     against the tool's model of the player.
-34. **2026-10-31: the music after its review** (refines 32). A composer
+34. **2026-10-31: a death that shows.** Matt: "there's no 'death' effect.
+    the player just vanishes." Ash's harness fails: they flicker between
+    themself and their dotted outline (the out-of-phase look), come apart
+    into it, and burst. The rumble is periodic noise, not the white noise
+    of a blast, with a falling whine over it, so a death doesn't sound like
+    a kill.
+35. **2026-10-31: the first enemies shootable from where you stand.** The
+    second newcomer's playtest found the first enemy of the game in a pit
+    no shot could reach, and Gadflies hovering just over Ash's head, so
+    only a jump and fire would hit them. A level-design agent moved them:
+    the Landing Zone's Trundler shuttles on a raised pad, in a standing
+    bolt's line; the Pump House's Gadfly patrols beyond the barricade,
+    which stops two rows short of the floor so a bolt passes under it and
+    Ash still has to shift; the Settling Tanks has a Trundler behind its
+    cracked wall instead of a Gadfly over its entry, and a narrower second
+    tank. Pickups moved clear of pipes, Slurry Run's Slivers off the place
+    where a player shifts, and the landmarks grew: the Pump House's
+    flywheel, the Settling Tanks' gauge, a hoist in the Catwalks, an
+    outflow in Slurry Run, in place of the ceiling rail and lamps.
+36. **2026-10-31: a shift changes the whole room.** A third outside review
+    found the phase swap barely showed in the magenta rooms: decision 29
+    had kept their rock magenta in the Blue, so only the lips changed.
+    Every room's rock is now blue in the Blue Phase, so a shift turns the
+    room from warm to cold (green stays acid's alone). The status bar names
+    the phase, and its rule is solid. The scattered solid bricks are gone,
+    since they read as blocks.
+37. **2026-10-31: walls are solid brick.** Deep in a wall, brick is solid
+    in the room's colour with black mortar, and nothing lit. Three outside
+    reviews pulled three ways: solid brick lit yellow throughout was the
+    loudest thing on screen, brick lines read as backdrop, and a dither
+    read as flat haze. Solid brick without the yellow reads as a wall and
+    isn't loud; in the Blue Phase's blue it reads best of all. Floors keep
+    their dither, so they sit back under the lip Ash walks on.
+38. **2026-10-31: the music after its review** (refines 32). A composer
     and a game-audio reviewer found no borrowed music, and these faults:
     - The title's bass leapt to its upper octave onto the tunes' notes. It
       now keeps to the roots, low, and quieter.
@@ -218,7 +251,7 @@ Matt was away is marked *provisional* until reviewed.
       fall reaching E, the cards' last bells short, the Prism's line on the
       bell, `high` ending open on B, and the game-over flicker audibly
       slowing.
-35. **2026-10-31: sounds that fit the music.**
+39. **2026-10-31: sounds that fit the music.**
     - The pickup is E5 B5 E6, notes the shift leaves alone, so it's in key
       in both phases (it was F major). A life, from a trauma kit or a
       score, has a figure of its own.

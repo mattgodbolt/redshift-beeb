@@ -1,5 +1,5 @@
 \ ***************************************************************************
-\ The music in the game (decisions 32 to 35): a sting for each sector's
+\ The music in the game (decisions 32, 33, 38, 39): a sting for each sector's
 \ card, the cage's figure before it, each sector's music under play, which
 \ follows the phase, and a phrase for the game's end. The scores are in
 \ music/; musicplay.6502 is the player, which the VSync interrupt steps a
