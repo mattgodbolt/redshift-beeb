@@ -138,19 +138,19 @@ variant space br
 ........
 ........
 
-# --- Masonry: the rock and brick of the Leach Works. Deep in a wall it's
-# --- shaded brick (dithered, so the wall's mass reads as solid but sits
-# --- back); facing air it's solid brick, lit along that side, and its top
-# --- is a lip.
+# --- Masonry: the rock and brick of the Leach Works. Solid brick in the
+# --- room's own colour, black mortar, nothing lit: a wall reads as a wall.
+# --- Facing air it's lit along that side, and its top is a lip. (Floors'
+# --- plating stays shaded, so the floor sits back under the lip.)
 
 tile # stone solid
-1.1.1.1.
-.1.1.1..
-1.1.1.1.
+1111111.
+1111111.
+1111111.
 ........
-1.1.1.1.
-.1.1.1.1
-1.1.1.1.
+111.1111
+111.1111
+111.1111
 ........
 
 # A ledge's ends: a capstone with its corner worn round.

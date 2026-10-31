@@ -218,4 +218,11 @@ Matt was away is marked *provisional* until reviewed.
     room from warm to cold (green stays acid's alone). The status bar names
     the phase, and its rule is solid. The scattered solid bricks are gone,
     since they read as blocks.
+37. **2026-10-31: walls are solid brick.** Deep in a wall, brick is solid
+    in the room's colour with black mortar, and nothing lit. Three outside
+    reviews pulled three ways: solid brick lit yellow throughout was the
+    loudest thing on screen, brick lines read as backdrop, and a dither
+    read as flat haze. Solid brick without the yellow reads as a wall and
+    isn't loud; in the Blue Phase's blue it reads best of all. Floors keep
+    their dither, so they sit back under the lip Ash walks on.
 
