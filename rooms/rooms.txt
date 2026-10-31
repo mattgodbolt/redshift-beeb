@@ -40,16 +40,16 @@ map
  |    |----------------------###
  |    |          ===  |
  |  : |       :       |
- |    |  :            |    :
- |    |         :     |
- |    |               |
- | :  |      :       ====
- |    | :                 :
- |    |                     :
- |    |    :     ====
- |    |           |      HHHH
- |    |vv   v     |    vvHHHH vv
-_________~~~____~~~~~~~_________
+ |    |  :   *        |    :
+ |    |      !  :     |
+ |    |      !        |
+ | :  |      !       ====
+ |    | :    !            :
+ |    |      !              :
+ |    |    : !   ====
+ |    |      !    |      HHHH
+ |    |vv   v!    |    vvHHHH vv
+_________~~~eeee~~~~~~~_________
 HHHHHHHHHwwwHHHHwwwwwwwHHHHHHHHH
 HHHHHHHHHwwwHHHHwwwwwwwHHHHHHHHH
 HHHHHHHHHwwwHHHHwwwwwwwHHHHHHHHH
@@ -79,8 +79,8 @@ map
   :  |     |   ########   | :###
      |     |     PP      === ###
     HHH  HHHH    PP          ###
-    HHH  HHHH    PP          ###
-    HHH  HHHH    PP          ###
+    HHH()HHHH    PP          ###
+    HHH[]HHHH    PP          ###
 ________________________________
 HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
@@ -111,12 +111,12 @@ map
 ###  |     |     x     |      ##
 ###=====bbbbbbb=====bbbbbbb=  ##
 ###HHHHH       HHHHH       H  ##
-###HHHHH       HHHHH       H  ##
-###HHHHH~~~~~~~HHHHH~~~~~~~H  ##
-###HHHHHwwwwwwwHHHHHwwwwwwwH  ##
-###HHHHHwwwwwwwHHHHHwwwwwwwH  ##
-###HHHHHwwwwwwwHHHHHwwwwwwwH  ##
-###HHHHHwwwwwwwHHHHHwwwwwwwH  ##
+###HHiHH       HHiHH       H  ##
+###HHIHH~~~~~~~HHIHH~~~~~~~H  ##
+###HHIHHwwwwwwwHHIHHwwwwwwwH  ##
+###HHIHHwwwwwwwHHIHHwwwwwwwH  ##
+###HHIHHwwwwwwwHHIHHwwwwwwwH  ##
+###HHIHHwwwwwwwHHIHHwwwwwwwH  ##
 ###HHHHHwwwwwwwHHHHHwwwwwwwH  ##
 thing crawler 4 11
 thing crawler 17 11 1
@@ -131,9 +131,9 @@ band 104 3 green
 band 112 3 white
 band 144 1 red
 map
-###########################H  H#
-###########################H  H#
-####HHHHHHHHHHHHHHHHHHHHHHHH  H#
+###########################T  T#
+###########################T  T#
+####nnnnnnnnnnnnnnnnnnnnnnnT  T#
 ###H    L      L      L       ##
 ###H                          ##
 ###H   :                      ##
@@ -172,8 +172,8 @@ map
 #  L  |   |  L  |  L ###########
 #     |   |     |    ###########
 #     |   |     |    ###########
-#     | : | :   |:   ###########
-# :   |   |     |    ###########
+#     | : |{}   |:   ###########
+# :   |   |<>   |    ###########
 #     |   |   : |    ###########
 #     |   |     |    ###########
 #     |   |     | :  ###########
@@ -201,18 +201,18 @@ map
 #########    ####    ###########
 ###### L       L          ######
 #####-----------------        ##
-#####    |          |     ====##
-#####    |  :       |   ========
-#####    |        : | ==========
+#####    |          |     AAAA##
+#####    |  :       |   AAAAAAAA
+#####    |        : | AAAAAAAAAA
 #####    |   :      |  HHHHHHHHH
-#####  : |          |  HHH L HHH
-#####    |          |  HHH   HHH
-#####    |      :   |  HHH   HHH
+#####  : |          |  HHH+L+HHH
+#####    |          |  HHH+++HHH
+#####    |      :   |  HHH+++HHH
 #####    |          |  HHHHHHHHH
 ##### :  |    :     |  HHHHHHHHH
-         |          |    L
-           HH       |
-           HH    HH
+         |          |  d L
+           HH       |  d
+           HH    HH    d
 ________________________________
 ################################
 ################################
@@ -236,7 +236,7 @@ map
 #### |   L   |   L   |       L #
 #### |       |       |         #
 #### |       | :     |  :      #
-#### |    :  |       |         #
+#### |    :  |       |    YY   #
 #### |       |       |    ==   #
 #### |       |  :    |    ##   #
 #### |:      |       |    ##   #
@@ -245,10 +245,10 @@ map
 #### |  :                 ##   #
      |            :     PP##   #
   :  |                    ##   #
-     |                    ##   #
+    Y|YY            YY    ##   #
 ____====bbbbbbbbbbbb====  ##:  #
-####                      ##   #
-####       :              ##   #
+####  !              !    ##   #
+####  !    :         !    ##   #
 ####~~~~~~~~~~~~~~~~~~~~~~##   #
 ####wwwwwwwwwwwwwwwwwwwwww##   #
 thing cell 13 11
@@ -279,8 +279,8 @@ map
 #       |        |             #
 #       |        |             #
 #   PPPPPPP====bbbbbbb=========#
-#           HH         H     H #
-#           HH         H     H #
+#           HH         H---c H #
+#           HH         H   s H #
 #   ~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #   wwwwwwwwwwwwwwwwwwwwwwwwwww#
 #   wwwwwwwwwwwwwwwwwwwwwwwwwww#
@@ -300,14 +300,14 @@ band 146 3 green
 map
 #   ############################
 #   ############################
-#                       |  |   #
-#                       |  |   #
+#                       |()|   #
+#                       |[]|   #
 #                       |  |   #
 #                       |  |   #
 #======                 |  |   #
-#                       HHHH   #
-#                       HHHH   #
-#        ======         HHHH   #
+#                       AAAA   #
+#                       AAAA   #
+#        ======         AAAA   #
 #                     ##########
 #                     ##########
 # ======              ##########
@@ -340,15 +340,15 @@ map
 #     |   L   |   L   |   L    #
 #     |       |       |        #
 #     |       |       |        #
-#     |       |       |        #
-#     |       |       |        #
-#     |       |       |        #
-#     |       |       |        #
-#     |       |       |        #
-#     |       |       |        #
-#     |       |       |        #
-#     |       |       |        #
-#     |       |       |        #
+#     |       |       |    *   #
+#     |       |       |   f!   #
+#     |       |       |    !   #
+#     |       |       |    !   #
+#     |       |       |    !   #
+#     |       |       |    !   #
+#     |       |       |    !   #
+#     |       | ()()  |    !   #
+#     |       | [][]  |    !   #
 #------------------------------#
 ________________________________
 ################################

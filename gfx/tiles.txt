@@ -152,6 +152,27 @@ tile # stone solid
 ...1....
 11111111
 
+# A ledge's ends: a capstone with its corner worn round.
+variant # up+left
+..222222
+.211111.
+2111111.
+2.......
+211.1111
+211.1111
+211.1111
+2.......
+
+variant # up+right
+222222..
+1111112.
+11111112
+.......2
+111.1112
+111.1112
+111.1112
+.......2
+
 variant # up
 22222222
 1111111.
@@ -224,6 +245,37 @@ tile H panel solid
 1.......
 1.......
 
+# A block's top corners are rolled, both of them on a post one tile wide.
+variant H up+left+right
+.222222.
+2.11112.
+21111112
+21111112
+21111112
+21111112
+21111.12
+2......2
+
+variant H up+left
+..222222
+.21.111.
+2111111.
+2111111.
+2111111.
+2111111.
+21111.1.
+2.......
+
+variant H up+right
+222222..
+1.11112.
+11111112
+11111112
+11111112
+11111112
+11111.12
+.......2
+
 variant H up
 22222222
 1.11111.
@@ -274,7 +326,8 @@ alt H base
 1.......
 1.......
 
-# A girder: a lattice to stand on.
+# A girder: a lattice to stand on. Where it ends in the open, an end
+# plate and a knee bracket under it.
 tile = girder solid
 22222222
 1.1..1.1
@@ -283,6 +336,26 @@ tile = girder solid
 11111111
 ........
 ........
+........
+
+variant = left
+22222222
+2.1..1.1
+21.11.1.
+2.1..1.1
+21111111
+2111....
+21......
+........
+
+variant = right
+22222222
+1.1..1.2
+.1.11.12
+1.1..1.2
+11111112
+....1112
+......12
 ........
 
 # The floor's walking surface, over plating.
@@ -510,3 +583,271 @@ tile P plate solid red
 2121212.
 2222222.
 ........
+
+# --- Set pieces: each room's landmark, from a small kit. Scenery unless it
+# --- says solid; drawn in colours 1 and 2 only, mostly line, so they sit
+# --- behind the play. A wheel and a gauge are two by two: the keys go
+# --- ( ) over [ ] and { } over < >.
+
+# A spoked wheel: the Pump House's flywheel, the Skip Shaft's sheave, the
+# Engine Shed's wagon wheels. It sits on the bottom of its cells.
+tile ( wheel_tl
+........
+.....211
+...22111
+..211..1
+.211...1
+.21.1..1
+21...1.1
+21....22
+
+tile ) wheel_tr
+........
+11......
+1111....
+..111...
+...111..
+..1.11..
+.1...11.
+2....11.
+
+tile [ wheel_bl
+21111121
+11....22
+11...1.1
+.11.1..1
+.111...1
+..111..1
+...11111
+.....111
+
+tile ] wheel_br
+2111111.
+2....11.
+.1...11.
+..1.11..
+...111..
+..111...
+1111....
+11......
+
+# The Settling Tanks' pressure gauge.
+tile { gauge_tl
+.....211
+...22111
+..211..2
+.211...2
+.21.2...
+21......
+21......
+2122...2
+
+tile } gauge_tr
+11......
+1111....
+..111...
+...111..
+..2.11..
+..2..11.
+22...11.
+...2211.
+
+tile < gauge_bl
+11....1.
+11......
+.11.2...
+.111....
+..111...
+...11111
+.....111
+........
+
+tile > gauge_br
+.....11.
+.....11.
+..2.11..
+...111..
+..111...
+1111....
+11......
+........
+
+# A lattice mast, and a lamp in a cage to go on top: the Landing Zone's
+# beacon, the Engine Shed's signal post (with its arm), the Catwalks' trestles.
+tile ! mast
+.2....1.
+.21...1.
+.2.1..1.
+.2..1.1.
+.2...11.
+.2....1.
+.211111.
+.2....1.
+
+tile * beacon
+...11...
+..1221..
+.122221.
+.121121.
+.122221.
+..1111..
+.2.11.1.
+.211111.
+
+tile f signalarm
+.......1
+11111111
+22122221
+22122221
+11111111
+.......1
+........
+........
+
+# The Landing Zone's pad, where the beacon stands: floor, solid.
+tile e pad solid
+22222222
+21122112
+11221122
+12211221
+11111111
+1.11.11.
+11111111
+........
+
+# A sight glass on a vat's side, full (and its empty top): plating, solid.
+tile I sightglass solid
+11111111
+1122221.
+1122221.
+1122221.
+1122221.
+1122221.
+1122221.
+1122221.
+
+tile i sighttop solid
+11111111
+1111111.
+11....1.
+11....1.
+11....1.
+11....1.
+11....1.
+11....1.
+
+# The Pickle Jar's lid, knurled, and the thread on its neck: solid.
+tile n lid solid
+11111111
+211.211.
+211.211.
+211.211.
+211.211.
+11111111
+........
+11111111
+
+tile T thread solid
+11111111
+2111....
+..2111..
+....2111
+1.....21
+11111111
+........
+11111111
+
+# Corrugated sheet, solid: the Foreman's Hut's roof, and the Skip Shaft's
+# skip. Its top is a lip to stand on, rolled where it ends on the left.
+tile A corrugated solid
+21..21..
+21..21..
+21..21..
+21..21..
+21..21..
+11111111
+1111111.
+........
+
+variant A up+left
+.2222222
+2111111.
+.21..21.
+.21..21.
+.21..21.
+.1111111
+..11111.
+........
+
+variant A up
+22222222
+11111111
+21..21..
+21..21..
+21..21..
+11111111
+1111111.
+........
+
+# The Foreman's Hut's window and door.
+tile + window
+.......1
+.2.....1
+..2....1
+...2...1
+.......1
+.......1
+.......1
+11111111
+
+tile d doorpost
+2111....
+2111....
+21211...
+2111....
+2111....
+21211...
+2111....
+2111....
+
+# The Catwalks' railing, with a post at its end.
+tile Y railing
+21111111
+1.......
+1.......
+11111111
+1.......
+1.......
+1.......
+1.......
+
+variant Y right
+21111112
+1......1
+1......1
+11111111
+1......1
+1......1
+1......1
+1......1
+
+# Slurry Run's outflow: a pipe turned down, and what pours out of it.
+tile c spout
+........
+........
+222222..
+2222222.
+1111.221
+1111.221
+...22222
+...11111
+
+tile s stream
+....221.
+....221.
+.....221
+....221.
+....221.
+.....221
+....2221
+..22.221
