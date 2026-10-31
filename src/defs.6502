@@ -80,6 +80,7 @@ K_UP     = &39
 K_DOWN   = &29
 K_ESCAPE = &70
 K_P      = &37
+K_M      = &65                  ; the music off and on (music.6502)
 
 \ Long branches, for when a routine outgrows the 6502's reach.
 MACRO JNE target

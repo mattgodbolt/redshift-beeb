@@ -18,6 +18,8 @@ make              # build/redshift.ssd, symbols build/redshift.json, previews in
 make ROOM=n       # a test build that starts in room n (0 first) at its `start`
 make run          # boot it, shots/run.png
 make ship         # the disc from HEAD (a scratch worktree), copied to redshift.ssd and committed
+make music-preview  # each piece of music as a WAV in build/preview/music, from the scores
+node tools/musiccap.mjs [dir] [--quick]  # what the game writes to the chip for each piece, checked against the scores, as WAVs
 ```
 
 `node tools/play.mjs '<script>' shots/p_ --until game_start` drives the game. The steps are listed in its header. Key names are jsbeeb's: Z, X, COLON_STAR, SLASH, RETURN, SPACE, SHIFT. `tools/beeb.mjs` presses SPACE at the title page on the way to any game symbol. A sector card shows for about 150 frames first (`f160`, or tap a key). `python3 tools/grid.py out.png 2 a.png b.png` tiles screenshots.
@@ -31,6 +33,7 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 - `irq.6502` plays the palette program: the status split, then up to 8 bands per room, each changing one logical colour on a scan line. Its timing is chuckie-egg-2-beeb's, measured there, and the instructions before each write must stay as they are.
 - `render.6502` draws moving things flicker-free. Each thing's old and new rectangles are composed in `cbuf` (tiles, then sprites masked), then copied out.
 - The art and the rooms are text. `tools/mkgfx.py` and `tools/mkrooms.py` turn them into `build/data/*.6502`, and `tools/gfxlib.py` is the shared reader. The level editor in `editor/` reads the same files.
+- The music is text too (`music/`; `music/instruments.txt` says how), made into data by `tools/mkmusic.py`. One player, `musicplay.6502`, is included twice, each in its own scope with its own data: in the game, where the VSync interrupt steps it (`music.6502`), and in RSLOAD for the title theme. The game's effects take a channel from it whenever they want one.
 - Each colour has a job (`gfx/tiles.txt`'s header, decision 20); keep new art to it. A tile's variants are picked from its surroundings when the rooms are built (`gfxlib.resolve`); the editor has a copy of that in its core script, which `editor/check.mjs` holds to the build pixel for pixel. Air is drawn by position at run time (`back_look`), not stored.
 - The sideways bank is the tight memory. If it fills, compress the room records with baron's section `transform` and `LZ_PARSE` (they're unpacked once a room); leave the art raw, since it's read every frame.
 
@@ -42,6 +45,8 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 - **The sideways bank must stay paged** (`RS_BANK`, `&F4` and `romsel`). Everything in RSDATA is read in place.
 - **Enemies and their bolts call `player_hit`, hazards and pits `player_die`.** `player_hit` does nothing in the safe spell after a respawn (decision 14); a pit must always kill, or Ash falls off the bottom of the room.
 - **The interrupt runs with D as the game left it**: `add_score` uses decimal mode, so the VSync path does `CLD` before anything that adds.
+- **The interrupt writes the sound chip.** Main-loop code that writes a tone (two bytes) holds `mu_busy` across them, as `sound_update` does. A loop that doesn't call `sound_update` (a card, game over) leaves an effect holding its channel: stop the effects first (`sound_quiet`).
+- **The game's frame is 312 lines, 39936 cycles, not 40000** (MODE 7's interlaced one is). A tool counting frames from cycles drifts a frame every 150 or so.
 
 ## House rules
 

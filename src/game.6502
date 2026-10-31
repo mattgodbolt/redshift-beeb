@@ -14,6 +14,7 @@
     DEX : BPL clear
     LDA #0 : STA phase : STA pl_dead : STA pl_safe : STA pl_air : STA fire_cool
     STA score : STA score+1 : STA score+2
+    JSR music_phase
     LDX #MAX_ROOMS - 1
 .gone
     STA room_gone,X
@@ -43,6 +44,7 @@ ENDIF
     LDA keys_new : BPL not_paused   ; (KB_PAUSE is bit 7)
     JSR pause
 .not_paused
+    JSR music_key
     LDA keys_new : AND #KB_SHIFT : BEQ no_shift
     LDA pl_dead : BNE no_shift
     JSR try_shift
@@ -148,6 +150,7 @@ ENDIF
 .shift_show
 {
     JSR sound_shift
+    JSR music_phase
     JSR wait_vsync
     JSR set_colours
     JSR draw_room_phase
@@ -160,11 +163,16 @@ ENDIF
 }
 
 \ Sector A's card: three lines in the middle of a black screen, for a
-\ few seconds or until a key.
+\ few seconds or until a key, and the sector's sting, which runs on into
+\ the music under play. The card doesn't step the game's sounds, so they
+\ stop: one left playing (the cage's) would keep its channel from the sting.
 .show_card
 {
     ZA_AUTO1 sc_row, sc_n
     PHA
+    JSR sound_quiet
+    PLA : PHA                       ; (the sector again: sound_quiet keeps only X and Y)
+    CLC : ADC #MUS_CARD1 - 1 : JSR music_play
     LDX #1 : STX blackout
     JSR cls
     \ No bands: logical 1 yellow, in either phase.
@@ -212,13 +220,16 @@ ENDIF
 .card_colours EQUB BLACK, YELLOW, WHITE, CYAN
 }
 
-\ P: everything stops until P again.
+\ P: everything stops until P again, and is silent.
 .pause
 {
+    JSR sound_quiet
+    JSR music_hold
 .wait
     JSR wait_vsync
     JSR read_keys
     LDA keys_new : BPL wait
+    JSR music_release
     LDA vsyncs : STA last_vs
     RTS
 }
@@ -228,10 +239,13 @@ START_LIVES = 5
 START_CELLS = 5
 START_GRENADES = 5
 
-\ The last life gone: GAME OVER in the status bar, then a new game when a
-\ key is pressed (after a moment, so a held key doesn't skip it).
+\ The last life gone: GAME OVER in the status bar, and its music, then a
+\ new game when a key is pressed (after a moment, so a held key doesn't
+\ skip it).
 .game_over
 {
+    JSR sound_quiet
+    LDA #MUS_OVER : JSR music_play
     PRINT_AT 0, 1, over_text
     LDY #100
 .wait

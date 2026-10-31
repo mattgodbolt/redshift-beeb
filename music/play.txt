@@ -1,0 +1,161 @@
+# REDSHIFT: the music under play. (music/instruments.txt says how a score
+# is written.)
+#
+# It has to sit under gunfire for a long session, so it's slow, quiet and
+# mostly space: a pump on the roots and fifths, a lone tune that comes and
+# goes, and now and then a drip. The bass is on channel 2, which nothing
+# else uses; the tune on 1, which an enemy's shot borrows for a moment; the
+# drips on 0, which Ash's own shots take.
+#
+# It follows the phase. The score is the Red Phase's, in E Phrygian, slow
+# and low on a soft lead. In the Blue every degree but E and B goes up a
+# semitone into E Lydian, the bass and the tune go up an octave, the tune
+# rings on a bell, and it all moves a third faster: the Blue is the short
+# half, thin and quick. Its chords change with it: Em F G C Dm in the Red
+# are E F# G#m C#m D#m in the Blue, the fifths kept. The drips are only
+# ever E and B, which are the same in both.
+#
+#   rise (4 bars)     the pump alone: Em | Em | F | Em
+#   call (4)          the tune: Em | Em | G F | Em
+#   thirds (4)        C | Dm | Em | Em
+#   climb (4)         C | Dm | F | Em, ending on the theme's fall
+#   breathe (4)       drips over a slower pump: Em | F | Em | Dm
+#   high (4)          G | F | Em | Em
+#   thirds (4)        again
+#   ebb (4)           F | F | Em | Em, and round again
+#
+# In the Red, 94 crotchets a minute (a row is a semiquaver, 8 frames); in
+# the Blue, 125 (6 frames).
+
+piece play
+speed 8 6
+bar 16
+then loop
+phased E
+voice drip  0 chime quiet 5
+voice tune  1 soft  quiet 3
+voice bass  2 deep  quiet 2
+blue  drip  quiet 6
+blue  tune  chime quiet 4 up 12
+blue  bass  quiet 3 up 12
+
+pattern rise
+bass:  E3  .   .   .   .   .   E3  .   B3  .   .   .   E3  .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+tune:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  E3  .   .   .   .   .   E3  .   B3  .   .   .   E3  .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   E6  .   .   .   .   .   |
+tune:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  F3  .   .   .   .   .   F3  .   C4  .   .   .   F3  .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+tune:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  E3  .   .   .   .   .   E3  .   B3  .   .   .   E3  .   .   .   |
+drip:  .   .   .   .   .   .   B5  .   .   .   .   .   .   .   .   .   |
+tune:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+pattern call
+bass:  E3  .   .   .   .   .   E3  .   B3  .   .   .   E3  .   .   .   |
+tune:  .   .   .   .   .   .   .   .   B3  .   E4  .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  E3  .   .   .   .   .   E3  .   B3  .   .   .   E3  .   .   .   |
+tune:  F4  .   .   .   .   .   E4  .   .   .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  G3  .   .   .   .   .   G3  .   F3  .   .   .   .   .   F3  .   |
+tune:  -   .   .   .   G4  .   A4  .   B4  .   .   .   .   .   A4  .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  E3  .   .   .   .   .   E3  .   B3  .   .   .   E3  .   .   .   |
+tune:  G4  .   .   .   .   .   .   .   F4  .   .   .   E4  .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   E6  .   .   .   |
+
+pattern thirds
+bass:  C3  .   .   .   .   .   C3  .   G3  .   .   .   C3  .   .   .   |
+tune:  E4  .   .   .   .   .   .   .   G4  .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  D3  .   .   .   .   .   D3  .   A3  .   .   .   D3  .   .   .   |
+tune:  F4  .   .   .   .   .   .   .   A4  .   .   .   .   .   .   .   |
+drip:  .   .   .   .   B5  .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  E3  .   .   .   .   .   E3  .   B3  .   .   .   E3  .   .   .   |
+tune:  B4  .   .   .   .   .   .   .   .   .   .   .   A4  .   G4  .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  E3  .   .   .   .   .   E3  .   B3  .   .   .   E3  .   .   .   |
+tune:  E4  .   .   .   .   .   .   .   .   .   .   .   -   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   E6  .   .   .   |
+
+pattern climb
+bass:  C3  .   .   .   .   .   C3  .   G3  .   .   .   C3  .   .   .   |
+tune:  G4  .   .   .   .   .   E4  .   .   .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  D3  .   .   .   .   .   D3  .   A3  .   .   .   D3  .   .   .   |
+tune:  A4  .   .   .   .   .   F4  .   .   .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   B5  .   .   .   |
+
+bass:  F3  .   .   .   .   .   F3  .   C4  .   .   .   F3  .   .   .   |
+tune:  C5  .   .   .   .   .   .   .   B4  .   .   .   A4  .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  E3  .   .   .   .   .   E3  .   B3  .   .   .   E3  .   .   .   |
+tune:  B4  .   .   .   G4  .   .   .   F4  .   .   .   E4  .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+pattern breathe
+bass:  E3  .   .   .   .   .   .   .   B3  .   .   .   .   .   .   .   |
+tune:  -   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   E6  .   .   .   .   .   .   .   |
+
+bass:  F3  .   .   .   .   .   .   .   C4  .   .   .   .   .   .   .   |
+tune:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+drip:  .   .   .   .   B5  .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  E3  .   .   .   .   .   .   .   B3  .   .   .   .   .   .   .   |
+tune:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   E6  .   .   .   |
+
+bass:  D3  .   .   .   .   .   .   .   A3  .   .   .   .   .   .   .   |
+tune:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   B5  .   .   .   .   .   .   .   .   .   |
+
+pattern high
+bass:  G3  .   .   .   .   .   G3  .   D4  .   .   .   G3  .   .   .   |
+tune:  D5  .   .   .   .   .   .   .   B4  .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  F3  .   .   .   .   .   F3  .   C4  .   .   .   F3  .   .   .   |
+tune:  C5  .   .   .   .   .   .   .   A4  .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   E6  .   |
+
+bass:  E3  .   .   .   .   .   E3  .   B3  .   .   .   E3  .   .   .   |
+tune:  B4  .   .   .   .   .   .   .   G4  .   .   .   A4  .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  E3  .   .   .   .   .   E3  .   B3  .   .   .   E3  .   .   .   |
+tune:  F4  .   .   .   .   .   .   .   E4  .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+pattern ebb
+bass:  F3  .   .   .   .   .   .   .   C4  .   .   .   .   .   .   .   |
+tune:  -   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  F3  .   .   .   .   .   .   .   C4  .   .   .   .   .   .   .   |
+tune:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   B5  .   .   .   .   .   .   .   |
+
+bass:  E3  .   .   .   .   .   .   .   B3  .   .   .   .   .   .   .   |
+tune:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+bass:  E3  .   .   .   .   .   .   .   B3  .   .   .   .   .   .   .   |
+tune:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+drip:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+play rise call thirds climb breathe high thirds ebb

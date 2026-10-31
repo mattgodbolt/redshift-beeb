@@ -185,3 +185,43 @@ What was done, in order, with what worked and what didn't.
   - horizontal pipes and the crystal span's teeth read as ledges and
     ghosts: the pipe is thinner and in the body colour, the span solid.
 
+## 2026-10-31: music
+
+- An agent wrote the music (decisions 30 and 31): a title theme, a sting
+  for each sector's card, the music under play and a phrase for the
+  game's end, all new and all in E. The idea came from the story's rule
+  that what was there before Bore Nine is in both phases. Going from E
+  Phrygian to E Lydian moves every degree but the tonic and the fifth, so
+  the Red Phase's music becomes the Blue's by raising every "made" note a
+  semitone. The music under play is written once and played either way,
+  and the player switches at a shift, mid-bar.
+- The scores are text grids, a token a semiquaver, so the voices line up
+  down the page. `tools/mkmusic.py` checks every bar's length and makes
+  the data. It also has a model of the player in Python, which renders
+  WAV previews through `tools/snwav.py`, a model of the chip after
+  jsbeeb's.
+- The player shares the chip with the game's sounds as chuckie-egg-2-beeb's
+  does: `mu_busy` across a tone's two bytes, and the keyboard's port put
+  back by the interrupt. As there, an effect borrows a channel and the
+  music writes its note again when the effect is done; here every effect
+  can, on channels 0, 1 and the noise. One source serves the game and the
+  title page, which has the OS running: baron scopes let each include it
+  with its own zero page, `sound_write` and data. The title page didn't
+  fit below MODE 7's screen, so RSLOAD now loads lower.
+- `tools/musiccap.mjs` records what the game writes to the chip for each
+  piece and checks it, frame by frame, against the Python model. Every
+  piece matched, over its whole length. It found two faults of the
+  harness's own, both now in CLAUDE.md:
+  - the game's frame is 312 lines, not MODE 7's 312.5, and counting
+    frames by 40000 cycles slipped one about every 150;
+  - the first VSync after start-up writes silence, as every channel
+    becomes the music's.
+- Reading the flow turned up a real fault. The cage starts its sound and
+  goes straight into the next sector's card, and the card doesn't step
+  sounds, so the cage's held channel 0 the whole time and the sting's
+  tune never sounded. A card now stops the game's sounds first. The first
+  try at that clobbered the sector number in A (`sound_quiet` keeps only
+  X and Y), and the music check caught it at once: no sting at all.
+- P silences everything now. Before, a pause in the middle of an effect
+  left its note sounding.
+

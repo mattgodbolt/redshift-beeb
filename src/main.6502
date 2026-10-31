@@ -33,10 +33,16 @@ SECTION Data, org = &8000, load = &FFFF3000, filename = "RSDATA", guard = &C000
     PRINT "data &8000-&", ~data_end, " (", &C000 - data_end, " bytes free)"
 ENDSECTION
 
-\ Below MODE 7's screen, above where RSDATA loads.
-SECTION RsLoad, org = &7000, load = &FFFF7000, exec = &FFFF7000, filename = "RSLOAD", guard = &7C00
+\ Below MODE 7's screen, above where RSDATA loads (the ASSERT): RSDATA
+\ would reach it only with the bank nearly full. Low enough for the title
+\ theme and its player (decision 31).
+RSLOAD_AT = &6C00
+SECTION RsLoad, org = RSLOAD_AT, load = &FFFF0000 + RSLOAD_AT, exec = &FFFF0000 + RSLOAD_AT, filename = "RSLOAD", guard = &7C00
     INCLUDE "rsload.6502"
+.rsload_end
+    PRINT "rsload &", ~RSLOAD_AT, "-&", ~rsload_end, " (", &7C00 - rsload_end, " bytes free)"
 ENDSECTION
+ASSERT &3000 + (data_end - &8000) <= RSLOAD_AT, "RSDATA loads over RSLOAD"
 
 SECTION Loader, org = &1900, load = &FFFF1900, exec = &FFFF0000 + loader, filename = "REDSHFT"
 .payload
@@ -46,6 +52,7 @@ SECTION Loader, org = &1900, load = &FFFF1900, exec = &FFFF0000 + loader, filena
     INCLUDE "system.6502"
     INCLUDE "irq.6502"
     INCLUDE "sound.6502"
+    INCLUDE "music.6502"
     INCLUDE "screen.6502"
     INCLUDE "bands.6502"
     INCLUDE "rooms.6502"
