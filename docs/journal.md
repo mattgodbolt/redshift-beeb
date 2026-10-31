@@ -15,3 +15,17 @@ What was done, in order, with what worked and what didn't.
   logical colour each.
 - The art and the rooms are text files (`gfx/`, `rooms/`), read by the
   Python tools and, later, by the level editor.
+
+## 2026-10-31: the first room on screen
+
+- `tools/mkgfx.py` and `tools/mkrooms.py` turn the text art and rooms
+  into data, with PNG previews in `build/preview` that render each room in
+  both phases, bands and all.
+- The room packs as tiles, runs, and runs copied from the row above.
+  The first room fits in under 200 bytes.
+- The first boot hung in `load_room`: `rd_byte` returned the flags of its
+  pointer's `INC`, not of the byte, so the name loop never saw its 0.
+  Then the status text was garbled: `print_char_a` leaves Y at &FF, and
+  the string loop indexed with it.
+- Bands and the phase shift work as planned. SHIFT recolours every band
+  and redraws only the phase tiles (`draw_room_phase`).

@@ -1,0 +1,136 @@
+\ ***************************************************************************
+\ The screen: clearing it, drawing the room's tiles, and text.
+\
+\ The playfield's tiles are in screen order: a tile is two character cells
+\ (16 bytes, the left cell's 8 lines then the right's), 32 make a 512-byte
+\ character row, and the rows follow on. So tile n of the map is at
+\ play_screen + 16n, and the room draws in one straight run.
+\ ***************************************************************************
+
+\ Clear the whole screen.
+.cls
+{
+    LDA #HI(screen) : STA cl_dst+2
+    LDA #0
+    LDX #0
+.page
+    LDY #0
+.loop
+.cl_dst
+    STA screen,Y
+    INY : BNE loop
+    INC cl_dst+2
+    LDX cl_dst+2 : BPL page         ; (up to &7FFF)
+    RTS
+}
+
+\ Point tp_lo and tp_hi at this phase's tile pointers (gfx.6502).
+.set_tile_ptrs
+{
+    LDA phase : BNE blue
+    LDA #LO(tiles_red) : LDX #HI(tiles_red)
+    BNE set                         ; (always)
+.blue
+    LDA #LO(tiles_blue) : LDX #HI(tiles_blue)
+.set
+    STA tp_lo : STX tp_lo+1
+    CLC : ADC #NTILES : STA tp_hi
+    TXA : ADC #0 : STA tp_hi+1
+    RTS
+}
+
+\ Draw the whole room from the map, in this phase. With mask_flags set,
+\ only the tiles with one of those flags (tile_attr): a phase shift redraws
+\ just the red and blue tiles.
+.draw_room_all
+    LDA #&FF : BNE draw_room_flags  ; (always)
+.draw_room_phase
+    LDA #TF_RED OR TF_BLUE
+.draw_room_flags
+{
+    ZA_AUTO2 dr_src, dr_dst, dr_map
+    ZA_AUTO1 dr_mask
+    STA dr_mask
+    LDA #LO(map) : STA dr_map
+    LDA #HI(map) : STA dr_map+1
+    LDA #LO(play_screen) : STA dr_dst
+    LDA #HI(play_screen) : STA dr_dst+1
+.tile
+    LDY #0 : LDA (dr_map),Y : TAY
+    LDA tile_attr,Y : ORA #&80 : AND dr_mask : BEQ next  ; (&FF: every tile)
+    LDA (tp_lo),Y : STA dr_src
+    LDA (tp_hi),Y : STA dr_src+1
+    LDY #15
+.copy
+    LDA (dr_src),Y : STA (dr_dst),Y
+    DEY : BPL copy
+.next
+    LDA dr_dst : CLC : ADC #16 : STA dr_dst
+    BCC no_carry
+    INC dr_dst+1
+.no_carry
+    INC dr_map : BNE same
+    INC dr_map+1
+.same
+    LDA dr_map : CMP #LO(map + MAP_W * MAP_H) : BNE tile
+    LDA dr_map+1 : CMP #HI(map + MAP_W * MAP_H) : BNE tile
+    RTS
+}
+
+\ Text in the status bar, in logical colour 1 on 0. The font is the OS's,
+\ read at start-up (startup.6502's grab_font), characters 32-95.
+\ print_at: X = column (0-31), Y = row (0-1), then the text's address in
+\ pr_text; it ends at a 0. Characters 96-127 are shown as 64-95 (capitals).
+.print_at
+{
+    ZA_AUTO2 pr_dst, pr_glyph
+    TXA : ASL A : ASL A : ASL A : ASL A : STA pr_dst    ; 16 a column
+    TXA : LSR A : LSR A : LSR A : LSR A : STA pr_dst+1
+    TYA : ASL A : ADC pr_dst+1 : ADC #HI(screen) : STA pr_dst+1
+.char
+    LDY #0 : LDA (pr_text),Y : BEQ done   ; (print_char_a leaves Y at &FF)
+    INC pr_text : BNE got
+    INC pr_text+1
+.got
+    JSR print_char_a
+    JMP char
+.done
+    RTS
+\ A character at pr_dst, which moves on a column.
+.print_char_a
+    AND #&7F : CMP #96 : BCC upper
+    SBC #32
+.upper
+    SEC : SBC #32                   ; (no character below 32 is printed)
+    \ The glyph: font + 8 * (char - 32).
+    LDX #0 : STX pr_glyph+1
+    ASL A : ROL pr_glyph+1
+    ASL A : ROL pr_glyph+1
+    ASL A : ROL pr_glyph+1
+    ADC #LO(font) : STA pr_glyph
+    LDA pr_glyph+1 : ADC #HI(font) : STA pr_glyph+1
+    \ Each row's left four pixels in the left cell, the right four in the
+    \ right cell: logical colour 1 is a pixel's low bit, the low nibble.
+    LDY #7
+.row
+    LDA (pr_glyph),Y : LSR A : LSR A : LSR A : LSR A : STA (pr_dst),Y
+    LDA (pr_glyph),Y : AND #15
+    PHA : TYA : ORA #8 : TAY : PLA
+    STA (pr_dst),Y
+    TYA : AND #7 : TAY
+    DEY : BPL row
+    LDA pr_dst : CLC : ADC #16 : STA pr_dst
+    BCC same
+    INC pr_dst+1
+.same
+    RTS
+}
+\ (In fixed zero page: callers set it.)
+pr_text = text_ptr
+
+\ PRINT_AT col, row, text: the string's in line, after the call.
+MACRO PRINT_AT col, row, text
+    LDA #LO(text) : STA text_ptr
+    LDA #HI(text) : STA text_ptr+1
+    LDX #col : LDY #row : JSR print_at
+ENDMACRO

@@ -1,0 +1,95 @@
+\ ***************************************************************************
+\ Rooms: reading a room's record (tools/mkrooms.py says what's in it) into
+\ the map, the bands and the rest.
+\ ***************************************************************************
+
+\ The next byte of the record at rd_ptr, with Z and N set for it.
+.rd_byte
+{
+    LDY #0 : LDA (rd_ptr),Y
+    INC rd_ptr : BNE same
+    INC rd_ptr+1
+.same
+    ORA #0                          ; (the INC's flags aren't the byte's)
+    RTS
+}
+
+\ Read room A: its name, exits, colours and bands, and its map unpacked.
+.load_room
+{
+    ZA_AUTO2 lr_dst
+    ZA_AUTO1 lr_n
+    STA room
+    TAX
+    LDA room_lo,X : STA rd_ptr : STA room_name
+    LDA room_hi,X : STA rd_ptr+1 : STA room_name+1
+.name
+    JSR rd_byte : BNE name
+    LDX #0
+.exits
+    JSR rd_byte : STA room_exits,X
+    INX : CPX #4 : BNE exits
+    \ Logical 0 is black in both phases; 1-3, Red then Blue.
+    LDA #0 : STA top_red : STA top_blue
+    LDX #1
+.red
+    JSR rd_byte : STA top_red,X
+    INX : CPX #4 : BNE red
+    LDX #1
+.blue
+    JSR rd_byte : STA top_blue,X
+    INX : CPX #4 : BNE blue
+    JSR rd_byte : STA band_n
+    LDX #0
+.band
+    CPX band_n : BEQ bands_done
+    JSR rd_byte : STA band_line,X
+    JSR rd_byte : STA band_log,X
+    JSR rd_byte : STA band_red,X
+    JSR rd_byte : STA band_blue,X
+    INX : BNE band                  ; (always)
+.bands_done
+    \ The things: noted for later (things.6502), and stepped over.
+    LDA rd_ptr : STA things_ptr
+    LDA rd_ptr+1 : STA things_ptr+1
+    JSR rd_byte : ASL A : ASL A     ; four bytes each
+    CLC : ADC rd_ptr : STA rd_ptr
+    BCC unpack
+    INC rd_ptr+1
+.unpack
+    \ The map: a tile, a run of the last, or a run copied from the row above.
+    LDA #LO(map) : STA lr_dst
+    LDA #HI(map) : STA lr_dst+1
+.code
+    JSR rd_byte
+    CMP #&80 : BCS run
+    LDY #0 : STA (lr_dst),Y
+    JSR advance
+    JMP check
+.run
+    \ (&80-&BF: n + 1 more of the last; &C0-&FF: n + 1 from the row above)
+    TAX : AND #&3F : STA lr_n : INC lr_n
+    TXA : AND #&40 : BNE above
+.again
+    DEC lr_dst+1 : LDY #&FF             ; the cell before: dst + 255 - 256
+    LDA (lr_dst),Y : INC lr_dst+1
+    LDY #0 : STA (lr_dst),Y
+    JSR advance
+    DEC lr_n : BNE again
+    BEQ check                           ; (always)
+.above
+    DEC lr_dst+1 : LDY #256 - MAP_W     ; dst - 32 = dst + 224 - 256
+    LDA (lr_dst),Y : INC lr_dst+1
+    LDY #0 : STA (lr_dst),Y
+    JSR advance
+    DEC lr_n : BNE above
+.check
+    LDA lr_dst : CMP #LO(map + MAP_W * MAP_H) : BNE code
+    LDA lr_dst+1 : CMP #HI(map + MAP_W * MAP_H) : BNE code
+    RTS
+.advance
+    INC lr_dst : BNE adv_done
+    INC lr_dst+1
+.adv_done
+    RTS
+}

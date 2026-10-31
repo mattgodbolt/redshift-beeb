@@ -24,9 +24,12 @@ SECTION ZeroPage, org = ZP_FIXED, guard = &90, virtual = TRUE
 .phase      SKIP 1          ; 0: the Red Phase, 1: the Blue
 .room       SKIP 1          ; the room we're in
 .room_ptr   SKIP 2          ; its record (rooms.6502)
-.tile_ptrs  SKIP 2          ; this phase's tile pointer table: lo bytes, then hi
+.tp_lo      SKIP 2          ; this phase's tile pointers: low bytes (gfx.6502)
+.tp_hi      SKIP 2          ; ... and high bytes
 .frame      SKIP 1          ; game frames (25 a second)
 .rng        SKIP 2
+.text_ptr   SKIP 2          ; print_at's text (screen.6502)
+.rd_ptr     SKIP 2          ; the room reader's place (rooms.6502)
 ENDSECTION
 
 SECTION LowPages, org = &0400, guard = &0D00, virtual = TRUE
@@ -59,6 +62,9 @@ MAXEV = 8                   ; palette changes in a room, below its top
 .band_blue  SKIP MAXEV
 .top_red    SKIP 4          ; logical 0-3 at the top of the playfield
 .top_blue   SKIP 4
+.room_exits SKIP 4          ; left, right, up, down: room numbers, &FF none
+.room_name  SKIP 2          ; the room's name (in its record)
+.things_ptr SKIP 2          ; its things (in its record)
 
 \ The compose buffer (render.6502): a rectangle of the screen is put
 \ together here, then copied out, so each screen byte is written once.

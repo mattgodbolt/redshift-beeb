@@ -11,7 +11,8 @@ Micro (Model B and Master 128), in 6502 assembly.
 
 ### ▶ [Play it in your browser](https://bbc.xania.org/?disc=github:mattgodbolt/redshift-beeb/redshift.ssd&autoboot)
 
-(There's no disc yet: the link starts working with the first build.)
+So far: the first room in MODE 1 with its palette bands. **SHIFT** flips
+the phase.
 
 ## The idea
 
