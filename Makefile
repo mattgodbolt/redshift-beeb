@@ -24,8 +24,6 @@ BUILD   := $(shell date -u '+%Y-%m-%d %H:%M') $(shell git rev-parse --short HEAD
 
 .DELETE_ON_ERROR:
 .PHONY: all run disc clean FORCE
-# (Always rebuilt: ROOM= changes what it is, which make can't see.)
-FORCE:
 
 all: $(TARGET)
 
@@ -54,3 +52,6 @@ disc:
 
 clean:
 	rm -rf build
+
+# (The disc is always rebuilt: ROOM= changes what it is, which make can't see.)
+FORCE:
