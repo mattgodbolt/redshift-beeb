@@ -5,14 +5,15 @@
 //
 //   node tools/musiccap.mjs [outdir] [--model B-DFS1.2] [--quick]
 //
-// The title theme from the title page's loop (RSLOAD, the OS running);
-// SECTOR 1's sting from the start of a game, as it runs on into the music
-// under play; then, standing in the first room (kept safe from its
-// enemies), each piece asked for in turn through the player's mu_req, the
-// music under play once in each phase, and then again with Ash shifting
-// every few seconds (play-shifting, recorded but not checked). Then M and
-// P: the music silent, and back. Each piece's writes, a frame (a VSync) to
-// a line, must be the
+// The title theme from the title page's loop (RSLOAD, the OS running),
+// and M there; SECTOR 1's sting from the start of a game, as it runs on
+// into the music under play; then, standing in the first room (kept safe
+// from its enemies), each piece asked for in turn through the player's
+// mu_req: the music under play once in each phase (and the first 30
+// seconds of each other sector's), and then again with Ash shifting every
+// few seconds (play-shifting, recorded but not checked). Then M and P: the
+// music silent, and back; and M on the title page keeping the game's
+// music off. Each piece's writes, a frame (a VSync) to a line, must be the
 // model's (build/music-writes, which this makes). Logs (a CPU cycle and a
 // byte a line, which tools/snwav.py reads) and WAVs go to outdir
 // (build/music by default). --quick checks the first 20 seconds of each.
@@ -49,12 +50,14 @@ const b = await startBeeb({ disc: "build/redshift.ssd", symbols: "build/redshift
 let failed = false;
 const fail = (msg) => { console.log(`FAIL (${model}): ${msg}`); failed = true; };
 
+// (Kept safe once the game's running: the first room's enemies would kill
+// a player who stands still. Not before: pl_safe is the OS's then.)
+let inGame = false;
 async function capture(secs, during) {
     await b.call("start_sound_capture", { session_id: b.session_id });
     if (during) await during();
     for (let left = secs; left > 0; left -= 5) {
-        // (Kept safe: the first room's enemies would kill a player who stands still.)
-        if (b.syms.pl_safe) await b.write("pl_safe", [250]);
+        if (inGame) await b.write("pl_safe", [250]);
         await b.run(Math.min(5, left));
     }
     const r = await b.call("stop_sound_capture", { session_id: b.session_id, max_entries: 1000000 });
@@ -112,10 +115,12 @@ try {
     let w = await capture(len("title"));
     check("title", w, expected("title"), len("title"), TITLE_FRAME);
     save("title", w);
+    await offAndBack("M", "the title page's M");
 
     // SPACE: the game, and SECTOR 1's card.
     await b.tap("SPACE", 0.1);
     await b.runUntil("game_start");
+    inGame = true;
     w = await capture(len("card1"));
     check("card1", w, expected("card1"), len("card1"));
     save("card1", w);
@@ -123,14 +128,18 @@ try {
 
     // Each piece from its start, standing still in the first room.
     const req = b.addr("mus.mu_req");
-    const piece = async (name, number) => {
-        w = await capture(len(name), () => b.write(req, [number]));
-        check(name, w, expected(name), len(name));
+    const piece = async (name, number, most = 1e9) => {
+        const secs = Math.min(len(name), most);
+        w = await capture(secs, () => b.write(req, [number]));
+        check(name, w, expected(name), secs);
         save(name, w);
     };
     for (let n = 2; n <= 5; n++) await piece(`card${n}`, b.addr(`mus.MUS_CARD${n}`));
+    await piece("cage", b.addr("mus.MUS_CAGE"));
     await piece("over", b.addr("mus.MUS_OVER"));
     await piece("play", b.addr("mus.MUS_PLAY"));
+    // The other sectors' music under play: the same notes on their own sounds.
+    for (let n = 2; n <= 5; n++) await piece(`play${n}`, b.addr(`mus.MUS_PLAY${n}`), 30);
     // Into the Blue (its own sound first), then the same again.
     await b.tap("SHIFT", 0.1);
     await b.run(1);
@@ -158,18 +167,36 @@ try {
     if ((await b.peek("phase")) !== 0) await b.tap("SHIFT", 0.1);
 
     // M: silent, though it plays on; and back. P the same, but it stops.
-    for (const key of ["M", "P"]) {
-        await b.tap(key, 0.1);
-        await b.run(0.5);
-        w = await capture(3);
-        const sounding = w.filter(([, v]) => (v & 0x90) === 0x90 && (v & 15) !== 15);
-        if (sounding.length) fail(`${key}: the music wrote a volume while off: ${sounding.length} times`);
-        await b.tap(key, 0.1);
-        w = await capture(3);
-        if (!w.some(([, v]) => (v & 0x90) === 0x90 && (v & 15) !== 15)) fail(`${key}: the music didn't come back`);
-        else console.log(`${key}: silent, then back`);
-    }
+    await offAndBack("M", "M");
+    await offAndBack("P", "P");
+
+    // M on the title page holds for the game.
+    inGame = false;
+    await b.boot();
+    await b.runUntil("rsload.space");
+    await b.clearBreakpoints();
+    await b.tap("M", 0.1);
+    await b.run(0.5);
+    await b.tap("SPACE", 0.1);
+    await b.runUntil("game_start");
+    await b.run(1);
+    if ((await b.peek("mu_state")) !== (b.addr("MU_LIVE") | b.addr("MU_MUTE"))) {
+        fail("M on the title page didn't keep the music off in the game");
+    } else console.log("the title page's M: the game's music off too");
 } finally {
     await b.close();
 }
 process.exit(failed ? 1 : 0);
+
+// Key: the music silent, wherever it is, then key again and it's back.
+async function offAndBack(key, label) {
+    await b.tap(key, 0.1);
+    await b.run(0.5);
+    let w = await capture(3);
+    const sounding = w.filter(([, v]) => (v & 0x90) === 0x90 && (v & 15) !== 15);
+    if (sounding.length) fail(`${label}: the music wrote a volume while off: ${sounding.length} times`);
+    await b.tap(key, 0.1);
+    w = await capture(3);
+    if (!w.some(([, v]) => (v & 0x90) === 0x90 && (v & 15) !== 15)) fail(`${label}: the music didn't come back`);
+    else console.log(`${label}: silent, then back`);
+}

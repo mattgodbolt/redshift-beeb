@@ -117,6 +117,7 @@ su_ptr = map_row                    ; (fixed zero page: not drawing now)
 \ The effects (sound_play's A).
 SFX_FIRE = 0 : SFX_DIE = 1 : SFX_BUZZ = 2 : SFX_PING = 3
 SFX_BOOM = 4 : SFX_TAKE = 5 : SFX_ZAP = 6 : SFX_SHIFT_RED = 7 : SFX_SHIFT_BLUE = 8
+SFX_LIFE = 9
 
 .sound_fire  : PHA : LDA #SFX_FIRE : JMP play_it
 .sound_die   : PHA : LDA #SFX_DIE : JMP play_it
@@ -125,6 +126,7 @@ SFX_BOOM = 4 : SFX_TAKE = 5 : SFX_ZAP = 6 : SFX_SHIFT_RED = 7 : SFX_SHIFT_BLUE =
 .sound_boom  : PHA : LDA #SFX_BOOM : JMP play_it
 .sound_take  : PHA : LDA #SFX_TAKE : JMP play_it
 .sound_zap   : PHA : LDA #SFX_ZAP : JMP play_it
+.sound_life  : PHA : LDA #SFX_LIFE : JMP play_it
 .sound_shift
     PHA : LDA phase : CLC : ADC #SFX_SHIFT_RED
 .play_it
@@ -152,9 +154,10 @@ ENDMACRO
     EQUB V_NOISE + &F0
     FOR k = 0..15 : NOISE k, 4 + (k DIV 6) : NEXT
     END_SFX
+\ (Above the Red bass's roots, so a refusal doesn't sound like the music.)
 .sfx_buzz
     EQUB V_TONE0 + &30
-    FOR k = 0..3 : TONE 2, 900 : TONE 6, 980 : NEXT
+    FOR k = 0..3 : TONE 2, 450 : TONE 6, 490 : NEXT
     END_SFX
 .sfx_ping
     EQUB V_TONE1 + &20
@@ -164,9 +167,11 @@ ENDMACRO
     EQUB V_NOISE + &E0
     FOR k = 0..12 : NOISE k, 4 + (k DIV 5) : NEXT
     END_SFX
+\ A pickup: E5 B5 E6, notes the phase shift leaves alone, so it's in key
+\ with the music in either phase.
 .sfx_take
     EQUB V_TONE0 + &50
-    TONE 2, 180 : TONE 2, 143 : TONE 2, 120 : TONE 3, 90 : TONE 6, 90 : TONE 10, 90
+    TONE 2, 190 : TONE 2, 127 : TONE 2, 95 : TONE 3, 95 : TONE 6, 95 : TONE 10, 95
     END_SFX
 .sfx_zap
     EQUB V_TONE1 + &30
@@ -181,7 +186,16 @@ ENDMACRO
     EQUB V_TONE0 + &60
     FOR k = 0..7 : TONE k DIV 2, 375 - k * 45 : NEXT
     END_SFX
+\ A life (a trauma kit, or every 10,000 points): the pickup's E's leaping
+\ the octave twice, a heartbeat, and a B high above.
+.sfx_life
+    EQUB V_TONE0 + &50
+    TONE 1, 190 : TONE 1, 95 : TONE 9, 95 : TONE 1, 190 : TONE 1, 95 : TONE 4, 95
+    TONE 1, 63 : TONE 3, 63 : TONE 6, 63 : TONE 9, 63 : TONE 12, 63
+    END_SFX
 .sfx_lo EQUB LO(sfx_fire), LO(sfx_die), LO(sfx_buzz), LO(sfx_ping), LO(sfx_boom)
         EQUB LO(sfx_take), LO(sfx_zap), LO(sfx_shift_red), LO(sfx_shift_blue)
+        EQUB LO(sfx_life)
 .sfx_hi EQUB HI(sfx_fire), HI(sfx_die), HI(sfx_buzz), HI(sfx_ping), HI(sfx_boom)
         EQUB HI(sfx_take), HI(sfx_zap), HI(sfx_shift_red), HI(sfx_shift_blue)
+        EQUB HI(sfx_life)

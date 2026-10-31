@@ -73,7 +73,7 @@ ASSERT top_icons - top_text = COL_CELL AND COL_GREN = COL_CELL + 4 AND COL_LIFE 
     LDA lives : CMP #9 : BCS same
     INC lives
     JSR show_counts
-    JSR sound_take
+    JSR sound_life
 .same
     JMP show_score
 .as_10k EQUB 0

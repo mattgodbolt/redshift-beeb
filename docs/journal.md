@@ -225,3 +225,25 @@ What was done, in order, with what worked and what didn't.
 - P silences everything now. Before, a pause in the middle of an effect
   left its note sounding.
 
+## 2026-10-31: the music, reviewed
+
+- Two reviewers, a composer and a game-audio designer, analysed the WAVs
+  and the scores (decisions 34 and 35). Neither found borrowed music. The
+  biggest fault was the title's bass: its octave leaps landed in unison
+  on the tune at full volume in nearly every bar. Unisons matter on this
+  chip: two square waves of the same period can be in opposite phase and
+  cancel, which is why card 4's landing note went hollow in the render.
+- The fixes were measured as the reviewers measured. A check over the
+  model's writes now finds no unison or step between channels except in
+  card 5's split, where the clash is meant. The Blue under play was tried
+  several ways, and the settings kept put its peaks below the Red's and
+  its brightness between the two.
+- A piece can now play another's notes on its own instruments (`from`),
+  which gives each sector its own sound under play for the cost of its
+  instruments.
+- The cage now has a figure of its own, and game over waits for its
+  phrase, with `music_wait`.
+- The capture tool had been poking `pl_safe` on the title page, where the
+  low pages are still the OS's, and `pl_safe` falls in its sound
+  workspace. It pokes it only once the game is running now.
+

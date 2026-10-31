@@ -15,7 +15,7 @@
 
 ZP_FIXED = &60
 
-SECTION ZeroPage, org = ZP_FIXED, guard = RS_BANK, virtual = TRUE
+SECTION ZeroPage, org = ZP_FIXED, guard = RS_MUSIC, virtual = TRUE
 \ Shared with the interrupt.
 .vsyncs     SKIP 1          ; VSyncs since start-up (irq.6502)
 .irq_split  SKIP 1          ; T1 interrupts since this VSync

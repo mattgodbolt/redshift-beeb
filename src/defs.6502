@@ -93,3 +93,5 @@ ENDMACRO
 \ RSLOAD (rsload.6502) leaves the sideways bank it filled here for the
 \ game: user zero page, which the DFS leaves alone, above the game's own.
 RS_BANK = &8F
+\ ... and whether M switched the music off on the title page (non-zero).
+RS_MUSIC = &8E

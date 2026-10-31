@@ -192,4 +192,42 @@ Matt was away is marked *provisional* until reviewed.
     and an `ASSERT` says if it does. `tools/musiccap.mjs` records what the
     game writes to the chip for each piece and checks it, frame by frame,
     against the tool's model of the player.
+34. **2026-10-31: the music after its review** (refines 32). A composer
+    and a game-audio reviewer found no borrowed music, and these faults:
+    - The title's bass leapt to its upper octave onto the tunes' notes. It
+      now keeps to the roots, low, and quieter.
+    - Most players press SPACE before the title's Blue arrived. Now the
+      split that opens it climbs E Lydian over a fall in E Phrygian, and
+      the theme goes a phrase at a time, Red then Blue, so the Blue's tune
+      comes in a third of the way through.
+    - Card 4's arpeggio doubled its bell, and card 5's voices started in
+      unison, which can cancel on the chip: the arpeggio is below the bell
+      now, and card 5's fall moves against a held B.
+    - The music under play came round too often. It's in two rounds now,
+      the second in another order, with the title theme's opening as a
+      tune of its own, and the stretch of bass alone where it loops is
+      shorter.
+    - Its Blue was shrill, with no low end. The bass stays down in the
+      Blue, and the tune's bell is quieter and doesn't strike an octave up,
+      so the Blue is no louder than the Red, and less bright than it was,
+      though still brighter than the Red.
+    - Each sector now has a sound of its own on channel 0 under play,
+      where sector 1 has drips: clanks, bubbles, glints, a whine. They're
+      separate pieces that play the same notes (`from` in a score).
+    - Smaller fixes: the fills, card 2's harmony off the bass, card 3's
+      fall reaching E, the cards' last bells short, the Prism's line on the
+      bell, `high` ending open on B, and the game-over flicker audibly
+      slowing.
+35. **2026-10-31: sounds that fit the music.**
+    - The pickup is E5 B5 E6, notes the shift leaves alone, so it's in key
+      in both phases (it was F major). A life, from a trauma kit or a
+      score, has a figure of its own.
+    - The refused shift's buzz is an octave higher, off the Red bass's
+      roots.
+    - Taking the cage plays its own figure, a clank and E D C B falling,
+      the room held still, before the next sector's card.
+    - Game over waits for its phrase to finish, then for a new key press.
+      A key held from play skipped it before.
+    - M works on the title page too, and the game starts with the music
+      as M left it there (`RS_MUSIC`).
 

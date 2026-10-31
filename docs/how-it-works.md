@@ -88,8 +88,15 @@ Both go straight to the SN76489 through the System VIA (`sound_write` in
   Blue's table has every note in E Lydian, an octave up, where the Red's
   has it in E Phrygian. A shift tells the player (`music_phase`), which
   writes the new pitches at once.
+- Each sector has its own piece under play (`play`, `play2`...): the
+  same notes, with the sector's own sound on channel 0. A sector's card
+  plays its sting, which runs on into its piece.
+- The cage and game over play a piece that stops, and wait for it
+  (`music_wait`) before going on.
 - The title page plays its theme with the same player, from RSLOAD's own
-  copy, a frame each VSync from the loop that waits for SPACE.
+  copy, a frame each VSync from the loop that waits for SPACE. M switches
+  it off there too, and RSLOAD leaves the choice in `RS_MUSIC` for the
+  game.
 
 ## Drawing without flicker
 
