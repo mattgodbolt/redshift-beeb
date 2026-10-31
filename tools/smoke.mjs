@@ -18,7 +18,9 @@ try {
     // (frame is a byte: the run is under 10s, 250 game frames.)
     const f0 = await b.peek("frame");
     let secs = 0;
-    for (const [key, held] of [["X", 1.5], ["COLON_STAR", 0.3], ["RETURN", 1], ["SHIFT", 0.1], ["Z", 1], ["SPACE", 0.2]]) {
+    // (Short of the first acid: a death redraws the room, a pause of its
+    // own, and this checks the frames of play.)
+    for (const [key, held] of [["X", 0.8], ["COLON_STAR", 0.3], ["RETURN", 1], ["SHIFT", 0.1], ["Z", 1], ["SPACE", 0.2]]) {
         await b.keyDown(key);
         await b.run(held);
         await b.keyUp(key);
