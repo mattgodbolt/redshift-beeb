@@ -27,6 +27,11 @@
     LDA #0 : STA obj_face + PL
     LDA #SPR_ASH_STAND : STA obj_spr + PL
     LDA #0 : STA cur_sector : STA cage_go
+IF DEFINED(START_ROOM)
+    \ (A test build, make ROOM=n: room n, at its start.)
+    LDA #1 : STA at_start
+    LDA #START_ROOM
+ENDIF
     JSR change_room
     LDA vsyncs : STA last_vs
 .loop
