@@ -9,7 +9,7 @@
 \ ***************************************************************************
 
 \ The status bar's text colour (logical 1) in each phase.
-.status_ink EQUB YELLOW, CYAN
+.status_ink EQUB WHITE, WHITE         ; (not the playfield's yellow: decision 23)
 
 \ The playfield's sixteen entries in room_ula's order (irq.6502): the ten
 \ the status bar never shows, then the six it does, logical 0 and 1 beside

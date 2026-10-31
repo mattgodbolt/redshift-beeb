@@ -86,7 +86,18 @@
     LDY #0 : LDA gf_char : STA (gf_ptr),Y
     LDA #10 : LDX gf_ptr : LDY gf_ptr+1 : JSR osword
     DEC gf_char : LDA gf_char : CMP #31 : BNE char
+    \ The status bar's icons, over characters it never prints.
+    LDX #8 * 3 - 1
+.icon
+    LDA icons,X : STA font + 8 * (ICON_CELL - 32),X
+    DEX : BPL icon
     RTS
+\ A PHASE CELL (spar in its sleeve), a FRACTURE CHARGE, a TRAUMA KIT.
+.icons
+    EQUB &30, &78, &30, &78, &48, &78, &78, &00
+    EQUB &08, &10, &38, &7C, &6C, &7C, &38, &00
+    EQUB &38, &28, &FE, &82, &BA, &82, &FE, &00
+ASSERT ICON_GREN = ICON_CELL + 1 AND ICON_LIFE = ICON_CELL + 2
 }
 gf_char = rd_ptr                ; (fixed zero page nobody's using yet)
 gf_ptr = text_ptr

@@ -126,7 +126,9 @@ ASSERT T_EMPTY = 0
 }
 
 \ Text in the status bar, in logical colour 1 on 0. The font is the OS's,
-\ read at start-up (startup.6502's grab_font), characters 32-95.
+\ read at start-up (startup.6502's grab_font), characters 32-95, with the
+\ bar's icons over three of them. On the bar's second row the bottom line
+\ of each character is the bar's rule.
 \ print_at: X = column (0-31), Y = row (0-1), then the text's address in
 \ pr_text; it ends at a 0. Characters 96-127 are shown as 64-95 (capitals).
 .print_at
@@ -174,6 +176,12 @@ ASSERT T_EMPTY = 0
     STA (pr_dst),Y
     TYA : AND #7 : TAY
     DEY : BPL row
+    \ On the bar's second row, its bottom line is the dotted rule.
+    LDA pr_dst+1 : CMP #HI(screen + ROW_BYTES) : BCC no_rule
+    LDA #&0A                        ; (logical 1, 0, 1, 0)
+    LDY #7 : STA (pr_dst),Y
+    LDY #15 : STA (pr_dst),Y
+.no_rule
     LDA pr_dst : CLC : ADC #16 : STA pr_dst
     BCC same
     INC pr_dst+1

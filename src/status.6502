@@ -1,23 +1,29 @@
 \ ***************************************************************************
-\ The status bar: score, phase cells, grenades, lives, and the room's name.
+\ The status bar: the score, then an icon and a count each for phase cells,
+\ fracture charges and lives; under them the room's name, over a dotted
+\ rule (print_at draws it) that keeps the bar off the playfield.
 \
-\   SCORE 000000      CELLS 5 GREN 5
-\   LANDING ZONE             LIVES 5
+\   SCORE 000000         c5  g5  l5
+\   LANDING ZONE
 \ ***************************************************************************
+
+\ The icons, drawn over characters the bar never prints (grab_font).
+ICON_CELL = 91 : ICON_GREN = 92 : ICON_LIFE = 93   ; ('[', backslash, ']')
+COL_CELL = 21 : COL_GREN = 25 : COL_LIFE = 29
 
 .draw_status
 {
     PRINT_AT 0, 0, top_text
     PRINT_AT 0, 1, blank_text
-    PRINT_AT 25, 1, lives_text
     LDA room_name : STA text_ptr
     LDA room_name+1 : STA text_ptr+1
     LDX #0 : LDY #1 : JSR print_at
     JSR show_score
     JMP show_counts
-.top_text   EQUS "SCORE 000000      CELLS 5 GREN 5", 0
-.blank_text EQUS "                         ", 0
-.lives_text EQUS "LIVES 5", 0
+.top_text   EQUS "SCORE 000000         "
+.top_icons  EQUB ICON_CELL, '5', ' ', ' ', ICON_GREN, '5', ' ', ' ', ICON_LIFE, '5', ' ', 0
+.blank_text EQUS "                                ", 0
+ASSERT top_icons - top_text = COL_CELL AND COL_GREN = COL_CELL + 4 AND COL_LIFE = COL_CELL + 8
 }
 
 \ The score's six digits.
@@ -38,12 +44,12 @@
 .sd_x EQUB 0
 }
 
-\ Cells, grenades and lives: a digit each.
+\ Cells, grenades and lives: a digit each, after its icon.
 .show_counts
 {
-    LDA cells : ORA #'0' : LDX #24 : LDY #0 : JSR print_at.print_char_at
-    LDA grenades : ORA #'0' : LDX #31 : LDY #0 : JSR print_at.print_char_at
-    LDA lives : ORA #'0' : LDX #31 : LDY #1 : JMP print_at.print_char_at
+    LDA cells : ORA #'0' : LDX #COL_CELL + 1 : LDY #0 : JSR print_at.print_char_at
+    LDA grenades : ORA #'0' : LDX #COL_GREN + 1 : LDY #0 : JSR print_at.print_char_at
+    LDA lives : ORA #'0' : LDX #COL_LIFE + 1 : LDY #0 : JMP print_at.print_char_at
 }
 
 \ Score A hundred points (A in BCD), and a life for every 10,000.

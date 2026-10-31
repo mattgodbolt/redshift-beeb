@@ -104,4 +104,10 @@ Matt was away is marked *provisional* until reviewed.
     enemy's ghost shimmers between the two squares of a checkerboard. A
     pickup glints a beat in every four and bobs, and the Settling Tanks'
     two tanks are sunk a row, so the acid's band stays below Ash's boots.
+23. **2026-10-31: a status bar of its own.** The score, then an icon and a
+    count each for cells, charges and lives in fixed columns; the room's
+    name under them, over a dotted rule that keeps the bar off the
+    playfield. Its ink is white in both phases, so it doesn't share the
+    playfield's yellow. The icons are drawn over three characters the bar
+    never prints.
 
