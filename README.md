@@ -31,6 +31,44 @@ The music follows the phase: listen to it change when you shift.
 | P | pause |
 | M | music off / on |
 
+## Sector 1, room by room
+
+<table>
+<tr><td><img src="docs/media/title.png" alt="The title page"></td>
+<td><img src="docs/media/landing.png" alt="The Landing Zone"></td></tr>
+<tr><td><img src="docs/media/pump_red.png" alt="The Pump House in the Red Phase"></td>
+<td><img src="docs/media/pump_blue.png" alt="The Pump House in the Blue Phase"></td></tr>
+<tr><td><img src="docs/media/jar.png" alt="The Pickle Jar"></td>
+<td><img src="docs/media/tanks.png" alt="The Settling Tanks"></td></tr>
+<tr><td><img src="docs/media/hut.png" alt="The Foreman's Hut"></td>
+<td><img src="docs/media/skip.png" alt="The Skip Shaft"></td></tr>
+</table>
+
+THE LEACH WORKS, where Ash starts, teaches one thing a room:
+
+1. **LANDING ZONE.** Hop the acid, climb the girders over the pool, and
+   get past the first of the machines on the way out.
+2. **PUMP HOUSE.** A welded barricade fills the corridor in the Red Phase.
+   SHIFT, and in the Blue it's a dotted ghost you walk through, while
+   crystal ledges you couldn't stand on appear (above, the same moment in
+   each phase).
+3. **VAT ROW.** Blue crystal spans over the acid vats. The machines here
+   belong to the Red, so in the Blue they're ghosts that can't touch you.
+4. **THE PICKLE JAR.** A drop into a jar of acid, with Red plates across
+   it: shift back, and the Gadfly over them is real again. Below, a
+   Trundler in the drain has to be shot crouching.
+5. **SETTLING TANKS.** A pack of fracture charges, and a cracked wall
+   across the way on. One charge brings the whole wall down.
+6. **FOREMAN'S HUT.** A Drill Sergeant holds the yard, and bolts spark off
+   its armour. Lob a charge from a crate, or crouch under its fire and roll
+   one. There's a trauma kit in the hut.
+7. **THE CATWALKS** and 8. **SLURRY RUN.** Spending cells with care: Blue
+   spans, Red plates, and Slivers that wake when you shift into their
+   phase.
+9. **SKIP SHAFT.** Down to THE CAGE, past a second sergeant. The cage takes
+   Ash down to Sector 2, whose first room, the ENGINE SHED, is as far as
+   the game goes for now.
+
 ## The idea
 
 - **SHIFT flips the phase.** Every palette band on the screen swaps at
