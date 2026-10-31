@@ -474,6 +474,7 @@ SAFE_FRAMES = 50
     \ The room afresh, as Ash came into it: its map, and its enemies where
     \ they started (decision 30). The dead stay dead (room_gone).
     LDA entry_phase : STA phase
+    JSR music_phase                 ; (the music follows the phase back too)
     LDA room : JSR enter_room
     JSR spawn_things
     JSR objs_forget
