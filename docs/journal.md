@@ -104,3 +104,18 @@ What was done, in order, with what worked and what didn't.
 - Still open: a grenade thrown point blank flies over a Drill Sergeant on
   the same floor, and only lands from well back. Both sergeants have a
   crate to throw from.
+
+## 2026-10-31: a gentler first room
+
+- Matt couldn't see how to finish the LANDING ZONE. It could be done, but
+  the obvious way died: walking off the middle girder carried Ash past
+  the crate into a pit with the Trundler, and a full jump from the crate
+  hit a rock overhang at the room's edge and dropped them back into it.
+- The girders and the crate are a tile wider, so a walk off the girder
+  lands mid-crate. The overhang is gone, so a jump from the crate clears
+  the Trundler and leaves the room. The Pump House's wall opens to match,
+  so Ash can't arrive inside rock.
+- A small simulator of Ash's movement (the jump table, falling, the
+  collision box) over a room's map found the trap and the fix before the
+  emulator confirmed them.
+
