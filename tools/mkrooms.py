@@ -22,6 +22,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gfxlib as g  # noqa: E402
 
 THING_TYPES = ["sentry", "drone", "crawler", "shard", "cell", "grenades", "life", "exit"]
+# Each type's size in pixels, with what it reaches beyond its sprite: the
+# drone bobs 4 lines up and down, the crawler sits 4 lines down (things.6502).
+THING_BOX = {"sentry": (16, 0, 16), "drone": (16, -4, 14), "crawler": (16, 4, 16),
+             "shard": (8, 0, 8), "cell": (8, 0, 8), "grenades": (8, 0, 8),
+             "life": (8, 0, 8), "exit": (16, 0, 24)}
 
 
 def pack(cells):
@@ -132,10 +137,15 @@ def main():
         rec.append(len(bands))
         for b in bands:
             rec += list(b)
+        if len(r.things) > 6:
+            raise SystemExit(f"{where}: at most 6 things a room")
         rec.append(len(r.things))
         for (typ, x, y, args) in r.things:
             if typ not in THING_TYPES:
                 raise SystemExit(f"{where}: unknown thing {typ!r}")
+            w, top, bottom = THING_BOX[typ]
+            if x < 0 or x * 8 + w > 256 or y * 8 + top < 0 or y * 8 + bottom > g.MAP_H * 8:
+                raise SystemExit(f"{where}: {typ} at {x},{y} doesn't fit on the screen")
             arg = int(args[0]) if args else 0
             rec += [THING_TYPES.index(typ), x, y, arg]
         cells = []
