@@ -46,12 +46,20 @@
     LDA lives : ORA #'0' : LDX #31 : LDY #1 : JMP print_at.print_char_at
 }
 
-\ Score A hundred points (A in BCD).
+\ Score A hundred points (A in BCD), and a life for every 10,000.
 .add_score
 {
+    LDX score+2 : STX as_10k
     SED
     CLC : ADC score+1 : STA score+1
     LDA score+2 : ADC #0 : STA score+2
     CLD
+    CMP as_10k : BEQ same
+    LDA lives : CMP #9 : BCS same
+    INC lives
+    JSR show_counts
+    JSR sound_take
+.same
     JMP show_score
+.as_10k EQUB 0
 }
