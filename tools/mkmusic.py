@@ -44,6 +44,7 @@ zero page):
                 pattern, and wherever the voice changes)
 """
 import argparse
+import copy
 import re
 import sys
 from pathlib import Path
@@ -88,6 +89,7 @@ class Piece:
         self.voices = {}                # name -> dict(ch, ins, quiet, blue_ins, blue_quiet, up)
         self.patterns = {}              # name -> {voice: [tokens]}
         self.play = []
+        self.parent = None              # "from": the piece whose notes it plays
 
 
 def parse(paths):
@@ -146,6 +148,15 @@ def parse(paths):
                 piece.then = words[1]
             elif key == "phased":
                 piece.tonic = midi(words[1] + "4") % 12
+            elif key == "from":
+                parent = next((q for q in pieces if q.name == words[1] and not q.parent), None)
+                if parent is None or piece.patterns or piece.voices:
+                    err(f"from: an earlier piece's notes ({words[1]}?), before anything else")
+                piece.parent = parent.name
+                piece.speed, piece.speed_blue, piece.bar = parent.speed, parent.speed_blue, parent.bar
+                piece.tonic, piece.patterns, piece.play = parent.tonic, parent.patterns, parent.play
+                piece.then = parent.then
+                piece.voices = copy.deepcopy(parent.voices)
             elif key == "voice":
                 if words[2] not in CHANNELS:
                     err("a voice's channel is 0, 1, 2 or noise")
@@ -155,6 +166,11 @@ def parse(paths):
                     v["ins"] = rest.pop(0)
                 v.update(options(rest, err))
                 v["blue_ins"], v["blue_quiet"] = v["ins"], v["quiet"]
+                if piece.parent:
+                    was = piece.voices.get(words[1]) or err(f"{piece.parent} has no voice {words[1]}")
+                    if was["ch"] != v["ch"]:
+                        err(f"{words[1]} plays on channel {was['ch']} in {piece.parent}")
+                    v["up"] = was["up"]
                 piece.voices[words[1]] = v
             elif key == "blue":
                 v = piece.voices.get(words[1]) or err(f"no voice {words[1]}")
@@ -163,7 +179,11 @@ def parse(paths):
                     v["blue_ins"] = rest.pop(0)
                 o = options(rest, err)
                 v["blue_quiet"] = o.get("quiet", v["quiet"])
-                v["up"] = o.get("up", 0)
+                if piece.parent and o.get("up", v["up"]) != v["up"]:
+                    err("a piece played from another keeps its transpositions")
+                v["up"] = o.get("up", v["up"])
+            elif key in ("pattern", "play") and piece.parent:
+                err(f"{piece.name} plays {piece.parent}'s notes: only its voices change")
             elif key == "pattern":
                 pattern = piece.patterns.setdefault(words[1], {})
             elif key == "play":
@@ -230,8 +250,29 @@ def build(instruments, drums, pieces):
             used_ins.append(name)
         return used_ins.index(name)
 
-    per, var, pieces_out, pats = [], [], [], []
+    def variants(p, bases):
+        """A variant for each pitch table: the piece's speed and instruments."""
+        first = len(var)
+        for blue, base in enumerate(bases):
+            ins, quiet = [0] * 4, [0] * 4
+            for v, vo in reversed(list(p.voices.items())):      # (a channel's first voice)
+                name = vo["blue_ins" if blue else "ins"]
+                if name is not None:
+                    ins[vo["ch"]] = ins_index(name, p.where)
+                quiet[vo["ch"]] = vo["blue_quiet" if blue else "quiet"]
+            var.append(dict(speed=p.speed_blue if blue else p.speed, base=base, ins=ins, quiet=quiet))
+        return first
+
+    def follower(p):
+        return 0xFF if p.then == "stop" else names.index(p.name if p.then == "loop" else p.then)
+
+    per, var, pieces_out, pats, built = [], [], [], [], {}
     for p in pieces:
+        if p.parent:
+            # Another's notes, pitches and order, on its own instruments.
+            b = built[p.parent]
+            pieces_out.append(dict(b, name=p.name, var=variants(p, b["bases"]), next=follower(p)))
+            continue
         if p.speed is None:
             raise ScoreError(f"{p.where}: {p.name} has no speed")
         if p.then not in ("loop", "stop") and p.then not in names:
@@ -265,17 +306,11 @@ def build(instruments, drums, pieces):
         tables = [[n for _, n in keys]]
         if p.tonic is not None:
             tables.append([blue_of(p, n, up) for up, n in keys])
-        first_var = len(var)
-        for blue, table in enumerate(tables):
-            base = len(per)
+        bases = []
+        for table in tables:
+            bases.append(len(per))
             per += [period(n) for n in table]
-            ins, quiet = [0] * 4, [0] * 4
-            for v, vo in reversed(list(p.voices.items())):      # (a channel's first voice)
-                name = vo["blue_ins" if blue else "ins"]
-                if name is not None:
-                    ins[vo["ch"]] = ins_index(name, p.where)
-                quiet[vo["ch"]] = vo["blue_quiet" if blue else "quiet"]
-            var.append(dict(speed=p.speed_blue if blue else p.speed, base=base, ins=ins, quiet=quiet))
+        first_var = variants(p, bases)
         # Voices that share a channel play at its loudness, and say which
         # instrument they are.
         sharing = {}
@@ -332,9 +367,9 @@ def build(instruments, drums, pieces):
         for pname in p.play:
             order += [0xFE, pat_index[pname]]
         order.append(0xFF)
-        nxt = 0xFF if p.then == "stop" else names.index(p.name if p.then == "loop" else p.then)
-        pieces_out.append(dict(name=p.name, var=first_var, flags=MUP_PHASED if p.tonic is not None else 0,
-                               next=nxt, order=order))
+        built[p.name] = dict(bases=bases, flags=MUP_PHASED if p.tonic is not None else 0,
+                             order=order, label=f"mus_{p.name}")
+        pieces_out.append(dict(built[p.name], name=p.name, var=first_var, next=follower(p)))
     if len(per) > 256 or len(pats) > 256 or len(used_drums) > 8:
         raise ScoreError("too many pitches, patterns or drums")
     for d in used_drums:
@@ -390,12 +425,13 @@ def emit(d, sources):
             ".piece_var", eqb(p["var"] for p in d["pieces"]),
             ".piece_flags", eqb(p["flags"] for p in d["pieces"]),
             ".piece_next", eqb(p["next"] for p in d["pieces"]),
-            ".piece_lo", "    EQUB " + ", ".join(f"LO(mus_{p['name']})" for p in d["pieces"]),
-            ".piece_hi", "    EQUB " + ", ".join(f"HI(mus_{p['name']})" for p in d["pieces"]),
+            ".piece_lo", "    EQUB " + ", ".join(f"LO({p['label']})" for p in d["pieces"]),
+            ".piece_hi", "    EQUB " + ", ".join(f"HI({p['label']})" for p in d["pieces"]),
             ".pat_lo", "    EQUB " + ", ".join(f"LO(mpat_{i})" for i in range(len(d["pats"]))),
             ".pat_hi", "    EQUB " + ", ".join(f"HI(mpat_{i})" for i in range(len(d["pats"])))]
     for p in d["pieces"]:
-        out += [f".mus_{p['name']}", eqb(p["order"])]
+        if p["label"] == f"mus_{p['name']}":
+            out += [f".mus_{p['name']}", eqb(p["order"])]
     for i, ev in enumerate(d["pats"]):
         out += [f".mpat_{i}", eqb(ev)]
     return "\n".join(out) + "\n"
@@ -588,7 +624,8 @@ def main():
     Path(args.out).write_text(emit(d, args.scores))
     size = (len(d["envs"]) + 2 * len(d["ins_env"]) + 2 * len(d["drum_ctl"]) + 2 * len(d["per"])
             + 10 * len(d["var"]) + 6 * len(d["pieces"]) + 2 * len(d["pats"])
-            + sum(len(p["order"]) for p in d["pieces"]) + sum(len(e) for e in d["pats"]))
+            + sum(len(p["order"]) for p in d["pieces"] if p["label"] == f"mus_{p['name']}")
+            + sum(len(e) for e in d["pats"]))
     summary = []
     for i, p in enumerate(d["pieces"]):
         phases = [0, 1] if p["flags"] & MUP_PHASED else [0]

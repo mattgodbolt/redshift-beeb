@@ -90,7 +90,7 @@ ASSERT COL_PHASE + 4 <= COL_CELL
     LDA lives : CMP #9 : BCS same
     INC lives
     JSR show_counts
-    JSR sound_take
+    JSR sound_life
 .same
     JMP show_score
 .as_10k EQUB 0

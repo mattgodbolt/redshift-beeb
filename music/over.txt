@@ -3,14 +3,15 @@
 #
 # The theme's fall once more, slowly, G to F to E. Then the harness stops
 # choosing: under the last E, the chord's third flickers between the Red's
-# G and the Blue's G#, slower and slower, and stops, and what's left is an
-# open fifth, E and B, which is neither minor nor major: neither phase.
-# Every note fades out on its own.
+# G and the Blue's G#, each a little longer than the last (2 2 3 3 4 5 6
+# rows), and stops, and what's left is an open fifth, E and B, which is
+# neither minor nor major: neither phase. Every note fades out on its own.
+# The game waits for the phrase to end before a key starts the next.
 #
-# 94 crotchets a minute: a row is a semiquaver, 8 frames.
+# 107 crotchets a minute: a row is a semiquaver, 7 frames.
 
 piece over
-speed 8
+speed 7
 bar 16
 then stop
 voice lead   0 fade  quiet 1
@@ -29,13 +30,13 @@ end:   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 lead:  E4  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 harm:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 bass:  E3  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
-flick: G3  .   G#3 .   G3  .   .   G#3 .   .   G3  .   .   G#3 .   .   |
+flick: G3  .   G#3 .   G3  .   .   G#3 .   .   G3  .   .   .   G#3 .   |
 end:   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 
 lead:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 harm:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 bass:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
-flick: G3  .   .   .   G#3 .   .   .   .   .   .   .   .   .   .   .   |
-end:   .   .   .   .   .   .   .   .   B3  .   .   .   .   .   .   .   |
+flick: .   .   .   G3  .   .   .   .   .   .   .   .   .   .   .   .   |
+end:   .   .   .   .   .   .   .   .   .   B3  .   .   .   .   .   .   |
 
 play over

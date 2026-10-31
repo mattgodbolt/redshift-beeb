@@ -4,20 +4,23 @@
 # In E, in the two phases' modes. The Red Phase's is E Phrygian, the white
 # notes from E: dark, with the flattened second (F) leaning on the tonic.
 # The Blue's is E Lydian, every degree but E and B a semitone higher:
-# bright, with the raised fourth (A#). The same melody in both: in the Red
-# it's in the middle, heavy, on a sustained lead; in the Blue it's an
-# octave up on a bell, over quick arpeggios. Then the Prism, where the
-# chords move between the phases (G then G#, A then A#), and the Red's
-# answer brings it home on an open fifth.
+# bright, with the raised fourth (A#). The same melody in both, a phrase
+# at a time: in the Red it's in the middle, heavy, on a sustained lead; in
+# the Blue it's an octave up on a bell, over quick arpeggios. Then the
+# Prism, where the chords move between the phases (G then G#, A then A#),
+# and the Red's answer brings it home on an open fifth. The bass keeps to
+# the roots, low, out of the tunes' way.
 #
-#   intro (4 bars)  a heartbeat on E, drips, and the split: two voices
-#                   opening out from one note, a step at a time, to two
-#                   octaves apart
-#   red1 red2 shift (8)  the theme in the Red:
-#                   Em | Em | F Dm | C G/B || Em C | G F | Dm F | Em,
-#                   with a run up E major 7 into the Blue
-#   blue1 blue2 (8) the theme in the Blue:
-#                   E | E | F# D#m | C#m G#m/B || E C#m | G#m F# | D#m F# | E
+#   intro (3 bars)  a heartbeat on E and drips; then the split: from one
+#                   note, the upper voice climbs E Lydian and the lower
+#                   falls E Phrygian, to two octaves apart
+#   red1 (4)        the theme's first phrase in the Red:
+#                   Em | Em | F Dm | C G/B, and a run up into the Blue
+#   blue1 (4)       ... and in the Blue: E | E | F# D#m | C#m G#m/B, and
+#                   a fall back to the Red
+#   red2 shift (4)  the answer in the Red: Em C | G F | Dm F | Em, and a
+#                   run up again
+#   blue2 (4)       ... and in the Blue: E C#m | G#m F# | D#m F# | E
 #   prism (4)       Em | E | F | F#
 #   red2 home (4)   the answer again, then round to the intro
 #
@@ -31,17 +34,11 @@ voice lead  0 lead  quiet 1
 voice bell  0 chime quiet 1
 voice harm  1 pad   quiet 2
 voice arp   1 glint quiet 2
-voice bass  2 bass  quiet 1
+voice bass  2 bass  quiet 2
 voice drum  noise   quiet 2
 
 pattern intro
-bell:  -   .   .   .   .   .   .   .   B5  .   .   .   .   .   .   .   |
-bass:  E3  .   E3  .   .   .   .   .   E3  .   E3  .   .   .   .   .   |
-drum:  -   .   .   .   h   .   .   .   -   .   .   .   h   .   .   .   |
-lead:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
-harm:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
-
-bell:  -   .   .   .   E6  .   .   .   .   .   .   .   B5  .   .   .   |
+bell:  .   .   .   .   E6  .   .   .   .   .   .   .   B5  .   .   .   |
 bass:  E3  .   E3  .   .   .   .   .   E3  .   E3  .   .   .   .   .   |
 drum:  -   .   .   .   h   .   .   .   -   .   .   .   h   .   .   .   |
 lead:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
@@ -50,130 +47,134 @@ harm:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 bell:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 bass:  E3  .   E3  .   .   .   .   .   E3  .   E3  .   .   .   .   .   |
 drum:  k   .   .   .   h   .   .   .   k   .   .   .   h   .   .   .   |
-lead:  E4  .   .   .   F4  .   .   .   G4  .   .   .   A4  .   .   .   |
-harm:  E4  .   .   .   D4  .   .   .   C4  .   .   .   B3  .   .   .   |
+lead:  E4  .   .   .   F#4 .   .   .   G#4 .   .   .   A#4 .   .   .   |
+harm:  -   .   .   .   D4  .   .   .   C4  .   .   .   B3  .   .   .   |
 
 bell:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
-bass:  E3  .   E3  .   .   .   .   .   -   .   .   .   E3  .   .   .   |
+bass:  E3  .   E3  .   .   .   .   .   -   .   .   .   .   .   .   .   |
 drum:  k   .   .   .   s   .   .   .   k   .   k   .   s   s   s   s   |
-lead:  B4  .   .   .   C5  .   .   .   D5  .   .   .   E5  .   .   .   |
+lead:  B4  .   .   .   C#5 .   .   .   D#5 .   .   .   E5  .   .   .   |
 harm:  A3  .   .   .   G3  .   .   .   F3  .   .   .   E3  .   .   .   |
 
 pattern red1
 lead:  E4  .   .   .   .   .   B4  .   A4  .   G4  .   F4  .   .   G4  |
 harm:  B3  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
-bass:  E3  .   E3  E3  E4  .   E3  .   E3  .   E3  E3  E4  .   E3  .   |
+bass:  E3  .   E3  E3  E3  .   E3  .   E3  .   E3  E3  E3  .   E3  .   |
 drum:  k   .   h   .   s   .   h   .   k   .   h   k   s   .   h   .   |
+arp:   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 
 lead:  E4  .   .   .   .   .   .   .   -   .   B3  .   D4  .   E4  .   |
 harm:  G3  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
-bass:  E3  .   E3  E3  E4  .   E3  .   E3  .   E3  E3  E4  .   E3  .   |
+bass:  E3  .   E3  E3  E3  .   E3  .   E3  .   E3  E3  E3  .   E3  .   |
 drum:  k   .   h   .   s   .   h   .   k   .   h   k   s   .   h   .   |
+arp:   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 
 lead:  F4  .   .   .   .   .   E4  .   D4  .   .   .   C4  .   D4  .   |
 harm:  A3  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
-bass:  F3  .   F3  F3  F4  .   F3  .   D3  .   D3  D3  D4  .   D3  .   |
+bass:  F3  .   F3  F3  F3  .   F3  .   D3  .   D3  D3  D3  .   D3  .   |
 drum:  k   .   h   .   s   .   h   .   k   .   h   k   s   .   h   .   |
+arp:   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 
 lead:  E4  .   .   D4  C4  .   D4  .   B3  .   .   .   .   .   .   .   |
 harm:  G3  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
-bass:  C3  .   C3  C3  C4  .   C3  .   B2  .   B2  B2  B3  .   B2  .   |
-drum:  k   .   h   .   s   .   h   .   k   .   h   k   s   .   h   .   |
+bass:  C3  .   C3  C3  C3  .   C3  .   B2  .   B2  B2  B2  .   B2  .   |
+drum:  k   .   h   .   s   .   h   .   k   .   h   k   s   .   s   s   |
+arp:   .   .   .   .   .   .   .   .   .   .   .   .   E4  G#4 B4  D#5 |
+
+pattern blue1
+bell:  E5  .   .   .   .   .   B5  .   A#5 .   G#5 .   F#5 .   .   G#5 |
+arp:   E4  G#4 B4  G#4 E4  G#4 B4  G#4 E4  G#4 B4  G#4 E4  G#4 B4  G#4 |
+bass:  E3  .   E3  E3  E3  .   E3  .   E3  .   E3  E3  E3  .   E3  .   |
+drum:  h   h   h   .   s   .   h   .   h   h   h   .   s   .   h   .   |
+
+bell:  E5  .   .   .   .   .   .   .   -   .   B4  .   D#5 .   E5  .   |
+arp:   E4  G#4 B4  G#4 E4  G#4 B4  G#4 E4  G#4 E4  G#4 E4  G#4 B4  G#4 |
+bass:  E3  .   E3  E3  E3  .   E3  .   E3  .   E3  E3  E3  .   E3  .   |
+drum:  h   h   h   .   s   .   h   .   h   h   h   .   s   .   h   .   |
+
+bell:  F#5 .   .   .   .   .   E5  .   D#5 .   .   .   C#5 .   D#5 .   |
+arp:   F#4 A#4 C#5 A#4 F#4 A#4 C#5 A#4 D#4 F#4 A#4 F#4 D#4 F#4 A#4 F#4 |
+bass:  F#3 .   F#3 F#3 F#3 .   F#3 .   D#3 .   D#3 D#3 D#3 .   D#3 .   |
+drum:  h   h   h   .   s   .   h   .   h   h   h   .   s   .   h   .   |
+
+bell:  E5  .   .   D#5 C#5 .   D#5 .   B4  .   .   .   .   .   .   .   |
+arp:   C#4 E4  G#4 E4  C#4 E4  G#4 E4  B3  D#4 G#4 D#4 G4  E4  B3  G3  |
+bass:  C#3 .   C#3 C#3 C#3 .   C#3 .   B2  .   B2  B2  B2  .   B2  .   |
+drum:  h   h   h   .   s   .   h   .   h   h   h   .   s   s   s   s   |
 
 pattern red2
 lead:  E4  .   .   .   .   .   B4  .   C5  .   .   .   B4  .   A4  .   |
 harm:  G3  .   .   .   .   .   .   .   E4  .   .   .   .   .   .   .   |
-bass:  E3  .   E3  E3  E4  .   E3  .   C3  .   C3  C3  C4  .   C3  .   |
+bass:  E3  .   E3  E3  E3  .   E3  .   C3  .   C3  C3  C3  .   C3  .   |
 drum:  k   .   h   .   s   .   h   .   k   .   h   k   s   .   h   .   |
 
 lead:  B4  .   .   .   .   .   G4  .   A4  .   .   .   F4  .   G4  .   |
 harm:  D4  .   .   .   .   .   .   .   C4  .   .   .   .   .   .   .   |
-bass:  G3  .   G3  G3  G4  .   G3  .   F3  .   F3  F3  F4  .   F3  .   |
+bass:  G3  .   G3  G3  G3  .   G3  .   F3  .   F3  F3  F3  .   F3  .   |
 drum:  k   .   h   .   s   .   h   .   k   .   h   k   s   .   h   .   |
 
 lead:  D5  .   .   .   C5  .   B4  .   A4  .   G4  .   F4  .   .   .   |
 harm:  A3  .   .   .   .   .   .   .   C4  .   .   .   .   .   .   .   |
-bass:  D3  .   D3  D3  D4  .   D3  .   F3  .   F3  F3  F4  .   F3  .   |
+bass:  D3  .   D3  D3  D3  .   D3  .   F3  .   F3  F3  F3  .   F3  .   |
 drum:  k   .   h   .   s   .   h   .   k   .   h   k   s   .   h   .   |
 
 pattern shift
 lead:  E4  .   .   .   .   .   .   .   .   .   .   .   -   .   .   .   |
 harm:  B3  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 arp:   .   .   .   .   .   .   .   .   .   .   .   .   E4  G#4 B4  D#5 |
-bass:  E3  .   E3  E3  E4  .   E3  .   E3  .   E3  E3  E4  .   E3  .   |
+bass:  E3  .   E3  E3  E3  .   E3  .   E3  .   E3  E3  E3  .   E3  .   |
 drum:  k   .   h   .   s   .   h   .   k   .   .   .   h   h   h   h   |
 
 pattern home
 lead:  E4  .   .   .   .   .   .   .   .   .   .   .   -   .   .   .   |
 harm:  B3  .   .   .   .   .   .   .   .   .   .   .   -   .   .   .   |
-bass:  E3  .   E3  E3  E4  .   E3  .   E3  .   .   .   .   .   .   .   |
+bass:  E3  .   E3  E3  E3  .   E3  .   E3  .   .   .   .   .   .   .   |
 drum:  k   .   h   .   s   .   h   .   k   .   .   .   .   .   .   .   |
-
-pattern blue1
-bell:  E5  .   .   .   .   .   B5  .   A#5 .   G#5 .   F#5 .   .   G#5 |
-arp:   E4  G#4 B4  G#4 E4  G#4 B4  G#4 E4  G#4 B4  G#4 E4  G#4 B4  G#4 |
-bass:  E3  .   E3  E3  E4  .   E3  .   E3  .   E3  E3  E4  .   E3  .   |
-drum:  h   h   h   .   s   .   h   .   h   h   h   .   s   .   h   .   |
-
-bell:  E5  .   .   .   .   .   .   .   -   .   B4  .   D#5 .   E5  .   |
-arp:   E4  G#4 B4  G#4 E4  G#4 B4  G#4 E4  G#4 B4  G#4 E4  G#4 B4  G#4 |
-bass:  E3  .   E3  E3  E4  .   E3  .   E3  .   E3  E3  E4  .   E3  .   |
-drum:  h   h   h   .   s   .   h   .   h   h   h   .   s   .   h   .   |
-
-bell:  F#5 .   .   .   .   .   E5  .   D#5 .   .   .   C#5 .   D#5 .   |
-arp:   F#4 A#4 C#5 A#4 F#4 A#4 C#5 A#4 D#4 F#4 A#4 F#4 D#4 F#4 A#4 F#4 |
-bass:  F#3 .   F#3 F#3 F#4 .   F#3 .   D#3 .   D#3 D#3 D#4 .   D#3 .   |
-drum:  h   h   h   .   s   .   h   .   h   h   h   .   s   .   h   .   |
-
-bell:  E5  .   .   D#5 C#5 .   D#5 .   B4  .   .   .   .   .   .   .   |
-arp:   C#4 E4  G#4 E4  C#4 E4  G#4 E4  B3  D#4 G#4 D#4 B3  D#4 G#4 D#4 |
-bass:  C#3 .   C#3 C#3 C#4 .   C#3 .   B2  .   B2  B2  B3  .   B2  .   |
-drum:  h   h   h   .   s   .   h   .   h   h   h   .   s   .   h   .   |
 
 pattern blue2
 bell:  E5  .   .   .   .   .   B5  .   C#6 .   .   .   B5  .   A#5 .   |
 arp:   E4  G#4 B4  G#4 E4  G#4 B4  G#4 C#4 E4  G#4 E4  C#4 E4  G#4 E4  |
-bass:  E3  .   E3  E3  E4  .   E3  .   C#3 .   C#3 C#3 C#4 .   C#3 .   |
+bass:  E3  .   E3  E3  E3  .   E3  .   C#3 .   C#3 C#3 C#3 .   C#3 .   |
 drum:  h   h   h   .   s   .   h   .   h   h   h   .   s   .   h   .   |
 
 bell:  B5  .   .   .   .   .   G#5 .   A#5 .   .   .   F#5 .   G#5 .   |
 arp:   G#4 B4  D#5 B4  G#4 B4  D#5 B4  F#4 A#4 C#5 A#4 F#4 A#4 C#5 A#4 |
-bass:  G#3 .   G#3 G#3 G#4 .   G#3 .   F#3 .   F#3 F#3 F#4 .   F#3 .   |
+bass:  G#3 .   G#3 G#3 G#3 .   G#3 .   F#3 .   F#3 F#3 F#3 .   F#3 .   |
 drum:  h   h   h   .   s   .   h   .   h   h   h   .   s   .   h   .   |
 
 bell:  D#6 .   .   .   C#6 .   B5  .   A#5 .   G#5 .   F#5 .   .   .   |
 arp:   D#4 F#4 A#4 F#4 D#4 F#4 A#4 F#4 F#4 A#4 C#5 A#4 F#4 A#4 C#5 A#4 |
-bass:  D#3 .   D#3 D#3 D#4 .   D#3 .   F#3 .   F#3 F#3 F#4 .   F#3 .   |
+bass:  D#3 .   D#3 D#3 D#3 .   D#3 .   F#3 .   F#3 F#3 F#3 .   F#3 .   |
 drum:  h   h   h   .   s   .   h   .   h   h   h   .   s   .   h   .   |
 
 bell:  E5  .   .   .   .   .   .   .   .   .   .   .   -   .   .   .   |
 arp:   E4  G#4 B4  G#4 E4  G#4 B4  G#4 E4  .   .   .   -   .   .   .   |
-bass:  E3  .   E3  E3  E4  .   E3  .   E3  .   .   .   .   .   .   .   |
+bass:  E3  .   E3  E3  E3  .   E3  .   E3  .   .   .   .   .   .   .   |
 drum:  h   h   h   .   s   .   h   .   k   .   .   .   .   .   .   .   |
 
 pattern prism
-lead:  E5  .   .   .   B4  .   .   .   F5  .   .   .   E5  .   .   .   |
+bell:  E5  .   .   .   B4  .   .   .   F5  .   .   .   E5  .   .   .   |
 harm:  G4  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 bass:  E3  .   .   .   .   .   E3  .   E3  .   .   .   .   .   .   .   |
 drum:  k   .   .   .   .   .   k   .   s   .   .   .   .   .   .   .   |
 arp:   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 
-lead:  E5  .   .   .   B4  .   .   .   F#5 .   .   .   E5  .   .   .   |
+bell:  E5  .   .   .   B4  .   .   .   F#5 .   .   .   E5  .   .   .   |
 harm:  G#4 .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 bass:  E3  .   .   .   .   .   E3  .   E3  .   .   .   .   .   .   .   |
 drum:  k   .   .   .   .   .   k   .   s   .   .   .   .   .   .   .   |
 arp:   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 
-lead:  F5  .   .   .   C5  .   .   .   G5  .   .   .   F5  .   .   .   |
+bell:  F5  .   .   .   C5  .   .   .   G5  .   .   .   F5  .   .   .   |
 harm:  A4  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 bass:  F3  .   .   .   .   .   F3  .   F3  .   .   .   .   .   .   .   |
 drum:  k   .   .   .   .   .   k   .   s   .   .   .   .   .   .   .   |
 arp:   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 
-lead:  F#5 .   .   .   C#5 .   .   .   G#5 .   .   .   F#5 .   .   .   |
+bell:  F#5 .   .   .   C#5 .   .   .   G#5 .   .   .   F#5 .   .   .   |
 harm:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 bass:  F#3 .   .   .   .   .   F#3 .   F#3 .   .   .   .   .   .   .   |
 drum:  k   .   .   .   s   .   .   .   s   .   s   .   s   s   s   s   |
 arp:   A#4 .   A4  .   A#4 .   A4  .   A#4 A4  A#4 A4  A#4 A4  A#4 A4  |
 
-play intro red1 red2 shift blue1 blue2 prism red2 home
+play intro red1 blue1 red2 shift blue2 prism red2 home

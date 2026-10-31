@@ -1,14 +1,15 @@
-# REDSHIFT: a sting for each sector's card. (music/instruments.txt says
-# how a score is written.)
+# REDSHIFT: a sting for each sector's card, and the cage that goes down
+# to it. (music/instruments.txt says how a score is written.)
 #
-# Each is two bars, a little longer than the card, built on the title
-# theme's opening fall from the fifth to the tonic (B A G F E in the Red),
-# and each runs straight on into the music under play. The cards come
-# before the game's sounds start, so they can use every channel; still,
-# nothing is left sounding on channels 0 and 1, which the game's sounds and
-# the music under play pick up.
+# Each sting is two bars, a little longer than the card, built on the
+# title theme's opening fall from the fifth to the tonic (B A G F E in the
+# Red), and each runs straight on into its sector's music under play
+# (music/play.txt). The cards come before the game's sounds start, so they
+# can use every channel; still, nothing is left sounding on channels 0
+# and 1, which the game's sounds and the music under play pick up. The
+# cage's figure plays before the card of every sector but the first.
 #
-# 125 crotchets a minute: a row is a semiquaver, 6 frames.
+# 125 crotchets a minute: a row is a semiquaver, 6 frames (the cage's, 5).
 
 # Sector 1, THE LEACH WORKS: two drips, and the fall from the fifth that
 # opens the title theme (B A G F E), over Em to F and home.
@@ -16,7 +17,7 @@ piece card1
 speed 6
 bar 16
 then play
-voice bell  0 chime quiet 1
+voice bell  0 ping  quiet 1
 voice lead  0 lead  quiet 1
 voice harm  1 pad   quiet 3
 voice bass  2 bass  quiet 1
@@ -24,7 +25,7 @@ voice bass  2 bass  quiet 1
 pattern sting
 bell:  E6  .   .   .   B5  .   .   .   .   .   .   .   .   .   .   .   |
 lead:  .   .   .   .   .   .   .   .   B4  .   A4  .   G4  .   F4  .   |
-harm:  E4  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+harm:  E4  .   .   .   .   .   .   .   .   .   .   .   C4  .   .   .   |
 bass:  E3  .   .   .   E3  .   .   .   E3  .   .   .   F3  .   .   .   |
 
 bell:  .   .   .   .   .   .   .   .   .   .   .   .   B5  .   .   .   |
@@ -34,12 +35,12 @@ bass:  E3  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 
 play sting
 
-# Sector 2, MARSHALLING YARD: the same fall, clanked out in octaves over
-# a bass that drives like an ore train, Em to F, and a last gallop home.
+# Sector 2, MARSHALLING YARD: the same fall, clanked out in sixths over a
+# bass that drives like an ore train, Em to F, and a last gallop home.
 piece card2
 speed 6
 bar 16
-then play
+then play2
 voice lead  0 clank quiet 1
 voice harm  1 clank quiet 2
 voice bass  2 bass  quiet 1
@@ -47,33 +48,33 @@ voice drum  noise   quiet 2
 
 pattern sting
 lead:  B4  .   B4  .   A4  .   G4  .   F4  .   .   F4  G4  .   F4  .   |
-harm:  B3  .   B3  .   A3  .   G3  .   F3  .   .   F3  G3  .   F3  .   |
+harm:  D4  .   D4  .   C4  .   B3  .   A3  .   .   A3  B3  .   A3  .   |
 bass:  E3  E3  E3  E3  E3  E3  E3  E3  F3  F3  F3  F3  F3  F3  F3  F3  |
 drum:  k   .   s   .   k   .   s   .   k   .   s   .   k   s   s   s   |
 
 lead:  E4  .   E4  E4  E5  .   -   .   .   .   .   .   .   .   .   .   |
-harm:  E3  .   E3  E3  B3  .   -   .   .   .   .   .   .   .   .   .   |
+harm:  B3  .   B3  B3  B4  .   -   .   .   .   .   .   .   .   .   .   |
 bass:  E3  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 drum:  k   .   k   k   s   .   -   .   .   .   .   .   .   .   .   .   |
 
 play sting
 
 # Sector 3, THE SUMP: in the Red it boils (a bubbling arpeggio under the
-# fall, Em to F); in the Blue the swarm drank it, and a dry bell picks out
-# E major: G#, the Blue's third.
+# fall, Em, F, Em); in the Blue the swarm drank it, and a dry bell picks
+# out E major: G#, the Blue's third.
 piece card3
 speed 6
 bar 16
-then play
+then play3
 voice lead  0 lead  quiet 2
-voice bell  0 chime quiet 2
+voice bell  0 ping  quiet 2
 voice harm  1 pad   quiet 3
 voice bub   2 arp   quiet 1
 
 pattern sting
-lead:  .   .   .   .   B4  .   .   .   A4  .   G4  .   F4  .   .   .   |
+lead:  .   .   B4  .   .   .   A4  .   G4  .   F4  .   E4  .   .   .   |
 harm:  -   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
-bub:   E3  G3  B3  G3  E3  G3  B3  G3  F3  A3  C4  A3  F3  A3  C4  A3  |
+bub:   E3  G3  B3  G3  E3  G3  B3  G3  F3  A3  C4  A3  E3  G3  B3  G3  |
 bell:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 
 lead:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
@@ -84,45 +85,63 @@ bell:  E5  .   .   .   B5  .   .   .   G#5 .   .   .   E6  .   .   .   |
 play sting
 
 # Sector 4, THE SPAR SEAMS: the Blue is native here. The fall in E Lydian
-# on a bell (B A# G# F# E), glittering arpeggios, E to F# and back.
+# on a bell (B A# G# F# E), arpeggios glittering below it, E to F# and
+# back.
 piece card4
 speed 6
 bar 16
-then play
+then play4
 voice bell  0 chime quiet 1
 voice arp   1 arp   quiet 2
 voice bass  2 bass  quiet 1
 
 pattern sting
 bell:  B5  .   .   .   A#5 .   .   .   G#5 .   .   .   F#5 .   .   .   |
-arp:   E5  B4  G#4 B4  E5  B4  G#4 B4  F#5 C#5 A#4 C#5 F#5 C#5 A#4 C#5 |
+arp:   B4  G#4 E4  G#4 B4  G#4 E4  G#4 C#5 A#4 F#4 A#4 C#5 A#4 F#4 A#4 |
 bass:  E3  .   .   .   .   .   .   .   F#3 .   .   .   .   .   .   .   |
 
 bell:  E5  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
-arp:   E5  B4  G#4 B4  E5  .   .   .   -   .   .   .   .   .   .   .   |
+arp:   B4  G#4 E4  G#4 B4  .   .   .   -   .   .   .   .   .   .   .   |
 bass:  E3  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 
 play sting
 
-# Sector 5, INSIDE THE PRISM: one note splits in two, the voices moving
-# apart a semitone at a time through both phases' notes at once, and
-# stopping a tritone apart (E and A#) over the E: it's awake.
+# Sector 5, INSIDE THE PRISM: one voice holds the B while the other
+# falls from it a semitone at a time, through both phases' notes at once,
+# and they stop a tritone apart (E and A#) over the E: it's awake.
 piece card5
 speed 6
 bar 16
-then play
+then play5
 voice lead  0 lead  quiet 1
 voice harm  1 lead  quiet 2
 voice bass  2 bass  quiet 1
 
 pattern sting
-lead:  B4  .   .   .   C5  .   C#5 .   D5  .   D#5 .   E5  .   .   .   |
-harm:  B4  .   .   .   A#4 .   A4  .   G#4 .   G4  .   F#4 .   .   .   |
+lead:  B4  .   .   .   A#4 .   A4  .   G#4 .   G4  .   F#4 .   F4  .   |
+harm:  -   .   .   .   B4  .   .   .   .   .   .   .   .   .   .   .   |
 bass:  E3  .   .   .   .   .   .   .   E3  .   .   .   .   .   .   .   |
 
-lead:  E5  .   .   .   .   .   .   .   .   .   .   .   -   .   .   .   |
+lead:  E4  .   .   .   .   .   .   .   .   .   .   .   -   .   .   .   |
 harm:  A#4 .   .   .   .   .   .   .   .   .   .   .   -   .   .   .   |
 bass:  E3  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
 
 play sting
+
+# The cage, before the next sector's card: a clank, and down it goes,
+# E D C B.
+piece cage
+speed 5
+bar 12
+then stop
+voice clank 0 clank quiet 1
+voice drop  2 bass  quiet 1
+voice drum  noise   quiet 1
+
+pattern down
+clank: E5  .   B4  .   -   .   .   .   .   .   .   .   |
+drop:  -   .   E3  .   D3  .   C3  .   B2  .   .   .   |
+drum:  s   .   .   .   .   .   .   .   .   .   .   .   |
+
+play down
 

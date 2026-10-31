@@ -1,9 +1,9 @@
 \ ***************************************************************************
-\ The music in the game (decision 32): a sting for each sector's card, the
-\ music under play, which follows the phase, and a phrase for the game's
-\ end. The scores are in music/; musicplay.6502 is the player, which the
-\ VSync interrupt steps a frame at a time (music_tick). M switches it off
-\ and on.
+\ The music in the game (decisions 32, 33, 38, 39): a sting for each sector's
+\ card, the cage's figure before it, each sector's music under play, which
+\ follows the phase, and a phrase for the game's end. The scores are in
+\ music/; musicplay.6502 is the player, which the VSync interrupt steps a
+\ frame at a time (music_tick). M switches it off and on.
 \
 \ Sharing the chip with the game's sounds (sound.6502), whose come first:
 \ - A channel an effect is playing on isn't the music's (mu_free): the
@@ -35,6 +35,7 @@ MU_HOLD = 1                 ; ... paused: it stops where it is, silently
 MUS_CARD1 = mus.MUS_CARD1
 MUS_PLAY = mus.MUS_PLAY
 MUS_OVER = mus.MUS_OVER
+MUS_CAGE = mus.MUS_CAGE
 ASSERT mus.MUS_CARD5 = MUS_CARD1 + 4
 
 \ From the VSync interrupt (irq.6502), which keeps X: a frame of the music,
@@ -100,6 +101,22 @@ ASSERT V_TONE0 = 0 AND V_TONE1 = 1     ; (snd_hi: tone 0, tone 1, the noise)
     STA mus.mu_req
     RTS
 
+\ Wait, a VSync at a time, until the piece asked for has started and come
+\ to its end (a piece that stops: the cage's, the game's end). Switched
+\ off with M it still plays, silently, so this still ends.
+.music_wait
+{
+.start
+    JSR wait_vsync
+    LDA mus.mu_req : BPL start      ; (not started yet)
+.playing
+    LDA mus.mu_piece : BMI done
+    JSR wait_vsync
+    JMP playing
+.done
+    RTS
+}
+
 \ The phase for the music under play to follow (the phase settled: a shift
 \ that's refused flips it and back, which the music mustn't hear).
 .music_phase
@@ -141,8 +158,15 @@ ASSERT V_TONE0 = 0 AND V_TONE1 = 1     ; (snd_hi: tone 0, tone 1, the noise)
     DEC mu_busy
     RTS
 
-\ Set up, playing nothing (start-up, once the chip is silent).
+\ Set up, playing nothing (start-up, once the chip is silent), and off if
+\ M switched it off on the title page.
 .music_init
+{
     JSR mus.mu_init
-    LDA #MU_LIVE : STA mu_state
+    LDA #MU_LIVE
+    LDX RS_MUSIC : BEQ on
+    ORA #MU_MUTE
+.on
+    STA mu_state
     RTS
+}

@@ -49,6 +49,8 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 - **The interrupt runs with D as the game left it**: `add_score` uses decimal mode, so the VSync path does `CLD` before anything that adds.
 - **The interrupt writes the sound chip.** Main-loop code that writes a tone (two bytes) holds `mu_busy` across them, as `sound_update` does. A loop that doesn't call `sound_update` (a card, game over) leaves an effect holding its channel: stop the effects first (`sound_quiet`).
 - **The game's frame is 312 lines, 39936 cycles, not 40000** (MODE 7's interlaced one is). A tool counting frames from cycles drifts a frame every 150 or so.
+- **Until the game runs, the low pages are the OS's.** A harness poke at a game variable there (`pl_safe`) on the title page writes into the OS's workspace.
+- **Two channels on one note can cancel.** Two square waves of the same period may be in opposite phase. Keep tunes off each other's notes (the bass low, arpeggios below a bell).
 
 ## House rules
 

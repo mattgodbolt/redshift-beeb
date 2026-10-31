@@ -72,7 +72,10 @@ ENDIF
 {
     LDA #0 : STA cage_go
     LDA room_exits + 3 : CMP #&FF : BEQ done
-    JSR sound_take
+    \ The cage's figure, the room held still while it goes down.
+    JSR sound_quiet
+    LDA #MUS_CAGE : JSR music_play
+    JSR music_wait
     LDA #1 : STA at_start
     LDA room_exits + 3 : JMP change_room
 .done
@@ -248,21 +251,20 @@ START_LIVES = 5
 START_CELLS = 5
 START_GRENADES = 5
 
-\ The last life gone: GAME OVER in the status bar, and its music, then a
-\ new game when a key is pressed (after a moment, so a held key doesn't
-\ skip it).
+\ The last life gone: GAME OVER in the status bar, and its music, heard
+\ to the end; then a new game when a key is pressed (pressed then: a key
+\ still held from play doesn't skip it).
 .game_over
 {
     JSR sound_quiet
     LDA #MUS_OVER : JSR music_play
     PRINT_AT 0, 1, over_text
-    LDY #100
-.wait
-    JSR wait_vsync
-    DEY : BNE wait
+    JSR music_wait                  ; (the phrase heard out)
+    JSR read_keys                   ; (keys held now aren't new)
 .key
+    JSR wait_vsync
     JSR read_keys
-    LDA keys : BEQ key
+    LDA keys_new : BEQ key
     JMP game_start
 .over_text EQUS "   OUT OF LIVES. OUT OF PHASE.  ", 0
 }

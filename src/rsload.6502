@@ -75,9 +75,23 @@ RS_MU    = &74                  ; (two bytes: the title theme's place)
     JSR tmus.mu_init
     LDA #&0F : STA tmus.mu_free     ; (every channel: no other sounds here)
     LDA #tmus.MUS_TITLE : STA tmus.mu_req
+    LDA #0 : STA RS_MUSIC : STA m_down
 .space
     LDA #19 : JSR &FFF4             ; the next VSync
     JSR tmus.mu_frame
+    \ M: the music off, or on again, once a press (and the game keeps it).
+    LDA #&81 : LDX #&9A : LDY #&FF : JSR &FFF4    ; INKEY -102: M
+    CPX m_down : BEQ m_done
+    STX m_down
+    TXA : BEQ m_done                ; (let go)
+    LDA RS_MUSIC : EOR #1 : STA RS_MUSIC
+    BEQ m_on
+    LDA #0 : STA tmus.mu_free       ; off: it plays on, silently
+    LDA #&0F : JSR tmus.mu_quiet
+    JMP m_done
+.m_on
+    LDA #&0F : STA tmus.mu_free : STA tmus.mu_dirty   ; (each note again)
+.m_done
     LDA #&81 : LDX #&9D : LDY #&FF : JSR &FFF4    ; INKEY -99: SPACE
     CPX #&FF : BNE space
     LDA #&0F : JSR tmus.mu_quiet
@@ -88,6 +102,7 @@ RS_MU    = &74                  ; (two bytes: the title theme's place)
 .load_cmd   EQUS "LOAD RSDATA", 13
 .run_cmd    EQUS "RUN REDSHFT", 13
 .press_text EQUS 31, 8, 22, 136, 131, "PRESS SPACE TO PLAY", 0
+.m_down     EQUB 0                  ; M was down last VSync (&FF), or not
 }
 
 \ The title theme: the game's music player (musicplay.6502), a copy of its

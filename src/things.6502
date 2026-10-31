@@ -349,6 +349,9 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
     CMP #TH_LIFE : BNE counted
     LDA lives : CMP #9 : BCS counted
     INC lives
+    JSR show_counts
+    LDX tk_x
+    JMP sound_life                  ; (a trauma kit has its own sound)
 .counted
     JSR show_counts
     LDX tk_x
