@@ -119,3 +119,14 @@ What was done, in order, with what worked and what didn't.
   collision box) over a room's map found the trap and the fix before the
   emulator confirmed them.
 
+## 2026-10-31: the Settling Tanks' wall
+
+- Matt couldn't see the way past the Settling Tanks: the cracked plate
+  hung over a gap one tile high, which read as a hole too small to fit
+  through, not a wall to blast.
+- The gap is filled, so the tunnel mouth is a cracked wall from the step
+  to the ceiling. A grenade from further back would only have broken its
+  top, and none could then reach its foot, so a cracked wall now comes
+  down whole (decision 18). A grenade from the foot of the step or from
+  a few tiles back clears it all.
+

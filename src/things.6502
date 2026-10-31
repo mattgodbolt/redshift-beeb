@@ -599,6 +599,9 @@ ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
 \ breakable tile three wide and four high about it: its own row, one
 \ above and two below. A grenade thrown at a wall goes off level with
 \ the player's head, and the two below reach their feet (decision 17).
+\ A breakable tile takes those above and below it with it: a cracked
+\ wall comes down whole, or a grenade that rose over its foot could
+\ leave a stub no grenade can reach (decision 18).
 .grenade_bang
 {
     ZA_AUTO1 gb_c, gb_r, gb_cx, gb_ry
@@ -653,15 +656,18 @@ ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
 .col
     LDA gb_c : CMP #MAP_W : BCS no_tile
     LDA gb_r : CMP #MAP_H : BCS no_tile
-    TAX
-    LDA maprow_lo,X : STA gb_ptr
-    LDA maprow_hi,X : STA gb_ptr+1
-    LDY gb_c
-    LDA (gb_ptr),Y : TAX
-    LDA tile_attr,X : AND #TF_BREAKABLE : BEQ no_tile
-    LDA #T_EMPTY : STA (gb_ptr),Y
-    LDX gb_c : LDY gb_r : JSR draw_tile_xy
-    INC gb_broke
+    TAY
+    JSR gb_break : BCC no_tile
+    \ The breakable tiles above it and below it come down too.
+    LDY gb_r
+.up
+    DEY : BMI up_done               ; (above row 0)
+    JSR gb_break : BCS up
+.up_done
+    LDY gb_r
+.down
+    INY : CPY #MAP_H : BCS no_tile
+    JSR gb_break : BCS down
 .no_tile
     INC gb_c
     LDA gb_c : SEC : SBC gb_cx : CMP #2 : BNE col
@@ -673,5 +679,25 @@ ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
 .done
     RTS
 .gb_broke EQUB 0
+
+\ Break tile (gb_c, row Y) if it's breakable: carry set if it was. Y kept.
+.gb_break
+    STY gk_r
+    LDA maprow_lo,Y : STA gb_ptr
+    LDA maprow_hi,Y : STA gb_ptr+1
+    LDY gb_c
+    LDA (gb_ptr),Y : TAX
+    LDA tile_attr,X : AND #TF_BREAKABLE : BEQ not_breakable
+    LDA #T_EMPTY : STA (gb_ptr),Y
+    LDX gb_c : LDY gk_r : JSR draw_tile_xy
+    INC gb_broke
+    LDY gk_r
+    SEC
+    RTS
+.not_breakable
+    LDY gk_r
+    CLC
+    RTS
+.gk_r EQUB 0
 }
 gb_ptr = text_ptr                   ; (fixed zero page: nothing prints here)

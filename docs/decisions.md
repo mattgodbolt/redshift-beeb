@@ -70,3 +70,8 @@ Matt was away is marked *provisional* until reviewed.
     grenade thrown at a wall goes off level with Ash's head, so a three
     by three blast never reached the bottom row of a wall standing on the
     floor. It now takes its own row, one above and two below.
+18. **2026-10-31: a cracked wall comes down whole** (*provisional*). A
+    breakable tile that a blast breaks takes the breakable tiles directly
+    above and below it with it. Otherwise a wall as tall as Ash could be
+    left with a stub at its foot: a grenade thrown from further back
+    breaks the top, and every grenade after rises over what's left.
