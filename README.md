@@ -12,11 +12,11 @@ assembly.
 
 ### ▶ [Play it in your browser](https://bbc.xania.org/?disc=github:mattgodbolt/redshift-beeb/redshift.ssd&autoboot)
 
-A teletext title page, then Sector 1's card, then (so far) one room
-with enemies and pickups. Get across the acid, mind the
-drone, and note that the sentry only dies to a grenade. Each **SHIFT**
-costs a phase cell. Enemies of the other phase are dotted ghosts, and
-can't touch you.
+A teletext title page, then Sector 1, THE LEACH WORKS: nine rooms from
+the LANDING ZONE down to the cage in the SKIP SHAFT, and the first room of
+Sector 2. Each **SHIFT** costs a phase cell. Blocks and enemies of the
+other phase are dotted ghosts: you walk through them, and they can't touch
+you. A Drill Sergeant is armoured, and dies only to a grenade.
 
 | Key | Does |
 |---|---|

@@ -38,11 +38,12 @@ Matt was away is marked *provisional* until reviewed.
     bit per thing), so pickups can't be farmed. At most six things a room.
 11. **2026-10-31: the enemies' phases.** Sentries, drones and crawlers are
     the Red Phase's machines; shards are the Blue Phase's crystals.
-    Out of phase, each is drawn as its dotted ghost and goes on moving.
+    Out of phase, each is drawn as its dotted ghost and goes on moving
+    (but see decision 15).
 12. **2026-10-31: a Model B with 16K of sideways RAM, or a Master**
     (*provisional*; the porting kit's baseline, and chuckie-egg-2-beeb's
-    decision 8). With the rooms, art and code in main RAM, 4K was left
-    after one room. `RSLOAD` finds a free RAM bank with the OS still
+    decision 8). With the rooms, art and code in main RAM, little was
+    left after one room. `RSLOAD` finds a free RAM bank with the OS still
     running, loads `RSDATA` (the art and the rooms) and copies it in, then
     runs the game with the bank paged in for good. jsbeeb's Model B has
     sideways RAM, so the play link works. A stock-B edition that reads
@@ -52,3 +53,20 @@ Matt was away is marked *provisional* until reviewed.
     (*provisional*). A room may need a shift to get through. With no
     cells and no pickup left, the player would be stuck for good, so
     respawning tops cells up to 2.
+14. **2026-10-31: a safe spell after a respawn** (*provisional*). Ash
+    starts again where they came into the room, and what killed them may
+    still be there: with a Sliver on the spot, every respawn died at once
+    and five lives went in seconds. For a while after a respawn
+    (`SAFE_FRAMES`) Ash flashes, and enemies and their bolts can't hurt
+    them. Hazards still kill; pickups and the cage still work.
+15. **2026-10-31: ghost Slivers hang still** (*provisional*). Out of
+    phase, a Sliver went on homing, settled on Ash, and killed them the
+    moment they shifted into the Blue. Now one out of phase stays where it
+    is. The other enemies still move out of phase (decision 11).
+16. **2026-10-31: a death leaves at least one grenade** (*provisional*),
+    as decision 13 leaves two cells: otherwise a cracked wall is a dead
+    end for a player who has thrown them all.
+17. **2026-10-31: a blast three wide and four high** (*provisional*). A
+    grenade thrown at a wall goes off level with Ash's head, so a three
+    by three blast never reached the bottom row of a wall standing on the
+    floor. It now takes its own row, one above and two below.

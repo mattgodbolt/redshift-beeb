@@ -87,7 +87,8 @@ The rules, as Morrell's harness manual gives them:
   FOREMAN'S HUT, THE CATWALKS, SLURRY RUN, SKIP SHAFT.
 - **Hazards and enemies:** acid pits, swarm bridges (Blue), the first welded
   barricades (Red), a cracked wall to teach the grenade. Trundlers, a Gadfly or
-  two, Slivers round the bridges; one Drill Sergeant guarding SKIP SHAFT.
+  two, Slivers round the bridges; Drill Sergeants in the FOREMAN'S HUT and
+  guarding SKIP SHAFT.
 
 ### Sector 2: MARSHALLING YARD
 

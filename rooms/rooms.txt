@@ -6,7 +6,8 @@
 # exits left=<id> right=<id> up=<id> down=<id>    (- for none)
 # start <x> <y>               where a new game starts (the first room), or
 #                             where the cage brings you into a sector: in
-#                             tiles, the player's feet on row y + 1
+#                             tiles, x the left of the player and y the row
+#                             their feet are in (standing on row y + 1)
 # colours <c1> <c2> <c3>      logical colours 1-3 at the top of the room
 # band <line> <logical> <c>   from playfield line 0-175 down, logical 1-3
 #                             shows colour c (at most 8; 2 lines apart)

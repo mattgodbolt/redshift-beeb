@@ -21,8 +21,8 @@ What was done, in order, with what worked and what didn't.
 - `tools/mkgfx.py` and `tools/mkrooms.py` turn the text art and rooms
   into data, with PNG previews in `build/preview` that render each room in
   both phases, bands and all.
-- The room packs as tiles, runs, and runs copied from the row above.
-  The first room fits in under 200 bytes.
+- The room packs as tiles, runs, and runs copied from the row above,
+  which suits rooms built of long walls and floors.
 - The first boot hung in `load_room`: `rd_byte` returned the flags of its
   pointer's `INC`, not of the byte, so the name loop never saw its 0.
   Then the status text was garbled: `print_char_a` leaves Y at &FF, and
@@ -58,14 +58,14 @@ What was done, in order, with what worked and what didn't.
   rectangles are redrawn.
 - The low pages filled up. The interrupt's page-aligned tables now come
   first, and the compose buffer is 768 bytes.
-- Memory is getting short below the screen: about 4K is left.
+- Memory is getting short below the screen.
 
 ## 2026-10-31: sideways RAM
 
 - The art and the rooms move to a sideways RAM bank (decision 12):
-  `RSLOAD` finds the bank, loads `RSDATA` and copies it in. Main RAM goes
-  from about 4K free to 10.7K, with 9.9K free in the bank. Both of
-  jsbeeb's B and Master find bank 7.
+  `RSLOAD` finds the bank, loads `RSDATA` and copies it in. That leaves
+  main RAM to the code, with plenty of room in both. Both of jsbeeb's B
+  and Master find a bank.
 
 ## 2026-10-31: sound
 
@@ -76,3 +76,31 @@ What was done, in order, with what worked and what didn't.
   inside `key_down`'s use of the same VIA port. Checked with jsbeeb's
   sound capture: the periods and volumes arrive as tabled.
 - `sound_write` now keeps Y: `sound_update` indexes with it.
+
+## 2026-10-31: Sector 1
+
+- An agent designed Sector 1, THE LEACH WORKS: nine rooms from the
+  LANDING ZONE down to the cage in the SKIP SHAFT, and a placeholder
+  ENGINE SHED in Sector 2 for the cage to arrive in. Each room teaches
+  one thing: jumping, the shift, ghosts, the grenade, the Drill Sergeant,
+  then spending cells with care. No room needs more than two shifts from
+  where Ash comes in, so the two cells a death leaves are always enough.
+- New tiles: the Blue's swarm span and crystal spikes, the Red's welded
+  plate and boiling water (kept for the Sump), and a lamp. The rooms use
+  the welded plate, not the red block: its seams are colour 2, so its
+  outline still shows in the Blue, where colour 1 is a dark blue.
+- A scripted run plays the whole sector without a death, from a driver
+  that reads Ash's position, lives, cells and phase every frame.
+- The playtests found four faults in the engine (decisions 14-17):
+  - An enemy left on the spot where Ash came in killed every respawn at
+    once: five lives went in seconds. Now a respawn has a short safe
+    spell, with Ash flashing.
+  - Ghost Slivers went on homing, and settled on Ash, so the next shift
+    into the Blue killed. Now they hang still out of phase.
+  - A grenade thrown at a wall goes off at head height, and its blast
+    never reached a wall's bottom row. Now it reaches two rows down.
+  - A player who'd thrown every grenade could be stuck at a cracked wall.
+    A death now leaves at least one.
+- Still open: a grenade thrown point blank flies over a Drill Sergeant on
+  the same floor, and only lands from well back. Both sergeants have a
+  crate to throw from.
