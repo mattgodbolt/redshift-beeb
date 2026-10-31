@@ -12,7 +12,7 @@ traps; `docs/decisions.md` has the why of each choice.
    written to it.
 3. It loads `RSDATA` at `&3000` and copies it into the bank. `RSDATA` is
    the art, the rooms and the screen text.
-4. It waits for SPACE, then runs `REDSHFT`.
+4. It waits for SPACE, playing the title theme, then runs `REDSHFT`.
 
 `REDSHFT` loads at `&1900` and copies the game down to `&0E00`, over the
 DFS's workspace. Start-up (`src/startup.6502`, run once from where it
@@ -66,6 +66,30 @@ It starts the User VIA's T1.
 - `set_timing` works out the periods, once a room.
 - `set_colours` works out the entries for the current phase. A phase shift
   just calls it again.
+
+## Sound and music
+
+Both go straight to the SN76489 through the System VIA (`sound_write` in
+`src/chip.6502`).
+
+- **Effects** (`src/sound.6502`) are tables of steps, one step a game
+  frame from the main loop: Ash's on tone channel 0, the enemies' on 1,
+  blasts on the noise.
+- **Music** (`src/musicplay.6502`, scores in `music/`) is stepped every
+  VSync by the interrupt (`music_tick` in `src/music.6502`). Its events
+  come a row at a time: a note starts an instrument's envelope, which
+  then steps its volume each frame. It only writes a channel no effect is
+  using; a channel it couldn't write is dirty, and it writes the note
+  again when the channel is free.
+- `sound_update` holds `mu_busy` while it writes, because a tone is two
+  bytes and a write from the interrupt in between would take the second.
+  The interrupt plays the frame it missed with the next.
+- The music under play is phased: its events index a pitch table, and the
+  Blue's table has every note in E Lydian, an octave up, where the Red's
+  has it in E Phrygian. A shift tells the player (`music_phase`), which
+  writes the new pitches at once.
+- The title page plays its theme with the same player, from RSLOAD's own
+  copy, a frame each VSync from the loop that waits for SPACE.
 
 ## Drawing without flicker
 
@@ -122,6 +146,8 @@ the editor.
 
 - `gfx/tiles.txt` and `gfx/sprites.txt` hold the art.
 - `rooms/rooms.txt` holds the rooms.
-- `tools/mkgfx.py` and `tools/mkrooms.py` turn them into `build/data/*.6502`.
+- `music/*.txt` hold the music: `music/instruments.txt` says how.
+- `tools/mkgfx.py`, `tools/mkrooms.py` and `tools/mkmusic.py` turn them
+  into `build/data/*.6502`.
 - A room packs as runs of tiles and runs copied from the row above. The
   record format is in `tools/mkrooms.py`'s docstring.

@@ -2,7 +2,9 @@
 \ RSLOAD: run by !BOOT with the OS still in charge. It finds a sideways RAM
 \ bank (decision 12), loads RSDATA (the art and the rooms) into main RAM
 \ at &3000, copies it into the bank, leaves the bank paged in, and runs
-\ the game, which reads the bank's number from RS_BANK.
+\ the game, which reads the bank's number from RS_BANK. While the title
+\ page waits for SPACE, the title theme plays (decisions 32 and 33): a
+\ frame of the music player each VSync, from the loop that waits.
 \ ***************************************************************************
 
 romshad  = &F4                  ; the OS's copy of romsel: always write both
@@ -10,6 +12,7 @@ romtypes = &02A1                ; the OS's ROM type per bank; 0: no ROM there
 RS_TRY   = &70                  ; (the loader's own zero page)
 RS_RES   = &71
 RS_P     = &72
+RS_MU    = &74                  ; (two bytes: the title theme's place)
 
 .rsload
 {
@@ -63,14 +66,21 @@ RS_P     = &72
     INC copy+2 : INC copy+5
     DEX : BNE copy
     CLI
-    \ PRESS SPACE, and wait for it.
+    \ PRESS SPACE, and wait for it, with the title theme playing.
     LDX #0
 .press
-    LDA press_text,X : BEQ space
+    LDA press_text,X : BEQ theme
     JSR &FFEE : INX : BNE press
+.theme
+    JSR tmus.mu_init
+    LDA #&0F : STA tmus.mu_free     ; (every channel: no other sounds here)
+    LDA #tmus.MUS_TITLE : STA tmus.mu_req
 .space
+    LDA #19 : JSR &FFF4             ; the next VSync
+    JSR tmus.mu_frame
     LDA #&81 : LDX #&9D : LDY #&FF : JSR &FFF4    ; INKEY -99: SPACE
     CPX #&FF : BNE space
+    LDA #&0F : JSR tmus.mu_quiet
     LDX #LO(run_cmd) : LDY #HI(run_cmd) : JMP &FFF7
 .none_text  EQUS 31, 0, 21, "REDSHIFT needs 16K of sideways RAM", 13, 10
             EQUS "(a Model B with a RAM board, or a", 13, 10
@@ -78,6 +88,16 @@ RS_P     = &72
 .load_cmd   EQUS "LOAD RSDATA", 13
 .run_cmd    EQUS "RUN REDSHFT", 13
 .press_text EQUS 31, 8, 22, 136, 131, "PRESS SPACE TO PLAY", 0
+}
+
+\ The title theme: the game's music player (musicplay.6502), a copy of its
+\ own, with chip.6502's sound_write, which is safe with the OS running.
+.tmus
+{
+    mu_ptr = RS_MU
+    INCLUDE "chip.6502"
+    INCLUDE "musicplay.6502"
+    INCLUDE "../build/data/title.6502"
 }
 
 \ Teletext: 129 red, 131 yellow, 132 blue, 134 cyan, 135 white, 136 flash,
@@ -103,7 +123,7 @@ ENDMACRO
     EQUS 31, 0, 13, T_YEL, " Z X ", T_WHITE, "left, right   ", T_YEL, ":  ", T_WHITE, "jump"
     EQUS 31, 0, 14, T_YEL, " /   ", T_WHITE, "crouch        ", T_YEL, "RETURN ", T_WHITE, "fire"
     EQUS 31, 0, 15, T_YEL, " SPACE ", T_WHITE, "grenade     ", T_YEL, "SHIFT ", T_WHITE, "phase"
-    EQUS 31, 0, 16, T_WHITE, " (or the cursor keys to move)"
+    EQUS 31, 0, 16, T_WHITE, " (or cursor keys) ", T_YEL, "P ", T_WHITE, "pause  ", T_YEL, "M ", T_WHITE, "music"
     EQUS 31, 0, 18, T_CYAN, "Each shift costs a phase cell. The"
     EQUS 31, 0, 19, T_CYAN, "other phase is dotted: it can't touch"
     EQUS 31, 0, 20, T_CYAN, "you, and you can't touch it."

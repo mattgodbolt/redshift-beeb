@@ -154,4 +154,42 @@ Matt was away is marked *provisional* until reviewed.
     Drill Sergeant's armour is seen, not only heard. A bolt can't start
     beyond a thin wall Ash stands against: it strikes the wall. A shift
     the game refuses turns the status bar red a moment, as well as buzzing.
+32. **2026-10-31: music, and it follows the phase.** All of it is new, in
+    E (`music/`):
+    - a title theme while the title page waits for SPACE;
+    - a sting for each sector's card, built on the theme's opening fall,
+      which runs on into the music under play;
+    - a phrase under OUT OF LIVES. OUT OF PHASE.
+    The Red Phase's mode is E Phrygian and the Blue's E Lydian: every
+    degree but the tonic and the fifth a semitone higher. So in the Blue
+    everything made since Bore Nine moves and the rock (E and B) stays, as
+    the story's rule has it. The music under play is written once, for the
+    Red. In the Blue the player plays the same bars in Lydian, an octave
+    up, on a bell and a third faster, from where it was, so a shift is
+    heard as well as seen. It has to last a long session under gunfire, so
+    it's slow, quiet and mostly space:
+    - a pump on channel 2, which nothing else uses;
+    - a tune on 1, which an enemy's shot borrows for a moment;
+    - now and then a drip on 0, which Ash's shots take.
+    The game's sounds take channels 0, 1 and the noise whenever they want
+    them, and the music writes its note again when they're done. M switches
+    it off and on: silent, but it plays on. P now silences everything, and
+    a sector's card stops the game's sounds so its sting has every channel.
+33. **2026-10-31: the player** (*provisional*). The scores are text, which
+    `tools/mkmusic.py` turns into events and tables at build time. One
+    player (`src/musicplay.6502`) serves both the game and the title page:
+    each includes it in a scope of its own, with its own data. In the game
+    the VSync interrupt steps it, after chuckie-egg-2-beeb's player (MIT,
+    Matt's own):
+    - `sound_update` holds `mu_busy` while it writes, so the interrupt
+      can't land between a tone's two bytes, and plays the frame it missed
+      with the next (`mu_owed`);
+    - the interrupt puts the keyboard's port back as it found it, since it
+      can land inside `key_down`.
+    On the title page, with the OS running, RSLOAD's loop steps it once a
+    VSync (OSBYTE 19). RSLOAD loads lower to fit it (`RSLOAD_AT`); RSDATA,
+    loading at `&3000`, could reach that only with the bank nearly full,
+    and an `ASSERT` says if it does. `tools/musiccap.mjs` records what the
+    game writes to the chip for each piece and checks it, frame by frame,
+    against the tool's model of the player.
 

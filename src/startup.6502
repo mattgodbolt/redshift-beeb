@@ -31,6 +31,7 @@
     STA snd_hi,X : STA snd_pri,X
     DEX : BPL voices
     LDA #&FF : STA snd_noise
+    JSR music_init
     JMP game_start
 }
 

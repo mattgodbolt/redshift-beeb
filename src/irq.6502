@@ -84,7 +84,7 @@ ENDIF
     DEX : BPL entries
     INX : STX irq_split             ; 0
     CLD                             ; (the game adds in decimal: add_score)
-    JSR sound_tick
+    JSR music_tick
 .done
     PLA : TAX
     LDA &FC                         ; the interrupted A, saved by the OS
@@ -98,7 +98,7 @@ ENDIF
     STA ula_pal
     CLC : ADC #16 : BCC black
     CLD
-    JSR sound_tick
+    JSR music_tick
     JMP done
 }
 

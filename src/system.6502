@@ -4,7 +4,9 @@
 \ no OS calls once it's running.
 \ ***************************************************************************
 
-\ Is a key down? X = internal key number. Z clear (BNE) if it is.
+\ Is a key down? X = internal key number. Z clear (BNE) if it is. (The
+\ music's interrupt can land in the middle of this, and puts the port
+\ back as it found it: music.6502.)
 .key_down
     LDA #&7F : STA sysvia_ddra      ; bits 0-6 the key, bit 7 its state
     LDA #3 : STA sysvia_orb         ; auto-scan off: the matrix is ours
@@ -12,25 +14,5 @@
     LDA sysvia_ora_nh : AND #&80
     RTS
 
-\ Write A to the sound chip, through the System VIA's slow bus. X and Y
-\ are kept.
-.sound_write
-{
-    STY sw_y
-    PHP : SEI
-    \ The keyboard off the bus first: key_down leaves it enabled, and then
-    \ it drives port A's bit 7 (the addressed key's state), which would
-    \ replace the byte's top bit.
-    LDY #&0B : STY sysvia_orb
-    LDY #&FF : STY sysvia_ddra
-    STA sysvia_ora_nh
-    LDY #0 : STY sysvia_orb         ; write enable low
-    LDY #3                          ; ... for 8us
-.hold
-    DEY : BNE hold
-    LDY #8 : STY sysvia_orb
-    PLP
-    LDY sw_y
-    RTS
-.sw_y EQUB 0
-}
+\ (sound_write, which the title page's music uses too, is in chip.6502.)
+INCLUDE "chip.6502"

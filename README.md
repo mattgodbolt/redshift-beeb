@@ -18,6 +18,7 @@ Sector 2. Each **SHIFT** costs a phase cell. Blocks and enemies of the
 other phase are dotted ghosts: you walk through them, and they can't touch
 you. Green is always acid. A Drill Sergeant is armoured and dies only to a
 grenade: lob one from a crate, or crouch under its fire and roll one at it.
+The music follows the phase: listen to it change when you shift.
 
 | Key | Does |
 |---|---|
@@ -28,6 +29,7 @@ grenade: lob one from a crate, or crouch under its fire and roll one at it.
 | SPACE | throw a grenade (crouching, roll it) |
 | SHIFT | flip the phase |
 | P | pause |
+| M | music off / on |
 
 ## The idea
 
@@ -55,7 +57,8 @@ open http://localhost:8000/editor/.
 
 [baron](https://github.com/waitingforvsync/baron) 0.6, Python 3 with
 Pillow, and Node for the test harness (jsbeeb through
-[jsbeeb-mcp](https://www.npmjs.com/package/jsbeeb-mcp)).
+[jsbeeb-mcp](https://www.npmjs.com/package/jsbeeb-mcp)). Rendering the
+music to WAVs needs NumPy too.
 
 ```sh
 npm install
@@ -70,4 +73,8 @@ make run        # boot it in jsbeeb, screenshot to shots/run.png
   every design call, numbered.
 - `gfx/tiles.txt`, `gfx/sprites.txt`: the art, as text.
 - `rooms/rooms.txt`: the rooms, as text.
+- `music/`: the music, as text (`music/instruments.txt` says how it's
+  written). `make music-preview` renders each piece to a WAV in
+  `build/preview/music`; `node tools/musiccap.mjs` records what the game
+  itself plays, checks it against the scores, and renders that.
 - `src/`: the game. `tools/`: the converters and the test harness.

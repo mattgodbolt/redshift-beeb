@@ -1,0 +1,312 @@
+\ ***************************************************************************
+\ The music player (decisions 32 and 33), adapted from chuckie-egg-2-beeb's
+\ src/music.6502 (MIT licence, Matt Godbolt's): its run-length envelopes,
+\ its repeats, and its way of sharing the chip with the game's sounds.
+\
+\ A call to mu_frame plays a frame. The game's VSync interrupt calls it
+\ (music.6502), and so does the title page's loop, with the OS still
+\ running (rsload.6502). Each includes this file in a scope of its own,
+\ with the data tools/mkmusic.py made from the scores in music/
+\ (build/data/music.6502, build/data/title.6502; the tool's header
+\ describes it), so each copy has its own state; the scope gives it mu_ptr
+\ (two bytes of zero page) and sound_write.
+\
+\ Four voices, one for each of the chip's channels: tones 0-2 (X = 0-2)
+\ and the noise (X = 3). A note starts its instrument's envelope, a byte
+\ a step in mu_envs (the attenuation, and the frames it lasts, or 0 to
+\ hold it), which then moves on a step at a time, each a volume write.
+\ Events come a row at a time, a row being mu_speed frames.
+\
+\ Talking to it: mu_req is a piece to start at the next frame (MUS_*, &FF
+\ none); mu_newphase is the phase a phased piece should play in (0 the
+\ Red, 1 the Blue), taken up at the next frame; mu_free has a bit for each
+\ channel it may write (1, 2, 4, and 8 for the noise). A channel it may
+\ not write it remembers as dirty, and once it's free again it writes the
+\ voice's note and volume as they are by then. Each is a single byte, so
+\ the game sets them from its main loop while the interrupt plays.
+\ ***************************************************************************
+
+MU_SILENT = 0               ; mu_envs' step 0: silence, held
+MUI_BLIP = 1                ; ins_flags: an octave up for its first frame
+MUP_PHASED = 1              ; piece_flags: its Blue variant follows its Red
+MU_REST = 63                ; a note event's pitch that silences the voice
+
+.mu_req      SKIP 1         ; a piece to start, &FF none
+.mu_newphase SKIP 1         ; the phase to play a phased piece in
+.mu_free     SKIP 1         ; the channels it may write
+.mu_phase    SKIP 1         ; the phase it's playing in
+.mu_piece    SKIP 1         ; the piece playing, &FF none (or its events done)
+.mu_speed    SKIP 1         ; frames a row
+.mu_base     SKIP 1         ; the variant's first pitch in per_lo, per_hi
+.mu_tick     SKIP 1         ; frames left in the row
+.mu_rows     SKIP 1         ; rows left before the next events
+.mu_ret      SKIP 2         ; where the order list goes on, in a pattern
+.mu_dirty    SKIP 1         ; channels to write again: note and volume
+.mu_tmp      SKIP 1
+.mv_note     SKIP 4         ; each voice's pitch (the noise's control), &FF none
+.mv_env      SKIP 4         ; its step in mu_envs
+.mv_cnt      SKIP 4         ; frames left there, 0 held
+.mv_att      SKIP 4         ; the step's attenuation
+.mv_ins      SKIP 4         ; the instrument each voice plays
+.mv_quiet    SKIP 4         ; ... and the attenuation added to it
+
+.mu_bit      EQUB 1, 2, 4, 8
+.mu_volcmd   EQUB &90, &B0, &D0, &F0
+.mu_tonecmd  EQUB &80, &A0, &C0
+
+\ Nothing playing, every voice silent (it writes nothing: the chip is
+\ silent already), every channel not free.
+.mu_init
+    LDA #&FF : STA mu_req : STA mu_piece
+    LDA #0 : STA mu_newphase : STA mu_phase : STA mu_free : STA mu_dirty
+\ Every voice silent.
+.mu_hush
+{
+    LDX #3
+.voice
+    JSR mu_silence
+    DEX : BPL voice
+    RTS
+}
+
+\ Voice X silent: no note, its envelope at step 0.
+.mu_silence
+    LDA #&FF : STA mv_note,X
+    LDA #MU_SILENT : STA mv_env,X
+    LDA #0 : STA mv_cnt,X
+    LDA #15 : STA mv_att,X
+    RTS
+
+\ Silence the channels in A (mu_free's bits) on the chip.
+.mu_quiet
+{
+    STA mu_tmp
+    LDX #3
+.voice
+    LDA mu_bit,X : AND mu_tmp : BEQ next
+    LDA mu_volcmd,X : ORA #15 : JSR sound_write
+.next
+    DEX : BPL voice
+    RTS
+}
+
+\ A frame: a piece asked for, a change of phase, then each envelope a step
+\ on, each dirty channel that's free written again, and the row's events.
+.mu_frame
+{
+    LDA mu_req : BMI no_req
+    LDX #&FF : STX mu_req
+    JSR mu_begin
+    LDA #1 : STA mu_tick : STA mu_rows      ; (its first events this frame)
+    JSR mu_hush
+    LDA #15 : STA mu_dirty                  ; (the silence written)
+.no_req
+    LDX mu_piece : BMI no_phase
+    LDA piece_flags,X : AND #MUP_PHASED : BEQ no_phase
+    LDA mu_newphase : CMP mu_phase : BEQ no_phase
+    STA mu_phase
+    JSR mu_variant
+    LDA mu_dirty : ORA #7 : STA mu_dirty    ; the tones at the new pitches
+.no_phase
+    LDX #3
+.envelope
+    LDA mv_cnt,X : BEQ env_next             ; (held)
+    DEC mv_cnt,X : BNE env_next
+    INC mv_env,X
+    JSR mu_step
+    JSR mu_volume
+.env_next
+    DEX : BPL envelope
+    LDX #3
+.dirty
+    LDA mu_bit,X : AND mu_dirty : AND mu_free : BEQ dirty_next
+    EOR mu_dirty : STA mu_dirty             ; (A was its bit alone)
+    JSR mu_note
+    JSR mu_write_vol
+.dirty_next
+    DEX : BPL dirty
+    LDA mu_piece : BMI done
+    DEC mu_tick : BNE done
+    LDA mu_speed : STA mu_tick
+    DEC mu_rows : BNE done
+    JMP mu_events
+.done
+    RTS
+}
+
+\ Piece A from its start, in the phase asked for (the voices as they are).
+.mu_begin
+    STA mu_piece
+    TAX
+    LDA piece_lo,X : STA mu_ptr
+    LDA piece_hi,X : STA mu_ptr+1
+    LDA mu_newphase : STA mu_phase
+\ The piece's variant for the phase: its speed, pitches and instruments.
+.mu_variant
+{
+    LDX mu_piece
+    LDA piece_flags,X : AND mu_phase        ; 1: phased, and in the Blue
+    CLC : ADC piece_var,X : TAY
+    LDA var_speed,Y : STA mu_speed
+    LDA var_base,Y : STA mu_base
+    TYA : ASL A : ASL A : TAY
+    LDX #0
+.voice
+    LDA var_ins,Y : STA mv_ins,X
+    LDA var_quiet,Y : STA mv_quiet,X
+    INY : INX : CPX #4 : BNE voice
+    RTS
+}
+ASSERT MUP_PHASED = 1
+
+\ The row's events, up to the wait for the next.
+.mu_events
+{
+.read
+    JSR mu_byte
+    CMP #&C0 : BCS control
+    \ A note: the channel in the top two bits.
+    PHA
+    LSR A : LSR A : LSR A : LSR A : LSR A : LSR A : TAX
+    PLA : AND #63
+    JSR mu_strike
+    JMP read
+.control
+    CMP #&F0 : BCS not_wait
+    SEC : SBC #&BF                          ; the rows
+    STA mu_rows
+    RTS
+.not_wait
+    CMP #&F8 : BCS not_drum
+    AND #7 : TAY
+    LDA drum_ins,Y : STA mv_ins + 3
+    LDA drum_ctl,Y
+    LDX #3 : JSR mu_strike
+    JMP read
+.not_drum
+    BNE not_quiet                           ; &F8: the noise silenced
+    LDX #3 : LDA #MU_REST : JSR mu_strike
+    JMP read
+.not_quiet
+    CMP #&F9 : BNE not_ins
+    \ A channel's instrument from now on.
+    JSR mu_byte : PHA
+    LSR A : LSR A : LSR A : LSR A : LSR A : LSR A : TAX
+    PLA : AND #63 : STA mv_ins,X
+    JMP read
+.not_ins
+    CMP #&FE : BCC back : BEQ call
+    \ &FF: the piece's end, and the next (or nothing).
+    LDX mu_piece
+    LDA piece_next,X : BMI stop
+    JSR mu_begin
+    LDA mu_speed : STA mu_tick              ; (its own speed from this row)
+    JMP read
+.stop
+    STA mu_piece
+    RTS
+.back
+    \ &FD: a pattern's end, back to the order list.
+    LDA mu_ret : STA mu_ptr
+    LDA mu_ret+1 : STA mu_ptr+1
+    JMP read
+.call
+    JSR mu_byte : TAX
+    LDA mu_ptr : STA mu_ret
+    LDA mu_ptr+1 : STA mu_ret+1
+    LDA pat_lo,X : STA mu_ptr
+    LDA pat_hi,X : STA mu_ptr+1
+    JMP read
+}
+
+\ The next byte of the events. (The flags are A's.)
+.mu_byte
+{
+    LDY #0 : LDA (mu_ptr),Y
+    INC mu_ptr : BNE same
+    INC mu_ptr+1
+.same
+    ORA #0
+    RTS
+}
+
+\ Voice X strikes pitch A (the noise: control A), or MU_REST.
+.mu_strike
+{
+    CMP #MU_REST : BNE note
+    JSR mu_silence
+    JMP mu_volume
+.note
+    STA mv_note,X
+    LDY mv_ins,X
+    LDA ins_env,Y : STA mv_env,X
+    JSR mu_step
+    LDA mu_bit,X : AND mu_free : BEQ later
+    CPX #3 : BEQ plain
+    LDY mv_ins,X
+    LDA ins_flags,Y : AND #MUI_BLIP : BEQ plain
+    JSR mu_note_up
+    LDA mu_bit,X : ORA mu_dirty : STA mu_dirty      ; (its own pitch next frame)
+    JMP mu_write_vol
+.plain
+    JSR mu_note
+    JMP mu_write_vol
+.later
+    JMP mu_volume                           ; (which finds it not free)
+}
+
+\ Voice X's volume, if its channel is free; or it's dirty.
+.mu_volume
+{
+    LDA mu_bit,X : AND mu_free : BEQ later
+    JMP mu_write_vol
+.later
+    LDA mu_bit,X : ORA mu_dirty : STA mu_dirty
+    RTS
+}
+
+\ Voice X's envelope step: its attenuation and frames.
+.mu_step
+    LDY mv_env,X
+    LDA mu_envs,Y : AND #15 : STA mv_att,X
+    LDA mu_envs,Y : LSR A : LSR A : LSR A : LSR A : STA mv_cnt,X
+    RTS
+
+\ Voice X's volume to the chip: the step's attenuation, quieter by the
+\ voice's mv_quiet.
+.mu_write_vol
+{
+    LDA mv_att,X : CLC : ADC mv_quiet,X
+    CMP #15 : BCC loud
+    LDA #15
+.loud
+    ORA mu_volcmd,X
+    JMP sound_write
+}
+
+\ Voice X's note to the chip: a tone's period, or the noise's control.
+.mu_note
+{
+    LDA mv_note,X : BMI done
+    CPX #3 : BEQ noise
+    CLC : ADC mu_base : TAY
+    LDA per_lo,Y : ORA mu_tonecmd,X : JSR sound_write
+    LDA per_hi,Y : JMP sound_write
+.noise
+    ORA #&E0 : JMP sound_write
+.done
+    RTS
+}
+
+\ ... and an octave up: half the period. The data byte's low bit moves
+\ down into the latch byte's top one.
+.mu_note_up
+{
+    LDA mv_note,X : CLC : ADC mu_base : TAY
+    LDA per_hi,Y : LSR A : STA mu_tmp
+    LDA per_lo,Y : BCC even
+    ORA #16
+.even
+    LSR A : ORA mu_tonecmd,X : JSR sound_write
+    LDA mu_tmp : JMP sound_write
+}

@@ -1,0 +1,31 @@
+\ ***************************************************************************
+\ Writing the sound chip, through the System VIA's slow bus (after
+\ chuckie-egg-2-beeb's sound.6502). The game includes it, and so does the
+\ title page's music player in RSLOAD (rsload.6502), with the OS running:
+\ it leaves the port as the OS's own writes do, with the keyboard back on
+\ auto-scan, and holds interrupts off for each byte, so neither the OS's
+\ keyboard interrupt nor the game's music interrupt can land inside one.
+\ ***************************************************************************
+
+\ Write A to the sound chip. X and Y are kept. (Y is kept with interrupts
+\ off too: the game's interrupt calls this, and would overwrite sw_y.)
+.sound_write
+{
+    PHP : SEI
+    STY sw_y
+    \ The keyboard off the bus first: key_down leaves it enabled, and then
+    \ it drives port A's bit 7 (the addressed key's state), which would
+    \ replace the byte's top bit.
+    LDY #&0B : STY sysvia_orb
+    LDY #&FF : STY sysvia_ddra
+    STA sysvia_ora_nh
+    LDY #0 : STY sysvia_orb         ; write enable low
+    LDY #3                          ; ... for 8us
+.hold
+    DEY : BNE hold
+    LDY #8 : STY sysvia_orb
+    LDY sw_y
+    PLP
+    RTS
+.sw_y EQUB 0
+}

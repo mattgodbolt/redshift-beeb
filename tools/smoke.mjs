@@ -2,7 +2,8 @@
 // The smoke test (make check): boot past the title and the sector card,
 // play a few seconds of keys, and check the game is still running and
 // keeping up: game frames advance at one per two VSyncs, and the PC is
-// in the game, not in the OS's BRK handler or off in the weeds.
+// in the game, not in the OS's BRK handler or off in the weeds; and the
+// music has gone from the card's sting to the music under play.
 //
 //   node tools/smoke.mjs [--model B-DFS1.2]
 import { startBeeb } from "./beeb.mjs";
@@ -35,6 +36,12 @@ try {
     if (pc < 0x0E00 && !(pc >= 0x0100 && pc < 0x0200)) fail(`PC in low memory: &${pc.toString(16)}`);
     const room = await b.peek("room");
     if (room !== 0) fail(`in room ${room}, not the first`);
+    // The card's sting has run on into the music under play (tools/musiccap.mjs
+    // checks the notes).
+    const piece = await b.peek("mus.mu_piece"), state = await b.peek("mu_state");
+    if (piece !== b.addr("MUS_PLAY") || state !== b.addr("MU_LIVE")) {
+        fail(`the music: piece ${piece}, state &${state.toString(16)}`);
+    }
 } finally {
     await b.close();
 }

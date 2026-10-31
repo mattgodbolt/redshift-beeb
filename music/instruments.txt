@@ -1,0 +1,73 @@
+# REDSHIFT's music: the instruments, and how the scores are written.
+#
+# tools/mkmusic.py turns these files into data for src/musicplay.6502, the
+# player: music/title.txt for the title page (in RSLOAD), and the rest for
+# the game. A comment is a whole line starting with '#'.
+#
+#   instrument <name> <step>... [blip]
+#       Its loudness from the start of a note, in steps of the SN76489's
+#       attenuation (0 the loudest, 15 silent, 2dB a step): "3:4" is 3 for
+#       4 frames (50 a second), and a last step with no frames ("9") holds
+#       until the voice's next note. "blip": the note starts an octave up
+#       for its first frame, like a struck bell.
+#   drum <name> <hi|mid|lo> <instrument>
+#       A hit of white noise at the chip's fastest, middle or slowest shift.
+#
+#   piece <name>              a piece, numbered in order (MUS_<NAME>)
+#   speed <frames> [<blue>]   frames a row: the length of a token below
+#   bar <rows>                rows a bar, checked at each '|'
+#   then <piece>|loop|stop    what plays when it ends
+#   phased <tonic>            it follows the game's phase: the score is the
+#                             Red Phase's, in <tonic> Phrygian; the Blue
+#                             plays every degree but the tonic and the
+#                             fifth a semitone higher (Lydian)
+#   voice <name> <0|1|2|noise> [<instrument>] [quiet <n>]
+#                             a part, on a tone channel (with its
+#                             instrument) or the noise channel (drums);
+#                             quiet adds n to its attenuation. Two voices
+#                             can share a channel, the newest note sounding.
+#   blue <name> [<instrument>] [quiet <n>] [up <semitones>]
+#                             how a phased piece's voice plays in the Blue
+#   pattern <name>            then lines of tokens, a row each, per voice:
+#       <voice>: E4 . . F#4 - |
+#                             a note (C4 is middle C) or a drum strikes;
+#                             '.' holds what's sounding; '-' silences the
+#                             voice; '|' ends a bar. A voice's lines in a
+#                             pattern follow on from each other, and every
+#                             voice in a pattern has the same length.
+#   play <pattern>...         the order the patterns play in
+#
+# The tone channels reach down to B2 (a period can't go past 1023).
+# The game's sounds have channels 0 and 1 and the noise when they want
+# them, so a piece the game plays keeps its line that matters on 2.
+
+# Plucked: strikes hard and dies away, ringing on quietly.
+instrument bass     0:1 1:2 2:3 3:4 4:5 5:6 6:8 7:10 8:12 9
+# The in-play bass: softer, and sinks further.
+instrument deep     2:1 3:3 4:4 5:6 6:8 7:10 8:14 9:18 10:22 11
+# A lead that speaks at once and sustains, slowly fading.
+instrument lead     0:1 1:2 2:3 3:6 4:12 5:20 6:28 7
+# A voice that swells in and sustains: chords and counter-lines.
+instrument pad      11:2 9:2 7:2 6:3 5:20 6:30 7:40 8
+# A gentle lead for the music under play.
+instrument soft     9:1 7:1 6:2 5:3 4:20 5:30 6:40 7:50 8
+# A bell: struck an octave up, then a long ring to silence.
+instrument chime    0:1 1:2 2:2 3:3 4:4 5:5 6:6 7:8 8:10 9:12 10:14 11:15 12:15 13:15 14:15 15 blip
+# Short and bright, for arpeggios.
+instrument arp      1:1 3:1 5:2 7:2 9:3 11:4 13:5 15
+# ... and further back, under a tune.
+instrument glint    4:1 6:1 8:2 10:2 12:3 14:3 15
+# A clipped note: machinery.
+instrument clank    0:1 2:1 4:2 7:2 10:3 13:3 15
+# A long note that fades right out, for endings.
+instrument fade     1:2 2:4 3:8 4:12 5:16 6:20 7:24 8:28 9:32 10:36 11:40 12:44 13:48 14:50 15
+# ... and a quieter one that starts already distant.
+instrument ebb      6:4 7:8 8:12 9:16 10:20 11:24 12:28 13:32 14:36 15
+
+# Drums: a thud, a crack and a tick.
+instrument kick     0:1 2:1 5:2 9:2 12:2 15
+instrument snare    1:1 3:2 5:2 7:3 9:3 11:4 13:4 15
+instrument hat      6:1 10:1 13:1 15
+drum k lo kick
+drum s mid snare
+drum h hi hat

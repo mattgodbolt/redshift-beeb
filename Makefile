@@ -20,26 +20,41 @@ export REDSHIFT_MODEL = $(MODEL)
 TARGET   = build/redshift.ssd
 DISC     = redshift.ssd
 SOURCES  = $(wildcard src/*.6502)
-DATA     = build/data/gfx.6502 build/data/rooms.6502
+DATA     = build/data/gfx.6502 build/data/rooms.6502 build/data/music.6502 build/data/title.6502
+# The game's music, and the title page's (music/instruments.txt says how
+# they're written).
+MUSIC    = music/cards.txt music/play.txt music/over.txt
 # Stamped into !BOOT: UTC build time and the commit, + if the tree had changes.
 # A test build's starting room (make ROOM=n); never on the shipped disc.
 ROOMDEF  = $(if $(ROOM),-D START_ROOM=$(ROOM))
 BUILD   := $(shell date -u '+%Y-%m-%d %H:%M') $(shell git rev-parse --short HEAD 2>/dev/null || echo NOGIT)$(shell git diff --quiet HEAD -- . ':(exclude)$(DISC)' 2>/dev/null || echo +)
 
 .DELETE_ON_ERROR:
-.PHONY: all run check disc ship clean FORCE
+.PHONY: all run check disc ship clean music-preview FORCE
 
 all: $(TARGET)
 
 $(TARGET): $(SOURCES) $(DATA) FORCE | build
 	$(ASM) -D 'BUILD="$(BUILD)"' $(ROOMDEF) -o $@ --title REDSHIFT --opt 3 --warn 2 --symbols $(@:.ssd=.json) -v -log0 build/listing.txt src/main.6502
-	@grep -E '^(code|data)' build/listing.txt || true
+	@grep -E '^(code|data|rsload)' build/listing.txt || true
 
 build/data/gfx.6502: gfx/tiles.txt gfx/sprites.txt tools/mkgfx.py tools/gfxlib.py
 	python3 tools/mkgfx.py $@ --preview build/preview
 
 build/data/rooms.6502: rooms/rooms.txt gfx/tiles.txt tools/mkrooms.py tools/gfxlib.py
 	python3 tools/mkrooms.py $@ --preview build/preview
+
+build/data/music.6502: music/instruments.txt $(MUSIC) tools/mkmusic.py
+	python3 tools/mkmusic.py $@ music/instruments.txt $(MUSIC)
+
+build/data/title.6502: music/instruments.txt music/title.txt tools/mkmusic.py
+	python3 tools/mkmusic.py $@ music/instruments.txt music/title.txt
+
+# Each piece as WAVs in build/preview/music, from tools/mkmusic.py's model
+# of the player (tools/musiccap.mjs records what the game itself plays).
+music-preview:
+	python3 tools/mkmusic.py build/data/music.6502 music/instruments.txt $(MUSIC) --preview build/preview/music
+	python3 tools/mkmusic.py build/data/title.6502 music/instruments.txt music/title.txt --preview build/preview/music
 
 build:
 	mkdir -p build

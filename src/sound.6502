@@ -1,7 +1,8 @@
 \ ***************************************************************************
 \ Sound: effects on the SN76489, a step each game frame (sound_update, from
-\ the main loop, not the interrupt: a chip write there could fall inside
-\ key_down's use of the same VIA port, and spoil a key or a note).
+\ the main loop). The music plays from the interrupt (music.6502), and
+\ gives way: a channel an effect is playing on isn't the music's until the
+\ effect ends.
 \
 \ Three voices: tone channel 0 for the player's sounds, tone channel 1 for
 \ the enemies', and the noise channel for blasts and deaths. An effect is
@@ -13,9 +14,6 @@
 \
 \ Every effect's entry keeps X and Y: callers are in the middle of loops.
 \ ***************************************************************************
-
-.sound_tick
-    RTS
 
 V_TONE0 = 0 : V_TONE1 = 1 : V_NOISE = 3
 NVOICES = 3
@@ -37,6 +35,10 @@ ZA_AUTO1 sv_tmp
     PLA : AND #&F0
     CMP snd_pri,X : BCC busy        ; something more important is playing
     STA snd_pri,X
+    CPX #2 : BNE not_noise
+    \ The noise's control written afresh: the music may have changed it.
+    LDA #&FF : STA snd_noise
+.not_noise
     LDA sp_ptr : CLC : ADC #1 : STA snd_lo,X
     LDA sp_ptr+1 : ADC #0 : STA snd_hi,X
 .busy
@@ -47,9 +49,11 @@ ZA_AUTO1 sv_tmp
 }
 sp_ptr = text_ptr                   ; (fixed zero page: nothing prints in sound_play)
 
-\ A step of each voice's effect: its volume, and its note or noise.
+\ A step of each voice's effect: its volume, and its note or noise. (The
+\ music's interrupt waits while it writes: mu_busy.)
 .sound_update
 {
+    INC mu_busy
     LDX #NVOICES - 1
 .voice
     LDA snd_hi,X : BEQ next         ; (nothing playing)
@@ -77,6 +81,7 @@ sp_ptr = text_ptr                   ; (fixed zero page: nothing prints in sound_
     LDA su_ptr+1 : ADC #0 : STA snd_hi,X
 .next
     DEX : BPL voice
+    DEC mu_busy
     RTS
 .finished
     LDA #15 : ORA vol_cmd,X : JSR sound_write    ; silent
@@ -86,6 +91,26 @@ sp_ptr = text_ptr                   ; (fixed zero page: nothing prints in sound_
 .sv_hi EQUB 0
 }
 su_ptr = map_row                    ; (fixed zero page: not drawing now)
+
+\ Every effect stopped, silent (a pause, the game's end: sound_update
+\ isn't called, and a note would hang on). X and Y kept.
+.sound_quiet
+{
+    STX sq_x
+    INC mu_busy
+    LDX #NVOICES - 1
+.voice
+    LDA snd_hi,X : BEQ next
+    LDA #15 : ORA vol_cmd,X : JSR sound_write
+    LDA #0 : STA snd_hi,X : STA snd_pri,X
+.next
+    DEX : BPL voice
+    LDA #&FF : STA snd_noise
+    DEC mu_busy
+    LDX sq_x
+    RTS
+.sq_x EQUB 0
+}
 .vol_cmd  EQUB &90, &B0, &F0
 .tone_cmd EQUB &80, &A0
 

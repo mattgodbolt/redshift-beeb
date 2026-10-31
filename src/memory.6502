@@ -20,6 +20,7 @@ SECTION ZeroPage, org = ZP_FIXED, guard = RS_BANK, virtual = TRUE
 .vsyncs     SKIP 1          ; VSyncs since start-up (irq.6502)
 .irq_split  SKIP 1          ; T1 interrupts since this VSync
 .blackout   SKIP 1          ; non-zero: every palette entry black (room changes)
+.mu_ptr     SKIP 2          ; the music's next event (musicplay.6502)
 \ The game's state.
 .phase      SKIP 1          ; 0: the Red Phase, 1: the Blue
 .room       SKIP 1          ; the room we're in

@@ -1,0 +1,148 @@
+\ ***************************************************************************
+\ The music in the game (decision 32): a sting for each sector's card, the
+\ music under play, which follows the phase, and a phrase for the game's
+\ end. The scores are in music/; musicplay.6502 is the player, which the
+\ VSync interrupt steps a frame at a time (music_tick). M switches it off
+\ and on.
+\
+\ Sharing the chip with the game's sounds (sound.6502), whose come first:
+\ - A channel an effect is playing on isn't the music's (mu_free): the
+\   player keeps it dirty, and writes its note and volume again once the
+\   effect is done. Channel 2 is the music's alone.
+\ - A tone is a latch byte then a data byte, and the interrupt mustn't
+\   write between an effect's two, so sound_update holds mu_busy across
+\   its writes. A VSync then is owed (mu_owed) and played with the next.
+\ - sound_write holds interrupts off for each byte. key_down's use of the
+\   port can't be made to, so the interrupt puts the port back as it found
+\   it (after chuckie-egg-2-beeb's music.6502, whose player this follows).
+\ ***************************************************************************
+
+MU_LIVE = &80               ; mu_state: set up (music_init)
+MU_MUTE = &40               ; ... M has switched it off: it plays on silently
+MU_HOLD = 1                 ; ... paused: it stops where it is, silently
+
+.mu_state   SKIP 1          ; MU_*; 0 until music_init
+.mu_busy    SKIP 1          ; non-zero: the game's code is writing the chip
+.mu_owed    SKIP 1          ; frames the interrupt didn't play (mu_busy)
+.mu_key     SKIP 1          ; M is down (one switch a press)
+
+\ The player, and the game's pieces (MUS_*).
+.mus
+{
+    INCLUDE "musicplay.6502"
+    INCLUDE "../build/data/music.6502"
+}
+MUS_CARD1 = mus.MUS_CARD1
+MUS_PLAY = mus.MUS_PLAY
+MUS_OVER = mus.MUS_OVER
+ASSERT mus.MUS_CARD5 = MUS_CARD1 + 4
+
+\ From the VSync interrupt (irq.6502), which keeps X: a frame of the music,
+\ and any owed.
+.music_tick
+{
+    LDA mu_state : BPL out          ; (not set up yet)
+    LDA mu_busy : BEQ play
+    INC mu_owed
+.out
+    RTS
+.play
+    TYA : PHA
+    LDA sysvia_ddra : PHA
+    LDA sysvia_ora_nh : PHA
+    \ The channels the game's sounds leave it, none while it's off.
+    LDA #0
+    LDX mu_state : CPX #MU_LIVE : BNE set
+    JSR effects_free
+.set
+    \ A channel given back is written again.
+    TAX
+    LDA mus.mu_free : EOR #&FF : STX mus.mu_free
+    AND mus.mu_free : ORA mus.mu_dirty : STA mus.mu_dirty
+    LDA mu_state : AND #MU_HOLD : BNE played
+.frame
+    JSR mus.mu_frame
+    LDA mu_owed : BEQ played
+    DEC mu_owed
+    JMP frame
+.played
+    \ The port as it was. key_down's (bit 7 an input) wants the keyboard
+    \ back on the bus, as it left it; sound_write's leaves it off.
+    PLA : STA sysvia_ora_nh
+    PLA : STA sysvia_ddra
+    CMP #&7F : BNE port_done
+    LDA #3 : STA sysvia_orb
+.port_done
+    PLA : TAY
+    RTS
+}
+
+\ A: the channels no effect is playing on (mus.mu_free's bits). X and Y
+\ kept.
+.effects_free
+{
+    LDA #4
+    LDY snd_hi : BNE not0
+    ORA #1
+.not0
+    LDY snd_hi + 1 : BNE not1
+    ORA #2
+.not1
+    LDY snd_hi + 2 : BNE done
+    ORA #8
+.done
+    RTS
+}
+ASSERT V_TONE0 = 0 AND V_TONE1 = 1     ; (snd_hi: tone 0, tone 1, the noise)
+
+\ Start piece A (MUS_*) at the next VSync. Everything kept.
+.music_play
+    STA mus.mu_req
+    RTS
+
+\ The phase for the music under play to follow (the phase settled: a shift
+\ that's refused flips it and back, which the music mustn't hear).
+.music_phase
+    PHA
+    LDA phase : STA mus.mu_newphase
+    PLA
+    RTS
+
+\ M: once a press, the music off (silent, though it goes on) or on again.
+.music_key
+{
+    LDX #K_M : JSR key_down : BEQ up
+    LDA mu_key : BNE done
+    INC mu_key
+    LDA mu_state : EOR #MU_MUTE : STA mu_state
+    AND #MU_MUTE : BNE music_quiet
+.done
+    RTS
+.up
+    STA mu_key                      ; (A = 0)
+    RTS
+}
+
+\ P: the music stops where it is, and silent; and on again.
+.music_hold
+    LDA mu_state : ORA #MU_HOLD : STA mu_state
+    JMP music_quiet
+.music_release
+    LDA mu_state : AND #&FF - MU_HOLD : STA mu_state
+    RTS
+
+\ The music's channels silent, now: those the effects aren't using. (Its
+\ state says it can't write them any more, so the interrupt won't sound
+\ them again until it can.)
+.music_quiet
+    INC mu_busy
+    JSR effects_free
+    JSR mus.mu_quiet
+    DEC mu_busy
+    RTS
+
+\ Set up, playing nothing (start-up, once the chip is silent).
+.music_init
+    JSR mus.mu_init
+    LDA #MU_LIVE : STA mu_state
+    RTS
