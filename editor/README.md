@@ -3,8 +3,9 @@
 Make REDSHIFT's rooms in a browser, no programming needed:
 https://mattgodbolt.github.io/redshift-beeb/editor/
 
-To send in your rooms, press **Download rooms.txt**. Then either commit it
-as `rooms/rooms.txt` in a pull request, or send the file to Matt.
+To keep your rooms, press **Download rooms.txt**. To play them, put the file
+in place of `rooms/rooms.txt` in your own copy of the repo and build it (the
+top-level README says how).
 
 To run it locally, serve the repo's root (`python3 -m http.server`) and open
 http://localhost:8000/editor/. It reads `gfx/tiles.txt`, `gfx/sprites.txt`,

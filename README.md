@@ -48,10 +48,11 @@ The music follows the phase: listen to it change when you shift.
 
 Paint tiles, place enemies and pickups, set the palette bands and the
 exits, and flip between the phases to see both as the BBC draws them.
-Then press **Download rooms.txt** and send it in, as a pull request
-replacing `rooms/rooms.txt` or to Matt. See [`editor/README.md`](editor/README.md).
-To run it locally, serve the repo's root (`python3 -m http.server`) and
-open http://localhost:8000/editor/.
+Press **Download rooms.txt** to keep your rooms. To play them, put the
+file in place of `rooms/rooms.txt` in your own copy and build it (below).
+See [`editor/README.md`](editor/README.md). To run the editor locally,
+serve the repo's root (`python3 -m http.server`) and open
+http://localhost:8000/editor/.
 
 ## Building it
 
@@ -78,3 +79,7 @@ make run        # boot it in jsbeeb, screenshot to shots/run.png
   `build/preview/music`; `node tools/musiccap.mjs` records what the game
   itself plays, checks it against the scores, and renders that.
 - `src/`: the game. `tools/`: the converters and the test harness.
+
+## Licence
+
+MIT: see [`LICENSE`](LICENSE).

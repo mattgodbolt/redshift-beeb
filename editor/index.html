@@ -270,11 +270,12 @@ dialog .btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 1
 <dialog id="dlgHelp" tabindex="-1" autofocus>
   <h2>REDSHIFT level editor</h2>
   <p>Make rooms for REDSHIFT, a BBC Micro game. Your work stays in this browser until you download it.</p>
-  <h3>Sending in your rooms</h3>
-  <p>Press <b>Download rooms.txt</b>. Then either commit it as <code>rooms/rooms.txt</code> in your copy of
+  <h3>Keeping and playing your rooms</h3>
+  <p>Press <b>Download rooms.txt</b> to keep them. To play them, put the file in place of
+    <code>rooms/rooms.txt</code> in your own copy of
     <a href="https://github.com/mattgodbolt/redshift-beeb" target="_blank" rel="noopener">github.com/mattgodbolt/redshift-beeb</a>
-    and open a pull request, or send the file to Matt. Anything under <b>Problems</b> would stop the game
-    building, so fix those first if you can, but you can download at any time.</p>
+    and build it. Anything under <b>Problems</b> would stop the game building, so fix those first, but you
+    can download at any time.</p>
   <h3>Painting</h3>
   <ul>
     <li>Pick a tile on the left, then drag on the room to paint it. The empty tile rubs out.</li>
@@ -1014,7 +1015,7 @@ function updateDirty() {
     d.textContent = "Same as the repo's rooms.txt";
     d.className = 'muted';
   } else {
-    d.textContent = 'Changed: download rooms.txt to send it in';
+    d.textContent = 'Changed: download rooms.txt to keep it';
     d.className = 'changed';
   }
 }
