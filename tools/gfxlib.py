@@ -241,8 +241,8 @@ def read_rooms(path=ROOT / "rooms/rooms.txt"):
             i += MAP_H
         elif key == "thing":
             _words(words, 4, where, "thing <type> <x> <y> [arg]")
-            for w in words[4:]:
-                _int(w, where)
+            if len(words) > 4:
+                _int(words[4], where)       # (the arg; words after it are ignored)
             room.things.append((words[1], _int(words[2], where), _int(words[3], where), words[4:]))
         else:
             raise SystemExit(f"{where}: unknown line {key!r}")
