@@ -31,6 +31,8 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 - `irq.6502` plays the palette program: the status split, then up to 8 bands per room, each changing one logical colour on a scan line. Its timing is chuckie-egg-2-beeb's, measured there, and the instructions before each write must stay as they are.
 - `render.6502` draws moving things flicker-free. Each thing's old and new rectangles are composed in `cbuf` (tiles, then sprites masked), then copied out.
 - The art and the rooms are text. `tools/mkgfx.py` and `tools/mkrooms.py` turn them into `build/data/*.6502`, and `tools/gfxlib.py` is the shared reader. The level editor in `editor/` reads the same files.
+- Each colour has a job (`gfx/tiles.txt`'s header, decision 20); keep new art to it. A tile's variants are picked from its surroundings when the rooms are built (`gfxlib.resolve`); the editor has a copy of that in its core script, which `editor/check.mjs` holds to the build pixel for pixel. Air is drawn by position at run time (`back_look`), not stored.
+- The sideways bank is the tight memory. If it fills, compress the room records with baron's section `transform` and `LZ_PARSE` (they're unpacked once a room); leave the art raw, since it's read every frame.
 
 ## Traps met
 

@@ -101,6 +101,20 @@ mirrored too.
 - Enemies belong to a phase too (`type_phase` in `src/things.6502`). Out of
   it they're drawn as their ghost sprite and can't touch or be touched.
 
+## Looks
+
+A tile in `gfx/tiles.txt` can have variants: other pictures for where it
+is in a room (open to air above, below or to a side, deep in a wall, under
+a ceiling, in an exit) and alts used here and there by a hash of the cell.
+`tools/gfxlib.py`'s `resolve` picks each cell's look when the rooms are
+built, so the game just draws a tile number, and the editor picks them the
+same way.
+
+Air is the exception. Its looks are a two by two grid of faint panel seams,
+and storing them would break up the rooms' runs of air, so the map keeps
+plain air and the drawing code picks the grid's look from where the cell
+is (`back_look` in `src/screen.6502`).
+
 ## The data
 
 The art and the rooms are text, so anyone can edit them, by hand or with

@@ -130,3 +130,33 @@ What was done, in order, with what worked and what didn't.
   down whole (decision 18). A grenade from the foot of the step or from
   a few tiles back clears it all.
 
+## 2026-10-31: a new look
+
+- Matt asked a fresh agent to compare REDSHIFT's screens with another BBC
+  game's, without saying which was ours. It found REDSHIFT readable and
+  varied in layout, but flat: walls louder than anything you play with,
+  yellow spent on everything, hazard colours on safe floors, palette bands
+  cutting stripes through brickwork, plain white sprites. Matt then handed
+  the look and feel over (decision 19).
+- Each colour has one job now (decision 20), and every room's palette was
+  redone to it: one rock colour, a floor colour from the floor's surface,
+  the liquid's colour only over the liquid.
+- Tiles get variants from where they are (decision 21), chosen as the
+  rooms are built, and the level editor chooses them the same way. Its
+  check, which draws every room against the build's own picture, caught
+  the port's mistakes before they shipped.
+- A first back wall, stored as a two by two grid in the map, broke the
+  rooms' run-length packing and cost more of the bank than all the new
+  tiles. Air is now drawn as the back wall for where it is
+  (`back_look`), and the map keeps plain air.
+- Ash and the enemies are redrawn with light and shade (decision 22). A
+  first Ash's helmet read as a beak, and a first Drill Sergeant as a
+  duck: both were redrawn after looking at them large, in more than one
+  band's colours.
+- The status bar has icons, fixed columns and a rule under it, in white
+  (decision 23).
+- Matt pointed out that baron can compress sections if memory gets tight.
+  The bank is the tight part. When it is, the room records are the first
+  thing to compress, since they're unpacked once a room; the art is read
+  every frame.
+
