@@ -1,0 +1,2383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REDSHIFT level editor</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0e1014;
+  --panel: #161920;
+  --panel2: #1d212a;
+  --line: #2a303c;
+  --line2: #3a4252;
+  --text: #d9dde5;
+  --muted: #8a93a4;
+  --red: #ff5a4f;
+  --blue: #5a95ff;
+  --err: #ff6b6b;
+  --warn: #f0c25a;
+  --ok: #5ed39a;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+canvas { image-rendering: pixelated; display: block; }
+h1 { font-size: 15px; letter-spacing: .14em; margin: 0 10px 0 0; white-space: nowrap; }
+h1 .r { color: var(--red); } h1 .b { color: var(--blue); }
+h1 small { color: var(--muted); letter-spacing: normal; font-weight: 400; margin-left: 6px; }
+h2 {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted);
+  margin: 14px 0 6px; font-weight: 600; display: flex; align-items: baseline; gap: 6px;
+}
+#left > h2:first-child, #roomBox > h2:first-child, dialog > h2:first-child { margin-top: 0; }
+h2 .n { text-transform: none; letter-spacing: normal; font-weight: 400; }
+button, input, select, textarea { font: inherit; color: var(--text); }
+button {
+  background: var(--panel2); border: 1px solid var(--line2); border-radius: 4px;
+  padding: 3px 9px; cursor: pointer; white-space: nowrap;
+}
+button:hover:not(:disabled) { border-color: #59647a; background: #242a35; }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: #23334f; border-color: #3d5784; }
+button.primary:hover:not(:disabled) { background: #2a3d5f; }
+button.on { background: #2f3a4f; border-color: #8090b0; color: #fff; }
+button.x { padding: 0 6px; line-height: 20px; color: var(--muted); }
+button.x:hover { color: var(--err); }
+input, select, textarea {
+  background: #0b0d11; border: 1px solid var(--line2); border-radius: 3px; padding: 2px 5px;
+}
+input:focus, select:focus, textarea:focus, button:focus-visible { outline: 1px solid #6d8ccc; outline-offset: 0; }
+input[type=number] { width: 54px; }
+input[type=checkbox] { margin: 0 4px 0 0; vertical-align: -2px; }
+label { white-space: nowrap; color: var(--muted); }
+kbd {
+  font: 10px var(--mono); color: var(--muted); border: 1px solid var(--line2); border-radius: 3px;
+  padding: 0 3px; margin-left: 4px;
+}
+code { font-family: var(--mono); }
+.muted { color: var(--muted); }
+.hint { color: var(--muted); font-size: 12px; margin: 4px 0 8px; }
+.spacer { flex: 1; }
+.grp { display: flex; gap: 4px; align-items: center; }
+.seg { display: inline-flex; }
+.seg button { border-radius: 0; margin-left: -1px; }
+.seg button:first-child { border-radius: 4px 0 0 4px; margin-left: 0; }
+.seg button:last-child { border-radius: 0 4px 4px 0; }
+.seg button.red.on { background: #4a1d1b; border-color: var(--red); }
+.seg button.blue.on { background: #1b2a4a; border-color: var(--blue); }
+
+header {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 7px 12px; background: var(--panel); border-bottom: 1px solid var(--line);
+}
+#dirty { font-size: 12px; }
+#dirty.changed { color: var(--warn); }
+#banner {
+  padding: 7px 12px; background: #262013; border-bottom: 1px solid #5a4a20; color: #f3dfa8;
+  display: flex; gap: 10px; align-items: center;
+}
+#banner.err { background: #2a1416; border-color: #6a2a2e; color: #ffc9c9; }
+#banner[hidden] { display: none; }
+#banner .msg { flex: 1; }
+
+main {
+  flex: 1; min-height: 0;
+  display: grid; grid-template-columns: 236px minmax(0, 1fr) 384px;
+}
+main > * { overflow: auto; min-height: 0; }
+#left { background: var(--panel); border-right: 1px solid var(--line); padding: 12px; }
+#right { background: var(--panel); border-left: 1px solid var(--line); padding: 12px; }
+#center { padding: 10px 14px; }
+
+#tools { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+#tools button { text-align: left; }
+#curTile { display: flex; gap: 10px; align-items: center; margin: 10px 0 0; padding: 8px; background: var(--panel2); border-radius: 4px; }
+#curTile .what { font-size: 12px; }
+#curTile .what b { font-family: var(--mono); }
+#palette, #thingTypes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.tile, .ttype {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px 2px 3px;
+  position: relative; background: #11141a;
+}
+.tile canvas, .ttype canvas { background: #000; }
+.tile .key { font: 11px var(--mono); color: #fff; }
+.tile .tname, .ttype .tname { font-size: 10px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.tile.on, .ttype.on { border-color: #e8ecf4; background: #262c38; }
+.tile .ph { position: absolute; top: 3px; right: 3px; width: 7px; height: 7px; border-radius: 50%; }
+.tile .ph.red { background: var(--red); } .tile .ph.blue { background: var(--blue); }
+.tile .hz { position: absolute; top: 3px; left: 3px; font-size: 9px; color: var(--warn); }
+.ttype .sw { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+
+#roombar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+#roomSel { max-width: 260px; }
+#view { display: flex; align-items: flex-start; }
+#gutter { cursor: copy; }
+#cv { cursor: crosshair; touch-action: none; outline: 1px solid var(--line); }
+#status { font: 12px var(--mono); color: var(--muted); margin: 6px 0 0; min-height: 18px; white-space: pre-wrap; }
+#lower { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; margin-top: 10px; }
+#mapWrap { overflow: auto; max-height: 300px; background: #0b0d11; border: 1px solid var(--line); border-radius: 4px; padding: 6px; }
+#mapCv { cursor: pointer; }
+#problems { list-style: none; margin: 0; padding: 0; max-height: 300px; overflow: auto; }
+#problems li { padding: 4px 6px; border-radius: 3px; cursor: pointer; display: flex; gap: 6px; align-items: baseline; }
+#problems li:hover { background: var(--panel2); }
+#problems li.ok { color: var(--ok); cursor: default; }
+#problems .lv { font-size: 10px; text-transform: uppercase; font-weight: 700; width: 52px; flex: none; }
+#problems .error .lv { color: var(--err); }
+#problems .warning .lv { color: var(--warn); }
+#problems .rid { font-family: var(--mono); color: #fff; flex: none; }
+
+.row { display: flex; gap: 6px; align-items: center; margin: 4px 0; }
+.row > .lab { width: 44px; color: var(--muted); flex: none; }
+#nameIn { flex: 1; min-width: 0; }
+.count { font-size: 11px; color: var(--muted); }
+.count.over { color: var(--warn); }
+.exits { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; align-items: center; margin: 8px 0 4px; }
+.exits .ex { display: flex; flex-direction: column; font-size: 11px; color: var(--muted); }
+.exits select { width: 100%; }
+.exits .me { text-align: center; font: 11px var(--mono); color: #fff; padding: 6px 2px; border: 1px dashed var(--line2); border-radius: 4px; overflow: hidden; text-overflow: ellipsis; }
+table.list { width: 100%; border-collapse: collapse; }
+table.list th { font-weight: 400; font-size: 11px; color: var(--muted); text-align: left; padding: 0 3px 2px; }
+table.list td { padding: 2px 3px; }
+table.list tr.sel td { background: #252c3a; }
+table.list tr.sel td:first-child { box-shadow: inset 2px 0 0 #e8ecf4; }
+table.list input[type=number] { width: 48px; }
+table.list input.arg { width: 44px; }
+select.colour { width: 80px; font-size: 12px; }
+select.colour.blue { width: 120px; }
+select.logical { width: 40px; }
+.note { font-size: 12px; color: var(--warn); margin: 4px 0; }
+
+dialog {
+  background: var(--panel); color: var(--text); border: 1px solid var(--line2); border-radius: 6px;
+  padding: 16px 18px; max-width: min(720px, 94vw);
+}
+dialog::backdrop { background: rgba(0, 0, 0, .6); }
+dialog h2 { font-size: 13px; color: var(--text); }
+dialog .btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 12px; }
+#pasteText { width: min(640px, 86vw); height: 50vh; font: 12px var(--mono); white-space: pre; }
+#askIn { width: 100%; font-family: var(--mono); }
+.err { color: var(--err); min-height: 1.2em; margin: 6px 0 0; font-size: 12px; }
+#dlgHelp { max-height: 88vh; overflow: auto; }
+#dlgHelp p, #dlgHelp li { color: #c5cad4; }
+#dlgHelp ul { padding-left: 18px; }
+#dlgHelp table td { padding: 1px 12px 1px 0; }
+#dlgHelp h3 { font-size: 13px; margin: 14px 0 4px; }
+#toast {
+  position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+  background: #2a3140; border: 1px solid #4a5570; color: #fff; padding: 7px 14px; border-radius: 5px;
+  opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 10;
+}
+#toast.show { opacity: 1; }
+#toast.warn { border-color: var(--warn); }
+
+@media (max-width: 1100px) {
+  body { overflow: auto; }
+  main { display: block; }
+  main > * { overflow: visible; }
+  #lower { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="r">RED</span><span class="b">SHIFT</span><small>level editor</small></h1>
+  <div class="grp">
+    <button id="bOpen" title="Load a rooms.txt from your computer">Open file…</button>
+    <input type="file" id="fileIn" accept=".txt,text/plain" hidden>
+    <button id="bPaste" title="Paste the text of a rooms.txt">Paste…</button>
+  </div>
+  <div class="grp">
+    <button id="bDownload" class="primary">Download rooms.txt</button>
+    <button id="bCopy">Copy to clipboard</button>
+  </div>
+  <div class="grp">
+    <button id="bUndo" title="Undo (Ctrl+Z)">Undo</button>
+    <button id="bRedo" title="Redo (Ctrl+Shift+Z or Ctrl+Y)">Redo</button>
+  </div>
+  <span id="dirty" class="muted"></span>
+  <span class="spacer"></span>
+  <button id="bDiscard" title="Throw away the work kept in this browser and start again from the repo's rooms.txt">Discard local changes</button>
+  <button id="bHelp">Help</button>
+</header>
+<div id="banner" hidden><span class="msg"></span><span class="extra"></span><button class="x" id="bannerClose" title="Dismiss">✕</button></div>
+<main>
+  <aside id="left">
+    <h2>Tools</h2>
+    <div id="tools">
+      <button data-tool="paint" title="Drag to paint the tile">Paint<kbd>P</kbd></button>
+      <button data-tool="rect" title="Drag a box to fill with the tile">Rectangle<kbd>R</kbd></button>
+      <button data-tool="thing" title="Click to place a thing, drag one to move it">Things<kbd>T</kbd></button>
+      <button data-tool="start" title="Click where Ash starts, or arrives by the cage">Start<kbd>S</kbd></button>
+    </div>
+    <div id="curTile"></div>
+    <h2>Tiles</h2>
+    <div id="palette"></div>
+    <h2>Things</h2>
+    <div id="thingTypes"></div>
+  </aside>
+  <section id="center">
+    <div id="roombar">
+      <select id="roomSel" title="The room you're editing"></select>
+      <button id="bNew">New</button>
+      <button id="bDup" title="A copy of this room, with no exits">Duplicate</button>
+      <button id="bRename" title="Change this room's id, and the exits that lead to it">Rename id</button>
+      <button id="bDelete">Delete</button>
+      <span class="spacer"></span>
+      <div class="seg" id="phaseSeg" title="F flips the phase">
+        <button data-phase="0" class="red">Red Phase</button><button data-phase="1" class="blue">Blue Phase</button>
+      </div>
+      <label title="G"><input type="checkbox" id="cGrid">Grid</label>
+      <label title="Draw the things and Ash's start"><input type="checkbox" id="cMarkers">Things</label>
+      <select id="zoomSel" title="Zoom">
+        <option value="fit">Fit</option><option value="1">1x</option><option value="2">2x</option>
+        <option value="3">3x</option><option value="4">4x</option><option value="5">5x</option>
+      </select>
+    </div>
+    <div id="view"><canvas id="gutter"></canvas><canvas id="cv"></canvas></div>
+    <div id="status"></div>
+    <div id="lower">
+      <div><h2>Map of rooms <span class="n muted">with sectors; dashed: one way only</span></h2><div id="mapWrap"><canvas id="mapCv"></canvas></div></div>
+      <div><h2>Problems <span class="n" id="probCount"></span></h2><ul id="problems"></ul></div>
+    </div>
+  </section>
+  <aside id="right"><div id="props"></div></aside>
+</main>
+<div id="toast"></div>
+
+<dialog id="dlgAsk">
+  <h2 id="askTitle"></h2>
+  <p class="hint" id="askText"></p>
+  <input id="askIn" spellcheck="false" autocomplete="off">
+  <p class="err" id="askErr"></p>
+  <div class="btns"><button id="askCancel">Cancel</button><button id="askOk" class="primary">OK</button></div>
+</dialog>
+
+<dialog id="dlgPaste">
+  <h2>Paste a rooms.txt</h2>
+  <p class="hint">This replaces every room here. Undo brings them back.</p>
+  <textarea id="pasteText" spellcheck="false"></textarea>
+  <p class="err" id="pasteErr"></p>
+  <div class="btns"><button id="pasteCancel">Cancel</button><button id="pasteLoad" class="primary">Load it</button></div>
+</dialog>
+
+<dialog id="dlgHelp" tabindex="-1" autofocus>
+  <h2>REDSHIFT level editor</h2>
+  <p>Make rooms for REDSHIFT, a BBC Micro game. Your work stays in this browser until you download it.</p>
+  <h3>Sending in your rooms</h3>
+  <p>Press <b>Download rooms.txt</b>. Then either commit it as <code>rooms/rooms.txt</code> in your copy of
+    <a href="https://github.com/mattgodbolt/redshift-beeb" target="_blank" rel="noopener">github.com/mattgodbolt/redshift-beeb</a>
+    and open a pull request, or send the file to Matt. Anything under <b>Problems</b> would stop the game
+    building, so fix those first if you can, but you can download at any time.</p>
+  <h3>Painting</h3>
+  <ul>
+    <li>Pick a tile on the left, then drag on the room to paint it. The empty tile rubs out.</li>
+    <li>Right-click the room, or point at it and press <kbd>I</kbd>, to pick up the tile there.</li>
+    <li><b>Rectangle</b> fills the box you drag.</li>
+  </ul>
+  <h3>The two phases</h3>
+  <p>In the game, SHIFT flips between the Red Phase and the Blue Phase: here, press <kbd>F</kbd> or use the buttons.
+    Every colour has a Red Phase value and a Blue Phase one. Tiles and enemies that belong to the other phase
+    show as dotted outlines, and Ash walks straight through them.</p>
+  <h3>Colours and bands</h3>
+  <p>Tiles are drawn with colours 1 (the main one), 2 (the second) and 3 (highlights). The room's colours
+    set them at the top of the screen, and a band changes one of them from a line down. Click beside the
+    view to add a band at that line, and drag its marker to move it. A room has at most 8 bands, on lines
+    2 to 175, each at least 2 lines below the one before. A colour's Blue Phase partner is its opposite
+    (red and blue, yellow and cyan, magenta and green) unless you choose another.</p>
+  <h3>Things, and the start</h3>
+  <p>With <b>Things</b>, pick a kind on the left, click the room to place it, and drag it to move it.
+    <kbd>Delete</kbd> removes the selected one. An enemy's arg of 1 turns it to face left. An <i>exit</i>
+    is the cage: it takes Ash down (by the room's down exit) to the next sector.</p>
+  <p>With <b>Start</b>, click where Ash's feet go: Ash stands on the row below. The first room needs a
+    start, where a new game begins; in another room, it's where the cage brings Ash in.</p>
+  <h3>Rooms and sectors</h3>
+  <p>New, Duplicate, Rename id and Delete are above the view. Set the exits and the sector (1 to 5) on the
+    right: a room without a sector is in the same one as the room before it. The map under the view shows
+    how the rooms join, with each one's sector. Click a room there to go to it.</p>
+  <h3>Keys</h3>
+  <table>
+    <tr><td><kbd>P</kbd> <kbd>R</kbd> <kbd>T</kbd> <kbd>S</kbd></td><td>Paint, Rectangle, Things, Start</td></tr>
+    <tr><td><kbd>I</kbd> or right-click</td><td>pick up the tile under the pointer</td></tr>
+    <tr><td><kbd>F</kbd></td><td>flip the phase</td></tr>
+    <tr><td><kbd>G</kbd></td><td>grid on and off</td></tr>
+    <tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>the room before or after</td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd>, <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></td><td>undo, redo</td></tr>
+    <tr><td><kbd>Delete</kbd></td><td>remove the selected thing</td></tr>
+  </table>
+  <h3>Your work</h3>
+  <p>It's kept in this browser, so a refresh doesn't lose it. <b>Discard local changes</b> goes back to the
+    repo's rooms.txt: download yours first if you want to keep it.</p>
+  <div class="btns"><button id="helpClose" class="primary">Close</button></div>
+</dialog>
+
+<!-- The core: reading, writing, checking and drawing rooms, with no page in sight, so that
+     editor/check.mjs can run it under Node against tools/mkrooms.py. It follows tools/gfxlib.py
+     and tools/mkrooms.py, which are the authority. -->
+<script id="core">
+(function (G) {
+'use strict';
+
+const PHYS_NAMES = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
+const RGB = [[0, 0, 0], [255, 0, 0], [0, 255, 0], [255, 255, 0], [0, 0, 255], [255, 0, 255], [0, 255, 255],
+  [255, 255, 255]];
+// gfxlib's SWAP as a list: the Blue Phase colour for each Red Phase one.
+const SWAP = [0, 4, 5, 6, 1, 2, 3, 7];
+const MAP_W = 32, MAP_H = 22, WIDTH = MAP_W * 8, LINES = MAP_H * 8;
+const TILE_FLAGS = ['solid', 'hazard', 'breakable', 'red', 'blue'];
+const SPRITE_FLAGS = ['phase', 'mirror'];
+// tools/mkrooms.py's list. The page reads the live one from there when it can, and check.mjs fails
+// if this copy falls behind.
+const THING_TYPES = ['sentry', 'drone', 'crawler', 'shard', 'cell', 'grenades', 'life', 'exit'];
+// mkrooms.py's THING_BOX, kept the same way: each type's width, and the lines it reaches above and
+// below its tile row's top (the drone bobs, the crawler sits 4 lines down).
+const THING_BOX = {
+  sentry: [16, 0, 16], drone: [16, -4, 14], crawler: [16, 4, 16], shard: [8, 0, 8], cell: [8, 0, 8],
+  grenades: [8, 0, 8], life: [8, 0, 8], exit: [16, 0, 24],
+};
+const MAX_THINGS = 6;
+const DIRS = ['left', 'right', 'up', 'down'];
+const OPPOSITE = {left: 'right', right: 'left', up: 'down', down: 'up'};
+// gfxlib's DEFAULT_PREVIEW, which a room without a colours line gets.
+const DEFAULT_COLOURS = [1, 3, 7];
+
+class ParseError extends Error {}
+function fail(where, msg) { throw new ParseError(`${where}: ${msg}`); }
+
+// Python's splitlines() drops the newline that ends the file; remember it, and the line ending, so
+// that what's written back matches what was read.
+function splitLines(text) {
+  const eol = text.includes('\r\n') ? '\r\n' : '\n';
+  const lines = text.split(/\r\n|\r|\n/);
+  let finalNewline = false;
+  if (lines[lines.length - 1] === '') {
+    lines.pop();
+    finalNewline = lines.length > 0;
+  }
+  return {lines, eol, finalNewline};
+}
+
+function wholeNumber(word, where) {
+  if (!/^[+-]?\d+$/.test(word)) fail(where, `'${word}' isn't a whole number`);
+  return parseInt(word, 10);
+}
+
+// 'red' or 'red/white'. b stays null when the file leaves the Blue Phase colour to SWAP, so that
+// writing the room back says the same.
+function parseColour(word, where) {
+  const parts = word.split('/');
+  const r = PHYS_NAMES.indexOf(parts[0]);
+  const b = parts.length > 1 ? PHYS_NAMES.indexOf(parts[1]) : null;
+  if (r < 0 || b === -1) fail(where, `unknown colour '${word}'`);
+  return {r, b};
+}
+const blueOf = c => (c.b == null ? SWAP[c.r] : c.b);
+const phaseColour = (c, phase) => (phase ? blueOf(c) : c.r);
+const colourText = c => PHYS_NAMES[c.r] + (c.b == null ? '' : '/' + PHYS_NAMES[c.b]);
+
+// --- Tiles and sprites (gfxlib's _blocks, read_tiles, read_sprites) -------------------------------
+
+// The out-of-phase look: the lit pixels on an edge, thinned to the checkerboard squares that keep
+// more of them (the even ones on a tie), unless that leaves too few to see.
+function hollow(px) {
+  const h = px.length, w = h ? px[0].length : 0;
+  const edge = [];
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (px[y][x] && (x === 0 || x === w - 1 || y === 0 || y === h - 1 ||
+          !px[y][x + 1] || !px[y][x - 1] || !px[y + 1][x] || !px[y - 1][x])) edge.push([x, y]);
+    }
+  }
+  const even = edge.filter(([x, y]) => !((x + y) & 1)), odd = edge.filter(([x, y]) => (x + y) & 1);
+  let keep = even.length >= odd.length ? even : odd;
+  if (keep.length < 8) keep = edge;
+  const out = px.map(row => row.map(() => 0));
+  for (const [x, y] of keep) out[y][x] = px[y][x];
+  return out;
+}
+
+function parseGfx(text, fname) {
+  const {lines} = splitLines(text);
+  const tiles = [], sprites = [];
+  for (let i = 0; i < lines.length;) {
+    // A comment is a whole line starting with '#', since '#' is also a tile's key.
+    const raw = lines[i++].trim();
+    if (!raw || raw.startsWith('#')) continue;
+    const where = `${fname}:${i}`;
+    const words = raw.split(/\s+/);
+    let w, h;
+    if (words[0] === 'tile') {
+      if (words.length < 3) fail(where, 'tile <key> <name> [flags]');
+      w = h = 8;
+    } else if (words[0] === 'sprite') {
+      if (words.length < 4) fail(where, 'sprite <name> <width> <height> [flags]');
+      w = wholeNumber(words[2], where);
+      h = wholeNumber(words[3], where);
+      if (w < 1 || h < 1) fail(where, 'a sprite is at least 1x1');
+    } else {
+      fail(where, `expected 'tile' or 'sprite', got '${raw}'`);
+    }
+    if (i + h > lines.length) fail(where, `the art wants ${h} lines`);
+    const pixels = lines.slice(i, i + h).map((line, k) => {
+      line = line.replace(/\s+$/, '');
+      if (line.length !== w || /[^.123]/.test(line)) fail(`${where}+${k}`, `art lines must be ${w} of '.123', got '${line}'`);
+      return Array.from(line, c => (c === '.' ? 0 : +c));
+    });
+    i += h;
+    if (words[0] === 'tile') {
+      const key = words[1] === 'space' ? ' ' : words[1];
+      if (key.length !== 1) fail(where, "a tile's key is one character");
+      const flags = words.slice(3), bad = flags.filter(f => !TILE_FLAGS.includes(f));
+      if (bad.length) fail(where, `unknown flags ${bad.join(' ')}`);
+      tiles.push({key, name: words[2], flags, pixels, hollow: hollow(pixels)});
+    } else {
+      const flags = words.slice(4), bad = flags.filter(f => !SPRITE_FLAGS.includes(f));
+      if (bad.length) fail(where, `unknown sprite flags ${bad.join(' ')}`);
+      sprites.push({name: words[1], w, h, flags, pixels, hollow: hollow(pixels)});
+    }
+  }
+  return {tiles, sprites};
+}
+
+function parseTiles(text, fname = 'gfx/tiles.txt') {
+  const {tiles} = parseGfx(text, fname);
+  if (!tiles.length || tiles[0].key !== ' ') fail(fname, "the first tile must be 'space'");
+  if (new Set(tiles.map(t => t.key)).size !== tiles.length) fail(fname, 'duplicate tile keys');
+  return tiles;
+}
+const parseSprites = (text, fname = 'gfx/sprites.txt') => parseGfx(text, fname).sprites;
+
+// --- Rooms (gfxlib's read_rooms) ------------------------------------------------------------------
+//
+// A document is {header, rooms, tail, eol, finalNewline}: header is every line before the first
+// room, tail every line after the last one's last line. Each room keeps what the file had around
+// its lines, so that saving gives back the same text:
+//   pre               the comment and blank lines between the room before and this one
+//   notes[keyword]    {before: comment lines just above it, after: the rest of its line from the
+//                     first '#', or trailing spaces}, for room, name, sector, exits, start,
+//                     colours and map; bands and things carry their own before and after
+//   mapSrc            the map's lines as written, where any were shorter than 32
+//   src, srcCanon     the room's lines as written and as roomLines() first wrote them, when those
+//                     differ (odd spacing, lines out of the usual order): while roomLines() still
+//                     gives srcCanon the room is unchanged, and src is written back as it was.
+
+function blankRoom(id) {
+  return {
+    id, name: id.toUpperCase(), sector: null, exits: {left: '-', right: '-', up: '-', down: '-'},
+    start: null, colours: null, bands: [], map: null, mapSrc: null, things: [], notes: {}, pre: [], src: null,
+    srcCanon: null,
+  };
+}
+
+function newRoom(id) {
+  const r = blankRoom(id);
+  r.colours = DEFAULT_COLOURS.map(c => ({r: c, b: null}));
+  r.map = Array.from({length: MAP_H}, () => ' '.repeat(MAP_W));
+  r.pre = [''];
+  return r;
+}
+
+function parseRooms(text, fname = 'rooms.txt') {
+  const {lines, eol, finalNewline} = splitLines(text);
+  const doc = {header: [], rooms: [], tail: [], eol, finalNewline};
+  let room = null, pending = [], first = 0, last = 0;
+  const take = () => { const p = pending; pending = []; return p; };
+  const finish = () => {
+    if (!room.map) fail(fname, `room ${room.id} has no map`);
+    if (!room.colours) room.colours = DEFAULT_COLOURS.map(c => ({r: c, b: null}));
+    const src = lines.slice(first, last + 1), canon = roomLines(room).join('\n');
+    if (src.join('\n') !== canon) {
+      room.src = src;
+      room.srcCanon = canon;
+    }
+  };
+  for (let i = 0; i < lines.length;) {
+    const line = lines[i++], where = `${fname}:${i}`;
+    const hash = line.indexOf('#');
+    const raw = (hash < 0 ? line : line.slice(0, hash)).replace(/\s+$/, '');
+    if (!raw.trim()) {
+      pending.push(line);
+      continue;
+    }
+    const after = line.slice(raw.length), words = raw.trim().split(/\s+/), key = words[0];
+    const need = (n, usage) => { if (words.length < n) fail(where, usage); };
+    const note = kw => {
+      const old = room.notes[kw];
+      room.notes[kw] = {before: (old ? old.before : []).concat(take()), after};
+    };
+    if (key === 'room') {
+      need(2, 'room <id>');
+      if (room) finish(); else doc.header = take();
+      room = blankRoom(words[1]);
+      room.pre = take();
+      note('room');
+      first = i - 1;
+      doc.rooms.push(room);
+    } else if (!room) {
+      fail(where, "expected 'room <id>'");
+    } else if (key === 'name') {
+      need(2, 'name <text>');
+      room.name = raw.trim().slice(key.length).trim();
+      note('name');
+    } else if (key === 'exits') {
+      for (const w of words.slice(1)) {
+        const eq = w.indexOf('='), d = eq < 0 ? w : w.slice(0, eq);
+        if (!DIRS.includes(d)) fail(where, `unknown exit '${d}'`);
+        room.exits[d] = eq < 0 ? '' : w.slice(eq + 1);
+      }
+      note('exits');
+    } else if (key === 'colours') {
+      if (words.length !== 4) fail(where, 'colours wants logical 1, 2 and 3');
+      room.colours = words.slice(1).map(w => parseColour(w, where));
+      note('colours');
+    } else if (key === 'band') {
+      if (words.length !== 4) fail(where, 'band <line> <logical 1-3> <colour>');
+      const at = wholeNumber(words[1], where), logical = wholeNumber(words[2], where);
+      if (logical < 1 || logical > 3) fail(where, 'a band changes logical colour 1, 2 or 3');
+      room.bands.push({line: at, logical, ...parseColour(words[3], where), before: take(), after});
+    } else if (key === 'sector') {
+      need(2, 'sector <n>');
+      room.sector = wholeNumber(words[1], where);
+      note('sector');
+    } else if (key === 'start') {
+      need(3, 'start <x> <y>');
+      room.start = [wholeNumber(words[1], where), wholeNumber(words[2], where)];
+      note('start');
+    } else if (key === 'map') {
+      // The map's lines are taken whole (spaces matter, and '#' is stone), and padded.
+      note('map');
+      if (i + MAP_H > lines.length) fail(where, `the map wants ${MAP_H} lines`);
+      const src = lines.slice(i, i + MAP_H);
+      src.forEach((l, k) => { if (l.length > MAP_W) fail(`${fname}:${i + k + 1}`, `map lines are at most ${MAP_W} wide`); });
+      room.map = src.map(l => l.padEnd(MAP_W));
+      room.mapSrc = src.some((l, k) => l !== room.map[k]) ? src : null;
+      i += MAP_H;
+    } else if (key === 'thing') {
+      need(4, 'thing <type> <x> <y> ...');
+      room.things.push({
+        type: words[1], x: wholeNumber(words[2], where), y: wholeNumber(words[3], where),
+        args: words.slice(4), before: take(), after,
+      });
+    } else {
+      fail(where, `unknown line '${key}'`);
+    }
+    last = i - 1;
+  }
+  if (room) {
+    finish();
+    doc.tail = pending;
+  } else {
+    doc.header = pending;
+  }
+  return doc;
+}
+
+// A room in the file's usual order: room, name, sector, exits, start, colours, bands, map, things.
+function roomLines(r) {
+  const out = [];
+  const line = (kw, text) => {
+    const n = r.notes[kw];
+    if (n) out.push(...n.before);
+    out.push(text + (n ? n.after : ''));
+  };
+  line('room', 'room ' + r.id);
+  const name = r.name.trim();
+  // An empty name line wouldn't read back; without one the game shows the id.
+  if (name) line('name', 'name ' + name);
+  else if (r.notes.name) out.push(...r.notes.name.before);
+  if (r.sector != null) line('sector', 'sector ' + r.sector);
+  line('exits', 'exits ' + DIRS.map(d => `${d}=${r.exits[d]}`).join(' '));
+  if (r.start) line('start', `start ${r.start[0]} ${r.start[1]}`);
+  line('colours', 'colours ' + r.colours.map(colourText).join(' '));
+  for (const b of r.bands) out.push(...b.before, `band ${b.line} ${b.logical} ${colourText(b)}${b.after}`);
+  line('map', 'map');
+  r.map.forEach((row, k) => {
+    const src = r.mapSrc && r.mapSrc[k];
+    out.push(src != null && src.padEnd(MAP_W) === row ? src : row);
+  });
+  for (const t of r.things) out.push(...t.before, ['thing', t.type, t.x, t.y, ...t.args].join(' ') + t.after);
+  return out;
+}
+
+// opts.canonical writes every room afresh, ignoring how the file had it.
+function serializeRooms(doc, opts = {}) {
+  const out = doc.header.slice();
+  doc.rooms.forEach((room, k) => {
+    let pre = room.pre;
+    // A room that has become the first after a delete brings its blank separator with it.
+    if (k === 0 && (!out.length || !out[out.length - 1].trim())) {
+      let j = 0;
+      while (j < pre.length && !pre[j].trim()) j++;
+      pre = pre.slice(j);
+    }
+    out.push(...pre);
+    const lines = roomLines(room);
+    out.push(...(!opts.canonical && room.src && lines.join('\n') === room.srcCanon ? room.src : lines));
+  });
+  out.push(...doc.tail);
+  return out.length ? out.join(doc.eol) + (doc.finalNewline ? doc.eol : '') : '';
+}
+
+// --- Drawing (mkrooms's render and gfxlib's room_palette_rows) -----------------------------------
+
+// Python sorts the bands as (line, logical, red, blue) tuples, and the order decides which of two
+// bands on one line wins.
+function sortedBands(room) {
+  return room.bands.map((b, k) => ({line: b.line, logical: b.logical, r: b.r, b: blueOf(b), k}))
+    .sort((p, q) => p.line - q.line || p.logical - q.logical || p.r - q.r || p.b - q.b || p.k - q.k);
+}
+
+function paletteRows(room, phase) {
+  const cur = [0, ...room.colours.map(c => phaseColour(c, phase))];
+  const bands = sortedBands(room);
+  const rows = [];
+  for (let y = 0; y < LINES; y++) {
+    for (const b of bands) if (b.line === y) cur[b.logical] = phase ? b.b : b.r;
+    rows.push(cur.slice());
+  }
+  return rows;
+}
+
+// Into buf (RGBA, WIDTH x LINES). A key that isn't a tile, which mkrooms would refuse, is drawn as
+// orange stripes, a colour the BBC can't show.
+function renderRoom(room, tileMap, phase, buf) {
+  const pal = paletteRows(room, phase);
+  const other = phase ? 'red' : 'blue';
+  for (let ty = 0; ty < MAP_H; ty++) {
+    const row = room.map[ty];
+    for (let tx = 0; tx < MAP_W; tx++) {
+      const t = tileMap.get(row[tx]);
+      const pix = t ? (t.flags.includes(other) ? t.hollow : t.pixels) : null;
+      for (let y = 0; y < 8; y++) {
+        const p = pal[ty * 8 + y];
+        let o = ((ty * 8 + y) * WIDTH + tx * 8) * 4;
+        for (let x = 0; x < 8; x++, o += 4) {
+          const rgb = pix ? RGB[p[pix[y][x]]] : ((x + y) >> 1) & 1 ? [255, 140, 0] : [0, 0, 0];
+          buf[o] = rgb[0];
+          buf[o + 1] = rgb[1];
+          buf[o + 2] = rgb[2];
+          buf[o + 3] = 255;
+        }
+      }
+    }
+  }
+  return buf;
+}
+
+// A sprite takes the colours of the lines it's on, as in the game.
+function drawSprite(buf, s, px, py, pal, ghost, flip) {
+  const pix = ghost ? s.hollow : s.pixels;
+  for (let sy = 0; sy < s.h; sy++) {
+    const y = py + sy;
+    if (y < 0 || y >= LINES) continue;
+    for (let sx = 0; sx < s.w; sx++) {
+      const c = pix[sy][flip ? s.w - 1 - sx : sx], x = px + sx;
+      if (!c || x < 0 || x >= WIDTH) continue;
+      const rgb = RGB[pal[y][c]], o = (y * WIDTH + x) * 4;
+      buf[o] = rgb[0];
+      buf[o + 1] = rgb[1];
+      buf[o + 2] = rgb[2];
+      buf[o + 3] = 255;
+    }
+  }
+}
+
+// --- Checking (mkrooms's rules, and what wouldn't read back) --------------------------------------
+
+function fits(t, thingBox = THING_BOX) {
+  const box = thingBox[t.type];
+  if (!box) return true;
+  const [w, top, bottom] = box;
+  return t.x >= 0 && t.x * 8 + w <= WIDTH && t.y * 8 + top >= 0 && t.y * 8 + bottom <= LINES;
+}
+
+// A room without a sector line is in the sector of the room before it; the first, in sector 1.
+function sectors(doc) {
+  let s = 1;
+  return doc.rooms.map(r => (s = r.sector == null ? s : r.sector));
+}
+
+function idProblem(id) {
+  if (!id) return 'An id needs at least one character.';
+  if (!/^[^\s#]+$/.test(id)) return "An id is one word, without '#'.";
+  if (id === '-') return "'-' means no exit, so it can't be an id.";
+  return '';
+}
+
+function validate(doc, tiles, thingTypes = THING_TYPES, thingBox = THING_BOX) {
+  const out = [];
+  const add = (level, room, msg) => out.push({level, room, msg});
+  const rooms = doc.rooms;
+  if (!rooms.length) add('error', null, 'There are no rooms.');
+  const uses = new Map();
+  for (const r of rooms) uses.set(r.id, (uses.get(r.id) || 0) + 1);
+  const keys = new Set(tiles.map(t => t.key)), sector = sectors(doc);
+  if (rooms.length && !rooms[0].start) add('error', 0, 'The first room needs a start, where a new game begins: use the Start tool.');
+  rooms.forEach((r, k) => {
+    if (sector[k] < 1 || sector[k] > 5) {
+      add('error', k, r.sector == null ? `It's in sector ${sector[k]}, like the room before it: sectors are 1-5.` : `Its sector is ${sector[k]}: sectors are 1-5.`);
+    }
+    const bad = idProblem(r.id);
+    if (bad) add('error', k, bad);
+    if (uses.get(r.id) > 1) add('error', k, `Another room has the id '${r.id}' too.`);
+    const name = r.name.trim();
+    if (!name) add('warning', k, 'It has no name, so the game shows its id.');
+    if (name.includes('#')) add('error', k, "The name can't have '#' in it: in rooms.txt that starts a comment.");
+    if (name.includes('"')) add('error', k, "The name can't have '\"' in it.");
+    if (name.length > 20) add('warning', k, `The name is ${name.length} characters long: only the first 20 show.`);
+    if (/[^\x20-\x7e]/.test(name)) add('warning', k, "The name has characters the BBC's font doesn't.");
+    for (const d of DIRS) {
+      const t = r.exits[d];
+      if (t === '-' || uses.has(t)) continue;
+      add('error', k, t ? `The ${d} exit goes to '${t}', which isn't a room.` : `The ${d} exit is blank: use - for none.`);
+    }
+    if (r.bands.length > 8) add('error', k, `It has ${r.bands.length} bands: at most 8 fit.`);
+    let last = 0;
+    for (const b of sortedBands(r)) {
+      if (b.line < 2 || b.line >= LINES || b.line - last < 2) {
+        add('error', k, `The band at line ${b.line}: lines run 2-${LINES - 1}, each at least 2 below the one before.`);
+      }
+      last = b.line;
+    }
+    if (r.things.length > MAX_THINGS) add('error', k, `It has ${r.things.length} things: at most ${MAX_THINGS} fit in a room.`);
+    r.things.forEach((t, i) => {
+      const what = `Thing ${i + 1} (${t.type})`;
+      if (!thingTypes.includes(t.type)) {
+        add('error', k, `Thing ${i + 1} is a '${t.type}', which isn't one of: ${thingTypes.join(', ')}.`);
+      } else if (!fits(t, thingBox)) {
+        add('error', k, `${what} at ${t.x}, ${t.y} doesn't fit on the screen.`);
+      }
+      const arg = t.args[0];
+      if (arg != null && (!/^[+-]?\d+$/.test(arg) || +arg < 0 || +arg > 255)) add('error', k, `${what}: its arg '${arg}' isn't a whole number from 0 to 255.`);
+    });
+    const odd = new Map();
+    for (const row of r.map) for (const c of row) if (!keys.has(c)) odd.set(c, (odd.get(c) || 0) + 1);
+    if (odd.size) {
+      const list = [...odd].map(([c, n]) => `'${c}' (${n})`).join(', ');
+      add('error', k, `The map has ${list}, which ${odd.size > 1 ? "aren't tiles" : "isn't a tile"}.`);
+    }
+    if (r.start) {
+      const [x, y] = r.start;
+      if (x < 0 || x > 255 || y < 0 || y > 255) add('error', k, `The start is at ${x}, ${y}: each must be 0-255.`);
+      else if (x >= MAP_W || y >= MAP_H) add('warning', k, `The start, ${x}, ${y}, is off the map.`);
+    }
+    // The cage (an exit thing) takes Ash down to the next sector, arriving at that room's start.
+    if (r.things.some(t => t.type === 'exit')) {
+      const down = rooms.find(o => o.id === r.exits.down);
+      if (r.exits.down === '-') add('warning', k, 'It has a cage (an exit thing), but no down exit for the cage to go to.');
+      else if (down && !down.start) add('warning', k, `The cage goes down to ${down.id}, which has no start for Ash to arrive at.`);
+    }
+  });
+  return out;
+}
+
+G.RS = {
+  PHYS_NAMES, RGB, SWAP, MAP_W, MAP_H, WIDTH, LINES, TILE_FLAGS, THING_TYPES, THING_BOX, MAX_THINGS, DIRS,
+  OPPOSITE, ParseError, fits,
+  parseTiles, parseSprites, parseRooms, serializeRooms, roomLines, newRoom, hollow, blueOf, phaseColour,
+  colourText, sortedBands, paletteRows, renderRoom, drawSprite, sectors, validate, idProblem,
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+
+<!-- The page. -->
+<script>
+(function () {
+'use strict';
+const RS = window.RS;
+const {MAP_W, MAP_H, WIDTH, LINES, PHYS_NAMES, RGB, DIRS, OPPOSITE} = RS;
+let THING_TYPES = RS.THING_TYPES.slice(), THING_BOX = {...RS.THING_BOX};
+
+// How each thing looks: its sprite in gfx/sprites.txt, the phase it belongs to (1 Red, 2 Blue, 0
+// both), and how far down its tile row it's drawn, as src/things.6502 has them (type_spr,
+// type_phase, and the crawler's tracks on the floor). Out of its phase it's a ghost.
+const THING_LOOK = {
+  sentry: ['sentry', 1, 0], drone: ['drone0', 1, 0], crawler: ['crawler0', 1, 4], shard: ['shard0', 2, 0],
+  cell: ['cell', 0, 0], grenades: ['grenades', 0, 0], life: ['life', 0, 0], exit: [null, 0, 0],
+};
+const THING_COLOURS = {
+  sentry: '#ff8a65', drone: '#ffd54f', crawler: '#aed581', shard: '#4fc3f7', cell: '#81c784',
+  grenades: '#ce93d8', life: '#f48fb1', exit: '#ffffff',
+};
+const ROLE = ['', '1 main', '2 second', '3 highlight'];
+const STORE = 'redshift-editor';
+const PREFS = ['phase', 'tool', 'tile', 'thingType', 'grid', 'markers', 'zoom', 'linkBack'];
+const GUTTER_W = 104;
+
+const $ = id => document.getElementById(id);
+function h(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (k === 'class') e.className = v;
+    else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2), v);
+    else if (k in e) e[k] = v;
+    else e.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) if (kid != null && kid !== false) e.append(kid);
+  return e;
+}
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const css = i => `rgb(${RGB[i].join(',')})`;
+const inkOn = i => ([0, 1, 4, 5].includes(i) ? '#fff' : '#000');
+const keyLabel = k => (k === ' ' ? 'space' : k);
+
+let tiles = [], tileMap = new Map(), sprites = new Map(), doc = null, baseText = null;
+const ui = {
+  cur: 0, phase: 0, tool: 'paint', tile: null, thingType: 'sentry', grid: true, markers: true, zoom: 'fit',
+  linkBack: true, selThing: -1, selBand: -1, hover: null, drag: null, S: 2, dpr: 1, errorRooms: new Set(),
+  gutterHits: [], mapHits: [],
+};
+const room = () => doc.rooms[ui.cur];
+const cv = $('cv'), gutter = $('gutter'), mapCv = $('mapCv');
+
+// --- Messages ----------------------------------------------------------------------------------
+
+let toastTimer = 0;
+function toast(msg, kind = '') {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'show ' + kind;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = kind; }, 3200);
+}
+function banner(msg, kind = '', extra = null) {
+  const b = $('banner');
+  b.hidden = false;
+  b.className = kind;
+  b.querySelector('.msg').textContent = msg;
+  const x = b.querySelector('.extra');
+  x.textContent = '';
+  if (extra) x.append(extra);
+}
+$('bannerClose').onclick = () => { $('banner').hidden = true; };
+
+// --- Keeping work in the browser ---------------------------------------------------------------
+
+function readStore() {
+  try {
+    const s = localStorage.getItem(STORE);
+    return s ? JSON.parse(s) : null;
+  } catch (e) {
+    return null;
+  }
+}
+let storeWarned = false;
+function writeStore() {
+  if (!doc) return;
+  try {
+    const prefs = {};
+    for (const k of PREFS) prefs[k] = ui[k];
+    localStorage.setItem(STORE, JSON.stringify({v: 1, text: RS.serializeRooms(doc), base: baseText, cur: ui.cur, prefs}));
+  } catch (e) {
+    if (!storeWarned) toast("This browser won't keep your work: download it to be safe.", 'warn');
+    storeWarned = true;
+  }
+}
+
+// --- Undo: a snapshot of every room before each change. Rooms are small. ----------------------
+
+const undoStack = [], redoStack = [];
+const snap = () => JSON.stringify({doc, cur: ui.cur});
+function checkpoint() {
+  undoStack.push(snap());
+  if (undoStack.length > 200) undoStack.shift();
+  redoStack.length = 0;
+  updateUndo();
+}
+function restore(s) {
+  const o = JSON.parse(s);
+  doc = o.doc;
+  ui.cur = clamp(o.cur, 0, doc.rooms.length - 1);
+  ui.selThing = ui.selBand = -1;
+  ui.drag = null;
+  refreshAll();
+  changed();
+}
+function undo() {
+  if (!undoStack.length) return;
+  redoStack.push(snap());
+  restore(undoStack.pop());
+  updateUndo();
+}
+function redo() {
+  if (!redoStack.length) return;
+  undoStack.push(snap());
+  restore(redoStack.pop());
+  updateUndo();
+}
+function updateUndo() {
+  $('bUndo').disabled = !undoStack.length;
+  $('bRedo').disabled = !redoStack.length;
+}
+
+// After any change: the slower things wait until the edits pause.
+let afterTimer = 0;
+function changed() {
+  clearTimeout(afterTimer);
+  afterTimer = setTimeout(afterChange, 200);
+}
+function afterChange() {
+  afterTimer = 0;
+  renderProblems();
+  drawMap();
+  writeStore();
+  updateDirty();
+}
+function updateDirty() {
+  const d = $('dirty');
+  if (baseText == null) {
+    d.textContent = '';
+  } else if (RS.serializeRooms(doc) === baseText) {
+    d.textContent = "Same as the repo's rooms.txt";
+    d.className = 'muted';
+  } else {
+    d.textContent = 'Changed: download rooms.txt to send it in';
+    d.className = 'changed';
+  }
+}
+
+// --- Layout -------------------------------------------------------------------------------------
+
+// The canvases are sized in device pixels, a whole number of them to a BBC pixel, so the art stays
+// crisp at any browser zoom.
+function sizeCrisp(c, w, h, cssScale) {
+  const dpr = window.devicePixelRatio || 1;
+  const k = Math.max(1, Math.round(cssScale * dpr));
+  c.width = w * k;
+  c.height = h * k;
+  c.style.width = (w * k) / dpr + 'px';
+  c.style.height = (h * k) / dpr + 'px';
+  return k;
+}
+
+function layout() {
+  const dpr = (ui.dpr = window.devicePixelRatio || 1);
+  let S;
+  if (ui.zoom === 'fit') {
+    const center = $('center');
+    const availW = center.clientWidth - 28 - GUTTER_W;
+    const availH = window.innerHeight - center.getBoundingClientRect().top - $('roombar').offsetHeight - 70;
+    S = Math.floor(Math.min(availW / WIDTH, Math.max(availH, LINES * 2) / LINES) * dpr);
+  } else {
+    S = Math.round(+ui.zoom * dpr);
+  }
+  ui.S = S = Math.max(1, S);
+  cv.width = WIDTH * S;
+  cv.height = LINES * S;
+  cv.style.width = (WIDTH * S) / dpr + 'px';
+  cv.style.height = (LINES * S) / dpr + 'px';
+  gutter.width = Math.round(GUTTER_W * dpr);
+  gutter.height = LINES * S;
+  gutter.style.width = GUTTER_W + 'px';
+  gutter.style.height = cv.style.height;
+  redraw(true);
+}
+
+// --- Drawing the room --------------------------------------------------------------------------
+
+const off = document.createElement('canvas');
+off.width = WIDTH;
+off.height = LINES;
+const offCtx = off.getContext('2d');
+const img = offCtx.createImageData(WIDTH, LINES);
+let roomDirty = true, drawQueued = false;
+
+function redraw(roomChanged = true) {
+  if (roomChanged) roomDirty = true;
+  if (drawQueued) return;
+  drawQueued = true;
+  requestAnimationFrame(() => {
+    drawQueued = false;
+    if (!doc) return;
+    drawView();
+    drawGutter();
+  });
+}
+
+function thingLook(t) {
+  const [name, phase, dy] = THING_LOOK[t.type] || [null, 0, 0];
+  const s = name ? sprites.get(name) : null, reach = THING_BOX[t.type];
+  return {
+    sprite: s,
+    at: {x: t.x * 8, y: t.y * 8 + dy},
+    ghost: !!(s && phase && s.flags.includes('phase') && phase !== ui.phase + 1),
+    // Arg bit 0 turns it to face left, if it faces at all.
+    flip: !!(s && s.flags.includes('mirror') && (parseInt(t.args[0], 10) & 1)),
+    // All the room it takes, which is what has to fit on the screen.
+    box: reach ? {x: t.x * 8, y: t.y * 8 + reach[1], w: reach[0], h: reach[2] - reach[1]}
+      : {x: t.x * 8, y: t.y * 8 + dy, w: s ? s.w : 8, h: s ? s.h : 8},
+  };
+}
+// The nearest place a thing fits on the screen, for placing and dragging.
+function fitThing(t) {
+  const reach = THING_BOX[t.type];
+  if (!reach) return;
+  const [w, top, bottom] = reach;
+  t.x = clamp(t.x, 0, Math.floor((WIDTH - w) / 8));
+  t.y = clamp(t.y, Math.ceil(-top / 8), Math.floor((LINES - bottom) / 8));
+}
+// Ash is 3 tiles tall, feet on the bottom of row y, standing on row y + 1.
+function startBox(r) {
+  const ash = sprites.get('ash_stand');
+  const w = ash ? ash.w : 16, hgt = ash ? ash.h : 24;
+  return {x: r.start[0] * 8, y: (r.start[1] + 1) * 8 - hgt, w, h: hgt};
+}
+
+function paintRoomBuffer() {
+  const r = room();
+  RS.renderRoom(r, tileMap, ui.phase, img.data);
+  if (ui.markers) {
+    const pal = RS.paletteRows(r, ui.phase);
+    const ash = sprites.get('ash_stand');
+    if (ash && r.start) {
+      const b = startBox(r);
+      RS.drawSprite(img.data, ash, b.x, b.y, pal, false, false);
+    }
+    for (const t of r.things) {
+      const look = thingLook(t);
+      if (look.sprite) RS.drawSprite(img.data, look.sprite, look.at.x, look.at.y, pal, look.ghost, look.flip);
+    }
+  }
+  offCtx.putImageData(img, 0, 0);
+}
+
+function tag(c, text, x, y, colour, dpr, above = true) {
+  c.font = `${Math.round(10 * dpr)}px ui-monospace, Menlo, monospace`;
+  const pad = Math.round(3 * dpr), hgt = Math.round(13 * dpr), w = c.measureText(text).width + pad * 2;
+  let ty = above ? y - hgt : y;
+  if (ty < 0) ty = y;
+  x = clamp(x, 0, c.canvas.width - w);
+  c.fillStyle = 'rgba(8,10,14,.82)';
+  c.fillRect(x, ty, w, hgt);
+  c.fillStyle = colour;
+  c.textBaseline = 'middle';
+  c.fillText(text, x + pad, ty + hgt / 2 + 0.5);
+}
+
+function strokeBox(c, b, S, colour, width) {
+  c.strokeStyle = colour;
+  c.lineWidth = width;
+  c.strokeRect(b.x * S + width / 2, b.y * S + width / 2, b.w * S - width, b.h * S - width);
+}
+
+function drawView() {
+  if (roomDirty) {
+    paintRoomBuffer();
+    roomDirty = false;
+  }
+  const c = cv.getContext('2d'), S = ui.S, dpr = ui.dpr, r = room();
+  c.imageSmoothingEnabled = false;
+  c.drawImage(off, 0, 0, WIDTH * S, LINES * S);
+  const thin = Math.max(1, Math.round(dpr));
+  if (ui.grid) {
+    c.fillStyle = 'rgba(255,255,255,.14)';
+    for (let x = 1; x < MAP_W; x++) c.fillRect(x * 8 * S, 0, thin, LINES * S);
+    for (let y = 1; y < MAP_H; y++) c.fillRect(0, y * 8 * S, WIDTH * S, thin);
+  }
+  const band = r.bands[ui.selBand];
+  if (band) {
+    c.strokeStyle = 'rgba(255,255,255,.85)';
+    c.lineWidth = thin;
+    c.setLineDash([4 * dpr, 3 * dpr]);
+    c.beginPath();
+    c.moveTo(0, band.line * S + thin / 2);
+    c.lineTo(WIDTH * S, band.line * S + thin / 2);
+    c.stroke();
+    c.setLineDash([]);
+  }
+  if (ui.markers) {
+    if (r.start) {
+      const b = startBox(r);
+      strokeBox(c, b, S, 'rgba(255,255,255,.5)', thin);
+      tag(c, 'START', b.x * S, b.y * S, '#fff', dpr);
+    }
+    r.things.forEach((t, k) => {
+      const look = thingLook(t), col = THING_COLOURS[t.type] || '#ff6b6b';
+      const sel = k === ui.selThing;
+      strokeBox(c, look.box, S, sel ? '#fff' : col, sel ? 2 * thin : thin);
+      const arg = t.args.length ? ' ' + t.args.join(' ') : '';
+      tag(c, t.type + arg + (look.ghost ? ' (ghost)' : ''), look.box.x * S, look.box.y * S, sel ? '#fff' : col, dpr);
+    });
+  }
+  const hv = ui.hover, d = ui.drag;
+  if (d && d.kind === 'rect') {
+    const x0 = Math.min(d.a.tx, d.b.tx), y0 = Math.min(d.a.ty, d.b.ty);
+    const box = {x: x0 * 8, y: y0 * 8, w: (Math.abs(d.a.tx - d.b.tx) + 1) * 8, h: (Math.abs(d.a.ty - d.b.ty) + 1) * 8};
+    c.fillStyle = 'rgba(255,255,255,.18)';
+    c.fillRect(box.x * S, box.y * S, box.w * S, box.h * S);
+    strokeBox(c, box, S, '#fff', thin);
+  } else if (hv && !d) {
+    if (ui.tool === 'start') {
+      strokeBox(c, startBox({start: [hv.tx, hv.ty]}), S, 'rgba(255,255,255,.8)', thin);
+    } else {
+      strokeBox(c, {x: hv.tx * 8, y: hv.ty * 8, w: 8, h: 8}, S, 'rgba(255,255,255,.9)', thin);
+    }
+  }
+}
+
+// Beside the view: colours 1-3 down every line, and a marker for each band.
+function drawGutter() {
+  const g = gutter.getContext('2d'), S = ui.S, dpr = ui.dpr, r = room();
+  const W = gutter.width, H = gutter.height;
+  g.fillStyle = '#0b0d11';
+  g.fillRect(0, 0, W, H);
+  const pal = RS.paletteRows(r, ui.phase);
+  const cw = Math.round(6 * dpr), gap = Math.max(1, Math.round(dpr)), x0 = W - 3 * (cw + gap);
+  for (let l = 1; l <= 3; l++) {
+    const x = x0 + (l - 1) * (cw + gap);
+    for (let y0 = 0, y = 1; y <= LINES; y++) {
+      if (y === LINES || pal[y][l] !== pal[y0][l]) {
+        g.fillStyle = css(pal[y0][l]);
+        g.fillRect(x, y0 * S, cw, (y - y0) * S);
+        y0 = y;
+      }
+    }
+  }
+  // Labels stack downwards when bands are closer than a label is tall.
+  const order = r.bands.map((b, k) => k).sort((a, b) => r.bands[a].line - r.bands[b].line);
+  const bad = new Set();
+  let last = 0;
+  for (const k of order) {
+    const at = r.bands[k].line;
+    if (at < 2 || at >= LINES || at - last < 2) bad.add(k);
+    last = at;
+  }
+  const lh = Math.round(16 * dpr), lx = Math.round(3 * dpr), lw = x0 - Math.round(14 * dpr) - lx;
+  g.font = `${Math.round(11 * dpr)}px ui-monospace, Menlo, monospace`;
+  g.textBaseline = 'middle';
+  ui.gutterHits = [];
+  let next = 0;
+  for (const k of order) {
+    const b = r.bands[k], sel = k === ui.selBand;
+    const y = clamp(b.line, 0, LINES - 1) * S + gap / 2;
+    const top = Math.max(Math.round(y - lh / 2), next);
+    next = top + lh + gap;
+    g.strokeStyle = sel ? '#fff' : '#8a93a4';
+    g.lineWidth = gap;
+    g.beginPath();
+    g.moveTo(lx + lw, top + lh / 2);
+    g.lineTo(lx + lw + 6 * dpr, y);
+    g.lineTo(W, y);
+    g.stroke();
+    g.fillStyle = sel ? '#3b4762' : '#202633';
+    g.fillRect(lx, top, lw, lh);
+    if (sel) {
+      g.strokeStyle = '#fff';
+      g.strokeRect(lx + gap / 2, top + gap / 2, lw - gap, lh - gap);
+    }
+    g.fillStyle = bad.has(k) ? '#ff6b6b' : sel ? '#fff' : '#d9dde5';
+    g.fillText(String(b.line), lx + 4 * dpr, top + lh / 2 + 0.5);
+    g.fillStyle = '#8a93a4';
+    g.fillText(String(b.logical), lx + 32 * dpr, top + lh / 2 + 0.5);
+    g.fillStyle = css(RS.phaseColour(b, ui.phase));
+    g.fillRect(lx + 44 * dpr, top + 3 * dpr, lw - 48 * dpr, lh - 6 * dpr);
+    ui.gutterHits.push({k, y0: top, y1: top + lh, y});
+  }
+}
+
+// --- The tile palette and the thing kinds ------------------------------------------------------
+
+function topPalette() {
+  return [0, ...room().colours.map(c => RS.phaseColour(c, ui.phase))];
+}
+function paintPixels(c, pixels, pal, k, flip = false) {
+  const g = c.getContext('2d');
+  g.fillStyle = '#000';
+  g.fillRect(0, 0, c.width, c.height);
+  const w = pixels[0].length;
+  pixels.forEach((row, y) => row.forEach((_, x) => {
+    const v = row[flip ? w - 1 - x : x];
+    if (!v) return;
+    g.fillStyle = css(pal[v]);
+    g.fillRect(x * k, y * k, k, k);
+  }));
+}
+function tileTitle(t) {
+  const flags = t.flags.length ? t.flags.join(', ') : 'scenery';
+  return `${t.name}: key '${keyLabel(t.key)}' (${flags})`;
+}
+
+function buildPalette() {
+  const p = $('palette');
+  p.textContent = '';
+  for (const t of tiles) {
+    const c = h('canvas');
+    c.dataset.k = sizeCrisp(c, 8, 8, 4);
+    const ph = t.flags.includes('red') ? 'red' : t.flags.includes('blue') ? 'blue' : '';
+    const b = h('button', {class: 'tile', title: tileTitle(t), onclick: () => selectTile(t.key)},
+      c, h('span', {class: 'key'}, keyLabel(t.key)), h('span', {class: 'tname'}, t.name),
+      ph && h('span', {class: 'ph ' + ph, title: `only there in the ${ph === 'red' ? 'Red' : 'Blue'} Phase`}),
+      t.flags.includes('hazard') && h('span', {class: 'hz', title: 'hazard: it kills'}, '▲'));
+    b.dataset.key = t.key;
+    p.append(b);
+  }
+}
+function buildThingTypes() {
+  const p = $('thingTypes');
+  p.textContent = '';
+  for (const type of THING_TYPES) {
+    const look = thingLook({type, args: []});
+    let pic;
+    if (look.sprite) {
+      pic = h('canvas');
+      const k = Math.max(1, Math.floor(Math.min(32 / look.sprite.w, 32 / look.sprite.h)));
+      pic.dataset.k = sizeCrisp(pic, look.sprite.w, look.sprite.h, k);
+    } else {
+      pic = h('span', {style: `color:${THING_COLOURS[type] || '#fff'};font:11px var(--mono)`}, type);
+    }
+    const b = h('button', {class: 'ttype', title: `Place a ${type}`, onclick: () => { ui.thingType = type; setTool('thing'); }},
+      h('span', {class: 'sw'}, pic), h('span', {class: 'tname'}, type));
+    b.dataset.type = type;
+    p.append(b);
+  }
+}
+function paintPalette() {
+  const pal = topPalette();
+  for (const b of $('palette').children) {
+    const t = tileMap.get(b.dataset.key), c = b.querySelector('canvas');
+    paintPixels(c, t.pixels, pal, +c.dataset.k);
+  }
+  for (const b of $('thingTypes').children) {
+    const c = b.querySelector('canvas');
+    if (!c) continue;
+    const look = thingLook({type: b.dataset.type, args: []});
+    paintPixels(c, look.ghost ? look.sprite.hollow : look.sprite.pixels, pal, +c.dataset.k);
+  }
+  const t = tileMap.get(ui.tile);
+  const box = $('curTile');
+  box.textContent = '';
+  if (!t) return;
+  const c = h('canvas');
+  paintPixels(c, t.pixels, pal, sizeCrisp(c, 8, 8, 5));
+  box.append(c, h('div', {class: 'what'}, h('b', {}, keyLabel(t.key)), ' ', t.name, h('br'),
+    h('span', {class: 'muted'}, t.flags.length ? t.flags.join(', ') : 'scenery')));
+}
+function markPalette() {
+  for (const b of $('palette').children) b.classList.toggle('on', b.dataset.key === ui.tile);
+  for (const b of $('thingTypes').children) b.classList.toggle('on', ui.tool === 'thing' && b.dataset.type === ui.thingType);
+}
+function selectTile(key) {
+  ui.tile = key;
+  if (ui.tool !== 'paint' && ui.tool !== 'rect') setTool('paint');
+  markPalette();
+  paintPalette();
+  persistSoon();
+}
+
+function setTool(tool) {
+  ui.tool = tool;
+  for (const b of $('tools').children) b.classList.toggle('on', b.dataset.tool === tool);
+  cv.style.cursor = tool === 'thing' ? 'pointer' : 'crosshair';
+  markPalette();
+  showHint();
+  redraw(false);
+  persistSoon();
+}
+function setPhase(p) {
+  ui.phase = p;
+  for (const b of $('phaseSeg').children) b.classList.toggle('on', +b.dataset.phase === p);
+  paintPalette();
+  redraw(true);
+  drawMap();
+  persistSoon();
+}
+let persistTimer = 0;
+function persistSoon() {
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(writeStore, 300);
+}
+
+// --- The status line ---------------------------------------------------------------------------
+
+function showHint() {
+  const hints = {
+    paint: 'Drag to paint. Right-click or I picks up a tile.',
+    rect: 'Drag a box to fill it with the tile.',
+    thing: `Click to place a ${ui.thingType}; drag a thing to move it; Delete removes the selected one.`,
+    start: "Click where Ash's feet go: Ash stands on the row below.",
+  };
+  $('status').textContent = hints[ui.tool];
+}
+function showAt(c) {
+  const r = room(), k = r.map[c.ty][c.tx], t = tileMap.get(k);
+  const pal = RS.paletteRows(r, ui.phase)[c.line];
+  const what = t ? `'${keyLabel(k)}' ${t.name}${t.flags.length ? ' (' + t.flags.join(', ') + ')' : ''}` : `'${k}' isn't a tile`;
+  $('status').textContent = `x ${c.tx}, y ${c.ty}   ${what}   line ${c.line}: colours ${pal.slice(1).map(i => PHYS_NAMES[i]).join(' ')}`;
+}
+
+// --- Editing on the view -----------------------------------------------------------------------
+
+function cellAt(e) {
+  const rc = cv.getBoundingClientRect();
+  const bx = ((e.clientX - rc.left) * WIDTH) / rc.width, by = ((e.clientY - rc.top) * LINES) / rc.height;
+  return {
+    tx: clamp(Math.floor(bx / 8), 0, MAP_W - 1), ty: clamp(Math.floor(by / 8), 0, MAP_H - 1),
+    line: clamp(Math.floor(by), 0, LINES - 1), bx, by,
+  };
+}
+function setCell(tx, ty, key) {
+  const r = room(), row = r.map[ty];
+  if (row[tx] === key) return false;
+  r.map[ty] = row.slice(0, tx) + key + row.slice(tx + 1);
+  return true;
+}
+function paintLine(a, b) {
+  // Every cell between the last one and this, so a quick drag leaves no gaps.
+  let x = a.tx, y = a.ty;
+  const dx = Math.abs(b.tx - x), dy = -Math.abs(b.ty - y), sx = x < b.tx ? 1 : -1, sy = y < b.ty ? 1 : -1;
+  let err = dx + dy, any = false;
+  for (;;) {
+    any = setCell(x, y, ui.tile) || any;
+    if (x === b.tx && y === b.ty) break;
+    const e2 = 2 * err;
+    if (e2 >= dy) { err += dy; x += sx; }
+    if (e2 <= dx) { err += dx; y += sy; }
+  }
+  return any;
+}
+function pickTile(c) {
+  const k = room().map[c.ty][c.tx];
+  if (!tileMap.has(k)) {
+    toast(`'${k}' isn't a tile`, 'warn');
+    return;
+  }
+  selectTile(k);
+  toast(`Picked up ${tileMap.get(k).name}`);
+}
+function thingAt(c) {
+  const things = room().things;
+  for (let k = things.length - 1; k >= 0; k--) {
+    const b = thingLook(things[k]).box;
+    if (c.bx >= b.x && c.bx < b.x + b.w && c.by >= b.y && c.by < b.y + b.h) return k;
+  }
+  return -1;
+}
+function blurActive() {
+  const a = document.activeElement;
+  if (a && a !== document.body && a.blur) a.blur();
+}
+
+cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('pointerdown', e => {
+  if (!doc) return;
+  blurActive();
+  const c = cellAt(e), r = room();
+  if (e.button === 2 || (e.button === 0 && e.altKey)) {
+    pickTile(c);
+    return;
+  }
+  if (e.button !== 0) return;
+  cv.setPointerCapture(e.pointerId);
+  if (ui.tool === 'paint') {
+    if (!tileMap.has(ui.tile)) return;
+    checkpoint();
+    ui.drag = {kind: 'paint', last: c, any: false};
+    if (paintLine(c, c)) { ui.drag.any = true; redraw(); changed(); }
+  } else if (ui.tool === 'rect') {
+    ui.drag = {kind: 'rect', a: c, b: c};
+    redraw(false);
+  } else if (ui.tool === 'thing') {
+    const k = thingAt(c);
+    if (k >= 0) {
+      const t = r.things[k];
+      ui.drag = {kind: 'thing', k, from: c, x: t.x, y: t.y, moved: false};
+    } else {
+      if (r.things.length >= RS.MAX_THINGS) toast(`A room has at most ${RS.MAX_THINGS} things.`, 'warn');
+      checkpoint();
+      const t = {type: ui.thingType, x: c.tx, y: c.ty, args: [], before: [], after: ''};
+      fitThing(t);
+      r.things.push(t);
+      ui.drag = {kind: 'thing', k: r.things.length - 1, from: c, x: t.x, y: t.y, moved: true};
+      changed();
+    }
+    ui.selThing = ui.drag.k;
+    renderThings();
+    redraw();
+  } else if (ui.tool === 'start') {
+    checkpoint();
+    ui.drag = {kind: 'start'};
+    r.start = [c.tx, c.ty];
+    renderStart();
+    redraw();
+    changed();
+  }
+});
+cv.addEventListener('pointermove', e => {
+  if (!doc) return;
+  const c = cellAt(e), d = ui.drag, r = room();
+  const moved = !ui.hover || ui.hover.tx !== c.tx || ui.hover.ty !== c.ty;
+  ui.hover = c;
+  showAt(c);
+  if (d && d.kind === 'paint') {
+    if (paintLine(d.last, c)) { d.any = true; redraw(); changed(); }
+    d.last = c;
+  } else if (d && d.kind === 'rect') {
+    d.b = c;
+    redraw(false);
+  } else if (d && d.kind === 'thing') {
+    const t = r.things[d.k];
+    const to = {type: t ? t.type : '', x: d.x + c.tx - d.from.tx, y: d.y + c.ty - d.from.ty};
+    fitThing(to);
+    if (t && (t.x !== to.x || t.y !== to.y)) {
+      if (!d.moved) checkpoint();
+      d.moved = true;
+      t.x = to.x;
+      t.y = to.y;
+      redraw();
+      changed();
+    }
+  } else if (d && d.kind === 'start') {
+    if (r.start[0] !== c.tx || r.start[1] !== c.ty) {
+      r.start = [c.tx, c.ty];
+      renderStart();
+      redraw();
+      changed();
+    }
+  } else if (moved) {
+    redraw(false);
+  }
+});
+cv.addEventListener('pointerup', () => {
+  const d = ui.drag;
+  ui.drag = null;
+  if (!d) return;
+  if (d.kind === 'paint' && !d.any) {
+    // A stroke that changed nothing isn't worth an undo step.
+    undoStack.pop();
+    updateUndo();
+  } else if (d.kind === 'rect') {
+    const x0 = Math.min(d.a.tx, d.b.tx), x1 = Math.max(d.a.tx, d.b.tx);
+    const y0 = Math.min(d.a.ty, d.b.ty), y1 = Math.max(d.a.ty, d.b.ty);
+    if (tileMap.has(ui.tile)) {
+      checkpoint();
+      let any = false;
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) any = setCell(x, y, ui.tile) || any;
+      if (any) changed(); else undoStack.pop();
+      updateUndo();
+    }
+    redraw();
+  } else if (d.kind === 'thing') {
+    renderThings();
+  }
+});
+cv.addEventListener('pointercancel', () => { ui.drag = null; redraw(false); });
+cv.addEventListener('pointerleave', () => {
+  ui.hover = null;
+  if (!ui.drag) showHint();
+  redraw(false);
+});
+
+// The gutter: click to add a band at that line, drag a marker to move it.
+function gutterLine(e) {
+  const rc = gutter.getBoundingClientRect();
+  const py = ((e.clientY - rc.top) * gutter.height) / rc.height;
+  return {py, line: clamp(Math.floor(py / ui.S), 0, LINES - 1)};
+}
+function gutterHit(py) {
+  const near = 4 * ui.dpr;
+  for (let i = ui.gutterHits.length - 1; i >= 0; i--) {
+    const hit = ui.gutterHits[i];
+    if ((py >= hit.y0 && py < hit.y1) || Math.abs(py - hit.y) <= near) return hit;
+  }
+  return null;
+}
+function sortBands(r) {
+  const sel = r.bands[ui.selBand];
+  r.bands.sort((a, b) => a.line - b.line || a.logical - b.logical);
+  ui.selBand = sel ? r.bands.indexOf(sel) : -1;
+}
+function addBandAt(line) {
+  const r = room();
+  if (r.bands.length >= 8) {
+    toast('A room has at most 8 bands.', 'warn');
+    return false;
+  }
+  checkpoint();
+  // It starts as the colour that's already there, so adding it changes nothing until you pick one.
+  const at = clamp(line, 0, LINES - 1);
+  const red = RS.paletteRows(r, 0)[at][1], blue = RS.paletteRows(r, 1)[at][1];
+  const b = {line: clamp(line, 2, LINES - 1), logical: 1, r: red, b: blue === RS.SWAP[red] ? null : blue, before: [], after: ''};
+  r.bands.push(b);
+  ui.selBand = r.bands.length - 1;
+  sortBands(r);
+  renderBands();
+  redraw();
+  changed();
+  return true;
+}
+gutter.addEventListener('pointerdown', e => {
+  if (!doc || e.button !== 0) return;
+  blurActive();
+  const {py, line} = gutterLine(e);
+  const hit = gutterHit(py);
+  if (hit) {
+    ui.selBand = hit.k;
+    ui.drag = {kind: 'band', k: hit.k, moved: false};
+    markBandRow();
+    redraw(false);
+  } else if (addBandAt(line)) {
+    ui.drag = {kind: 'band', k: ui.selBand, moved: true};
+  } else {
+    return;
+  }
+  gutter.setPointerCapture(e.pointerId);
+});
+gutter.addEventListener('pointermove', e => {
+  if (!doc) return;
+  const {py, line} = gutterLine(e), d = ui.drag, r = room();
+  if (d && d.kind === 'band') {
+    const b = r.bands[d.k], at = clamp(line, 2, LINES - 1);
+    if (b && b.line !== at) {
+      if (!d.moved) checkpoint();
+      d.moved = true;
+      b.line = at;
+      const inp = document.querySelector(`#bandsBox tr[data-k="${d.k}"] input`);
+      if (inp) inp.value = at;
+      redraw();
+      changed();
+    }
+    return;
+  }
+  const hit = gutterHit(py);
+  gutter.style.cursor = hit ? 'ns-resize' : r.bands.length >= 8 ? 'default' : 'copy';
+  const pal = RS.paletteRows(r, ui.phase)[line];
+  $('status').textContent = `line ${line}: colours ${pal.slice(1).map(i => PHYS_NAMES[i]).join(' ')}   ` +
+    (hit ? 'drag to move this band' : r.bands.length >= 8 ? '(8 bands: no more fit)' : 'click to add a band here');
+});
+gutter.addEventListener('pointerup', () => {
+  const d = ui.drag;
+  ui.drag = null;
+  if (d && d.kind === 'band') {
+    sortBands(room());
+    renderBands();
+    redraw(false);
+  }
+});
+gutter.addEventListener('pointerleave', () => { if (!ui.drag) showHint(); });
+
+// --- Rooms ---------------------------------------------------------------------------------------
+
+function goRoom(k) {
+  ui.cur = clamp(k, 0, doc.rooms.length - 1);
+  ui.selThing = ui.selBand = -1;
+  $('roomSel').value = ui.cur;
+  renderProps();
+  paintPalette();
+  showHint();
+  redraw();
+  drawMap();
+  persistSoon();
+}
+function renderRoomList() {
+  const s = $('roomSel');
+  s.textContent = '';
+  doc.rooms.forEach((r, k) => s.append(new Option(`${k + 1}. ${r.id}: ${r.name}`, k)));
+  s.value = ui.cur;
+}
+function idCheck(except) {
+  return id => RS.idProblem(id) || (doc.rooms.some(r => r !== except && r.id === id) ? `There's already a room called '${id}'.` : '');
+}
+function freeId(base) {
+  for (let n = 2; ; n++) {
+    const id = `${base}${n}`;
+    if (!doc.rooms.some(r => r.id === id)) return id;
+  }
+}
+async function newRoom() {
+  const id = await ask('New room', "Its id: one word, which other rooms' exits use.", freeId('room'), idCheck(null));
+  if (id == null) return;
+  checkpoint();
+  doc.rooms.splice(ui.cur + 1, 0, RS.newRoom(id));
+  renderRoomList();
+  goRoom(ui.cur + 1);
+  changed();
+}
+async function duplicateRoom() {
+  const r = room();
+  const id = await ask('Duplicate room', `A copy of ${r.id}, with no exits. Its id:`, freeId(r.id + '_'), idCheck(null));
+  if (id == null) return;
+  checkpoint();
+  const copy = JSON.parse(JSON.stringify(r));
+  Object.assign(copy, {id, start: null, notes: {}, pre: [''], src: null, srcCanon: null});
+  for (const d of DIRS) copy.exits[d] = '-';
+  doc.rooms.splice(ui.cur + 1, 0, copy);
+  renderRoomList();
+  goRoom(ui.cur + 1);
+  changed();
+}
+async function renameRoom() {
+  const r = room(), old = r.id;
+  const id = await ask('Rename room', `A new id for ${old}. Exits that lead here follow it.`, old, idCheck(r));
+  if (id == null || id === old) return;
+  checkpoint();
+  r.id = id;
+  // (If another room still has the old id, exits to it stay.)
+  if (!doc.rooms.some(o => o.id === old)) {
+    for (const o of doc.rooms) for (const d of DIRS) if (o.exits[d] === old) o.exits[d] = id;
+  }
+  refreshAll();
+  changed();
+}
+function deleteRoom() {
+  const r = room();
+  if (doc.rooms.length === 1) {
+    toast('There must be at least one room.', 'warn');
+    return;
+  }
+  const others = doc.rooms.filter(o => o.id === r.id).length > 1;
+  const refs = others ? 0 : doc.rooms.filter(o => o !== r && DIRS.some(d => o.exits[d] === r.id)).length;
+  const msg = `Delete room ${r.id} (${r.name})?` + (refs ? ` Exits to it from ${refs} room${refs > 1 ? 's' : ''} will be cleared.` : '') +
+    (ui.cur === 0 ? ' The next room becomes the first, where the game starts.' : '');
+  if (!confirm(msg)) return;
+  checkpoint();
+  doc.rooms.splice(ui.cur, 1);
+  if (!others) for (const o of doc.rooms) for (const d of DIRS) if (o.exits[d] === r.id) o.exits[d] = '-';
+  ui.cur = Math.min(ui.cur, doc.rooms.length - 1);
+  refreshAll();
+  changed();
+}
+
+// --- The room's details --------------------------------------------------------------------------
+
+// A text field makes one undo step however much is typed into it.
+function onEdit(input, apply) {
+  input.addEventListener('focus', () => { input._cp = false; });
+  input.addEventListener('input', () => {
+    if (!input._cp) checkpoint();
+    input._cp = true;
+    apply(input.value);
+    changed();
+  });
+}
+function onPick(select, apply) {
+  select.addEventListener('change', () => {
+    checkpoint();
+    apply(select.value);
+    changed();
+  });
+}
+
+// The Red Phase colour, or the Blue Phase one with 'auto' for the opposite of the Red.
+function colourSelect(get, set, blue) {
+  const s = h('select', {class: 'colour' + (blue ? ' blue' : ''), title: blue ? 'Blue Phase' : 'Red Phase'});
+  if (blue) s.append(new Option('auto', ''));
+  PHYS_NAMES.forEach((n, i) => {
+    const o = new Option(n, i);
+    o.style.background = css(i);
+    o.style.color = inkOn(i);
+    s.append(o);
+  });
+  s.sync = () => {
+    const c = get();
+    s.value = blue ? (c.b == null ? '' : c.b) : c.r;
+    const eff = blue ? RS.blueOf(c) : c.r;
+    if (blue) {
+      s.options[0].text = `auto: ${PHYS_NAMES[RS.SWAP[c.r]]}`;
+      s.options[0].style.background = css(RS.SWAP[c.r]);
+      s.options[0].style.color = inkOn(RS.SWAP[c.r]);
+    }
+    s.style.background = css(eff);
+    s.style.color = inkOn(eff);
+  };
+  onPick(s, v => {
+    set(v === '' ? null : +v);
+    s.sync();
+    if (s.partner) s.partner.sync();
+    paintPalette();
+    redraw();
+  });
+  s.sync();
+  return s;
+}
+function colourPair(c) {
+  const red = colourSelect(() => c, v => { c.r = v; }, false);
+  const blue = colourSelect(() => c, v => { c.b = v; }, true);
+  red.partner = blue;
+  return [red, blue];
+}
+
+function renderProps() {
+  const P = $('props');
+  P.textContent = '';
+  P.append(
+    h('div', {id: 'roomBox'}), h('div', {id: 'startBox'}), h('div', {id: 'coloursBox'}),
+    h('div', {id: 'bandsBox'}), h('div', {id: 'thingsBox'}));
+  renderRoomFields();
+  renderStart();
+  renderColours();
+  renderBands();
+  renderThings();
+}
+
+function renderRoomFields() {
+  const r = room(), box = $('roomBox');
+  box.textContent = '';
+  const name = h('input', {id: 'nameIn', value: r.name, spellcheck: false, title: 'Shown in the status bar: 20 characters at most, in capitals'});
+  const count = h('span', {class: 'count'});
+  const recount = () => {
+    const n = r.name.trim().length;
+    count.textContent = `${n}/20`;
+    count.classList.toggle('over', n > 20);
+  };
+  recount();
+  onEdit(name, v => {
+    r.name = v;
+    recount();
+    renderRoomList();
+  });
+  const before = ui.cur ? RS.sectors(doc)[ui.cur - 1] : 1;
+  const sector = h('select', {title: 'Sectors are 1-5. A room without one is in the sector of the room before it.'},
+    new Option(ui.cur ? `${before}, as the room before` : '1, as the first room', ''),
+    [1, 2, 3, 4, 5].map(n => new Option(String(n), n)));
+  if (r.sector != null && !(r.sector >= 1 && r.sector <= 5)) sector.append(new Option(`${r.sector} (not 1-5)`, r.sector));
+  sector.value = r.sector == null ? '' : r.sector;
+  onPick(sector, v => { r.sector = v === '' ? null : +v; });
+  const exit = d => {
+    const s = h('select', {title: `Where the ${d} edge leads`});
+    s.append(new Option('- none', '-'));
+    const ids = [...new Set(doc.rooms.map(o => o.id))];
+    for (const id of ids) s.append(new Option(id === r.id ? `${id} (this room)` : id, id));
+    if (r.exits[d] !== '-' && !ids.includes(r.exits[d])) s.append(new Option(`${r.exits[d]} (missing)`, r.exits[d]));
+    s.value = r.exits[d];
+    onPick(s, v => {
+      r.exits[d] = v;
+      // The way back, unless the other room already goes somewhere from that side.
+      const t = doc.rooms.find(o => o.id === v);
+      if (ui.linkBack && t && t !== r && t.exits[OPPOSITE[d]] === '-') t.exits[OPPOSITE[d]] = r.id;
+    });
+    return h('label', {class: 'ex'}, d, s);
+  };
+  const back = h('input', {type: 'checkbox', checked: ui.linkBack, onchange: e => { ui.linkBack = e.target.checked; persistSoon(); }});
+  box.append(
+    h('h2', {}, 'Room ', h('span', {class: 'n muted'}, `${ui.cur + 1} of ${doc.rooms.length}`)),
+    h('div', {class: 'row'}, h('span', {class: 'lab'}, 'Id'), h('code', {}, r.id),
+      h('button', {onclick: renameRoom, title: 'Change the id'}, 'Rename…')),
+    h('div', {class: 'row'}, h('span', {class: 'lab'}, 'Name'), name, count),
+    h('div', {class: 'row'}, h('span', {class: 'lab'}, 'Sector'), sector),
+    h('div', {class: 'exits'},
+      h('span'), exit('up'), h('span'),
+      exit('left'), h('div', {class: 'me', title: 'this room'}, r.id), exit('right'),
+      h('span'), exit('down'), h('span')),
+    h('label', {title: "When you set an exit, give the other room an exit back here, if it hasn't one on that side"}, back, 'Set the way back too'));
+}
+
+function renderStart() {
+  const r = room(), box = $('startBox'), first = ui.cur === 0;
+  box.textContent = '';
+  const why = first ? 'Where a new game begins: the first room needs one.' : 'Where the cage brings Ash into this sector, if it does.';
+  box.append(h('h2', {}, 'Start'));
+  if (!r.start) {
+    box.append(h('p', {class: first ? 'note' : 'hint'}, why),
+      h('button', {onclick: () => setTool('start')}, 'Pick the Start tool'));
+    return;
+  }
+  const num = i => {
+    const inp = h('input', {type: 'number', value: r.start[i], min: 0, max: i ? MAP_H - 1 : MAP_W - 1});
+    onEdit(inp, v => {
+      if (/^-?\d+$/.test(v.trim())) r.start[i] = parseInt(v, 10);
+      redraw();
+    });
+    return inp;
+  };
+  const remove = h('button', {class: 'x', title: 'Remove the start', onclick: () => {
+    checkpoint();
+    r.start = null;
+    renderStart();
+    redraw();
+    changed();
+  }}, '✕');
+  box.append(h('div', {class: 'row'}, h('span', {class: 'lab'}, 'x'), num(0), h('span', {class: 'muted'}, 'y'), num(1), remove),
+    h('p', {class: 'hint'}, `${why} In tiles: Ash's feet are on row y, standing on row y + 1. Or use the Start tool (S).`));
+}
+
+function renderColours() {
+  const r = room(), box = $('coloursBox');
+  box.textContent = '';
+  const t = h('table', {class: 'list'}, h('tr', {}, h('th', {}, 'Colour'), h('th', {}, 'Red Phase'), h('th', {}, 'Blue Phase')));
+  r.colours.forEach((c, i) => t.append(h('tr', {}, h('td', {class: 'muted'}, ROLE[i + 1]), ...colourPair(c).map(s => h('td', {}, s)))));
+  box.append(h('h2', {}, 'Colours'),
+    h('p', {class: 'hint'}, 'What colours 1-3 are at the top of the room. Tiles use 1 most, 2 next, and 3 for highlights.'), t);
+}
+
+function markBandRow() {
+  for (const tr of document.querySelectorAll('#bandsBox tr[data-k]')) tr.classList.toggle('sel', +tr.dataset.k === ui.selBand);
+}
+function renderBands() {
+  const r = room(), box = $('bandsBox');
+  box.textContent = '';
+  const t = h('table', {class: 'list'},
+    h('tr', {}, h('th', {}, 'Line'), h('th', {}, 'Colour'), h('th', {}, 'Red Phase'), h('th', {}, 'Blue Phase'), h('th')));
+  r.bands.forEach((b, k) => {
+    const line = h('input', {type: 'number', value: b.line, min: 2, max: LINES - 1, title: 'From this line down (2-175)'});
+    onEdit(line, v => {
+      if (/^-?\d+$/.test(v.trim())) b.line = parseInt(v, 10);
+      redraw();
+    });
+    line.addEventListener('change', () => {
+      const before = r.bands.slice();
+      sortBands(r);
+      if (r.bands.some((x, i) => x !== before[i])) renderBands();
+    });
+    const logical = h('select', {class: 'logical', title: 'Which colour it changes: 1 main, 2 second, 3 highlight'},
+      [1, 2, 3].map(n => new Option(String(n), n)));
+    logical.value = b.logical;
+    onPick(logical, v => {
+      b.logical = +v;
+      redraw();
+    });
+    const del = h('button', {class: 'x', title: 'Remove this band', onclick: () => {
+      checkpoint();
+      r.bands.splice(k, 1);
+      ui.selBand = -1;
+      renderBands();
+      redraw();
+      changed();
+    }}, '✕');
+    const tr = h('tr', {onclick: () => { ui.selBand = k; markBandRow(); redraw(false); }},
+      h('td', {}, line), h('td', {}, logical), ...colourPair(b).map(s => h('td', {}, s)), h('td', {}, del));
+    tr.dataset.k = k;
+    t.append(tr);
+  });
+  const add = h('button', {disabled: r.bands.length >= 8, onclick: () => {
+    // In the middle of the biggest gap, where it's least likely to be too close to another.
+    const lines = [0, ...r.bands.map(b => b.line).sort((a, b) => a - b), LINES];
+    let at = 88, gap = 0;
+    for (let i = 1; i < lines.length; i++) {
+      if (lines[i] - lines[i - 1] > gap) {
+        gap = lines[i] - lines[i - 1];
+        at = Math.floor((lines[i] + lines[i - 1]) / 2);
+      }
+    }
+    addBandAt(at);
+  }}, 'Add band');
+  box.append(h('h2', {}, 'Bands ', h('span', {class: 'n muted'}, `${r.bands.length} of 8`)),
+    h('p', {class: 'hint'}, 'Each changes one colour from a line down. Click beside the view to add one there; drag its marker to move it.'),
+    ...(r.bands.length ? [t] : []), add);
+  markBandRow();
+}
+
+function renderThings() {
+  const r = room(), box = $('thingsBox');
+  if (!box) return;
+  box.textContent = '';
+  const t = h('table', {class: 'list'},
+    h('tr', {}, h('th', {}, 'Kind'), h('th', {}, 'x'), h('th', {}, 'y'), h('th', {title: 'For an enemy, 1 faces it left'}, 'Arg'), h('th')));
+  r.things.forEach((th, k) => {
+    const type = h('select', {}, THING_TYPES.map(n => new Option(n, n)));
+    if (!THING_TYPES.includes(th.type)) type.append(new Option(`${th.type} (unknown)`, th.type));
+    type.value = th.type;
+    onPick(type, v => {
+      th.type = v;
+      redraw();
+    });
+    const num = (key, max) => {
+      const inp = h('input', {type: 'number', value: th[key], min: 0, max});
+      onEdit(inp, v => {
+        if (/^-?\d+$/.test(v.trim())) th[key] = parseInt(v, 10);
+        redraw();
+      });
+      return inp;
+    };
+    // '#' would start a comment in rooms.txt.
+    const arg = h('input', {class: 'arg', value: th.args.join(' '), spellcheck: false, title: 'A number for the thing: for an enemy, 1 faces it left'});
+    onEdit(arg, v => {
+      th.args = v.replace(/#/g, '').trim().split(/\s+/).filter(Boolean);
+      redraw();
+    });
+    const del = h('button', {class: 'x', title: 'Remove it', onclick: e => {
+      e.stopPropagation();
+      removeThing(k);
+    }}, '✕');
+    const tr = h('tr', {class: k === ui.selThing ? 'sel' : '', onclick: () => {
+      ui.selThing = k;
+      for (const row of t.querySelectorAll('tr[data-k]')) row.classList.toggle('sel', +row.dataset.k === k);
+      redraw(false);
+    }}, h('td', {}, type), h('td', {}, num('x', MAP_W - 1)), h('td', {}, num('y', MAP_H - 1)), h('td', {}, arg), h('td', {}, del));
+    tr.dataset.k = k;
+    t.append(tr);
+  });
+  box.append(h('h2', {}, 'Things ', h('span', {class: 'n muted'}, `${r.things.length} of ${RS.MAX_THINGS}`)),
+    r.things.length ? t : h('p', {class: 'hint'}, 'None yet. Pick the Things tool (T), choose a kind on the left, and click the room.'));
+}
+function removeThing(k) {
+  const r = room();
+  if (!r.things[k]) return;
+  checkpoint();
+  r.things.splice(k, 1);
+  ui.selThing = -1;
+  renderThings();
+  redraw();
+  changed();
+}
+
+// --- The map of rooms --------------------------------------------------------------------------
+
+const CELL_W = 92, CELL_H = 66, THUMB_W = 64, THUMB_H = 44;
+const D = {left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1]};
+const thumbs = new Map();
+
+// Each room goes where its exits put it from the room it was reached from, or in the nearest free
+// place. Rooms the first room doesn't lead to fill rows below, as wide as the panel.
+function layoutMap() {
+  const rooms = doc.rooms, index = new Map();
+  rooms.forEach((r, k) => { if (!index.has(r.id)) index.set(r.id, k); });
+  const pos = rooms.map(() => null), taken = new Set();
+  const place = (k, x, y) => {
+    for (let rad = 0; ; rad++) {
+      for (let dy = -rad; dy <= rad; dy++) {
+        for (let dx = -rad; dx <= rad; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== rad || taken.has(`${x + dx},${y + dy}`)) continue;
+          taken.add(`${x + dx},${y + dy}`);
+          pos[k] = [x + dx, y + dy];
+          return;
+        }
+      }
+    }
+  };
+  let shelf = null;
+  for (let s = 0; s < rooms.length; s++) {
+    if (pos[s]) continue;
+    if (!shelf) {
+      place(s, 0, 0);
+    } else {
+      let x = shelf.x0, y = shelf.y;
+      while (taken.has(`${x},${y}`)) {
+        if (++x >= shelf.x0 + shelf.w) {
+          x = shelf.x0;
+          y++;
+        }
+      }
+      place(s, x, y);
+    }
+    const queue = [s];
+    while (queue.length) {
+      const k = queue.shift();
+      for (const d of DIRS) {
+        const t = index.get(rooms[k].exits[d]);
+        if (t === undefined || pos[t]) continue;
+        place(t, pos[k][0] + D[d][0], pos[k][1] + D[d][1]);
+        queue.push(t);
+      }
+    }
+    if (!shelf) {
+      const placed = pos.filter(Boolean), xs = placed.map(p => p[0]);
+      const fit = Math.floor(($('mapWrap').clientWidth - 12) / CELL_W);
+      shelf = {x0: Math.min(...xs), y: Math.max(...placed.map(p => p[1])) + 1, w: Math.max(fit, Math.max(...xs) - Math.min(...xs) + 1, 1)};
+    }
+  }
+  const mx = Math.min(...pos.map(p => p[0])), my = Math.min(...pos.map(p => p[1]));
+  return {pos: pos.map(([x, y]) => [x - mx, y - my]), index};
+}
+function thumb(r, k) {
+  const key = ui.phase + '\n' + RS.roomLines(r).join('\n');
+  let e = thumbs.get(k);
+  if (!e || e.key !== key) {
+    const c = e ? e.c : document.createElement('canvas');
+    c.width = WIDTH;
+    c.height = LINES;
+    const g = c.getContext('2d'), im = g.createImageData(WIDTH, LINES);
+    RS.renderRoom(r, tileMap, ui.phase, im.data);
+    g.putImageData(im, 0, 0);
+    e = {key, c};
+    thumbs.set(k, e);
+  }
+  return e.c;
+}
+function drawMap() {
+  if (!doc || !doc.rooms.length) return;
+  const {pos, index} = layoutMap(), dpr = window.devicePixelRatio || 1;
+  const cols = Math.max(...pos.map(p => p[0])) + 1, rows = Math.max(...pos.map(p => p[1])) + 1;
+  mapCv.width = Math.round(cols * CELL_W * dpr);
+  mapCv.height = Math.round(rows * CELL_H * dpr);
+  mapCv.style.width = cols * CELL_W + 'px';
+  mapCv.style.height = rows * CELL_H + 'px';
+  const g = mapCv.getContext('2d');
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const box = k => ({x: pos[k][0] * CELL_W + (CELL_W - THUMB_W) / 2, y: pos[k][1] * CELL_H + 4, w: THUMB_W, h: THUMB_H});
+  const side = (b, d) => ({
+    left: [b.x, b.y + b.h / 2], right: [b.x + b.w, b.y + b.h / 2], up: [b.x + b.w / 2, b.y], down: [b.x + b.w / 2, b.y + b.h],
+  })[d];
+  doc.rooms.forEach((r, k) => {
+    for (const d of DIRS) {
+      const t = index.get(r.exits[d]);
+      if (t === undefined || t === k) continue;
+      const both = doc.rooms[t].exits[OPPOSITE[d]] === r.id;
+      if (both && t < k) continue;
+      const [x0, y0] = side(box(k), d), [x1, y1] = side(box(t), OPPOSITE[d]);
+      g.strokeStyle = both ? '#7f8aa3' : '#e0a040';
+      g.lineWidth = 2;
+      g.setLineDash(both ? [] : [4, 3]);
+      g.beginPath();
+      g.moveTo(x0, y0);
+      g.lineTo(x1, y1);
+      g.stroke();
+      g.setLineDash([]);
+      if (!both) {
+        const a = Math.atan2(y1 - y0, x1 - x0);
+        g.fillStyle = '#e0a040';
+        g.beginPath();
+        g.moveTo(x1, y1);
+        g.lineTo(x1 - 7 * Math.cos(a - 0.45), y1 - 7 * Math.sin(a - 0.45));
+        g.lineTo(x1 - 7 * Math.cos(a + 0.45), y1 - 7 * Math.sin(a + 0.45));
+        g.fill();
+      }
+    }
+  });
+  ui.mapHits = [];
+  const sector = RS.sectors(doc);
+  g.font = '11px ui-monospace, Menlo, monospace';
+  g.textAlign = 'center';
+  g.textBaseline = 'top';
+  doc.rooms.forEach((r, k) => {
+    const b = box(k);
+    g.imageSmoothingEnabled = true;
+    g.imageSmoothingQuality = 'high';
+    g.drawImage(thumb(r, k), b.x, b.y, b.w, b.h);
+    g.strokeStyle = k === ui.cur ? '#fff' : '#3a4252';
+    g.lineWidth = k === ui.cur ? 2 : 1;
+    g.strokeRect(b.x - 0.5, b.y - 0.5, b.w + 1, b.h + 1);
+    g.fillStyle = 'rgba(8,10,14,.8)';
+    g.fillRect(b.x, b.y, 14, 12);
+    g.fillStyle = '#d9dde5';
+    g.textAlign = 'left';
+    g.fillText(String(sector[k]), b.x + 3, b.y + 1);
+    g.textAlign = 'center';
+    if (ui.errorRooms.has(k)) {
+      g.fillStyle = '#ff6b6b';
+      g.beginPath();
+      g.arc(b.x + b.w - 1, b.y + 1, 4, 0, 7);
+      g.fill();
+    }
+    g.fillStyle = k === ui.cur ? '#fff' : '#a8b0c0';
+    let label = `${k + 1} ${r.id}`;
+    while (label.length > 3 && g.measureText(label).width > CELL_W - 4) label = label.slice(0, -2) + '…';
+    g.fillText(label, b.x + b.w / 2, b.y + b.h + 3);
+    ui.mapHits.push({k, x0: b.x - 4, y0: b.y - 2, x1: b.x + b.w + 4, y1: b.y + b.h + 16});
+  });
+  thumbs.forEach((_, k) => { if (k >= doc.rooms.length) thumbs.delete(k); });
+}
+mapCv.addEventListener('click', e => {
+  const rc = mapCv.getBoundingClientRect(), x = e.clientX - rc.left, y = e.clientY - rc.top;
+  const hit = ui.mapHits.find(m => x >= m.x0 && x < m.x1 && y >= m.y0 && y < m.y1);
+  if (hit) goRoom(hit.k);
+});
+
+// --- Problems ------------------------------------------------------------------------------------
+
+function renderProblems() {
+  const probs = RS.validate(doc, tiles, THING_TYPES, THING_BOX);
+  ui.errorRooms = new Set(probs.filter(p => p.level === 'error').map(p => p.room));
+  const ul = $('problems');
+  ul.textContent = '';
+  const errs = probs.filter(p => p.level === 'error').length, warns = probs.length - errs;
+  const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+  $('probCount').textContent = probs.length ? [errs && plural(errs, 'error'), warns && plural(warns, 'warning')].filter(Boolean).join(', ') : '';
+  $('probCount').style.color = errs ? 'var(--err)' : warns ? 'var(--warn)' : '';
+  if (!probs.length) ul.append(h('li', {class: 'ok'}, 'None: the build should take these rooms.'));
+  for (const p of probs) {
+    const r = doc.rooms[p.room];
+    ul.append(h('li', {class: p.level, onclick: () => { if (r) goRoom(p.room); }},
+      h('span', {class: 'lv'}, p.level), r ? h('span', {class: 'rid'}, r.id) : null, h('span', {}, p.msg)));
+  }
+}
+
+// --- Whole-page refreshes ------------------------------------------------------------------------
+
+function refreshAll() {
+  renderRoomList();
+  renderProps();
+  paintPalette();
+  markPalette();
+  showHint();
+  redraw();
+  renderProblems();
+  drawMap();
+}
+
+// --- Loading and saving --------------------------------------------------------------------------
+
+async function fetchText(url) {
+  const r = await fetch(url, {cache: 'no-cache'});
+  if (!r.ok) throw new Error(`${url}: ${r.status} ${r.statusText}`);
+  return r.text();
+}
+function loadText(text, source) {
+  let d;
+  try {
+    d = RS.parseRooms(text, source);
+    if (!d.rooms.length) throw new Error('there are no rooms in it');
+  } catch (e) {
+    return e.message;
+  }
+  checkpoint();
+  doc = d;
+  ui.cur = 0;
+  ui.selThing = ui.selBand = -1;
+  refreshAll();
+  changed();
+  toast(`Loaded ${d.rooms.length} room${d.rooms.length > 1 ? 's' : ''} from ${source}.`);
+  return '';
+}
+function download() {
+  const text = RS.serializeRooms(doc);
+  const a = h('a', {href: URL.createObjectURL(new Blob([text], {type: 'text/plain'})), download: 'rooms.txt'});
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  const errs = RS.validate(doc, tiles, THING_TYPES, THING_BOX).filter(p => p.level === 'error').length;
+  toast(errs ? `Downloaded rooms.txt. It has ${errs} problem${errs > 1 ? 's' : ''} to fix before it builds.` : 'Downloaded rooms.txt.', errs ? 'warn' : '');
+}
+async function copyText() {
+  const text = RS.serializeRooms(doc);
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (e) {
+    // Older browsers, or a page not served over https or localhost.
+    const ta = h('textarea', {value: text, style: 'position:fixed;opacity:0'});
+    document.body.append(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    if (!ok) {
+      toast("The browser wouldn't copy: use Download instead.", 'warn');
+      return;
+    }
+  }
+  toast('Copied rooms.txt to the clipboard.');
+}
+async function discard() {
+  if (!confirm("Throw away the work kept in this browser and go back to the repo's rooms.txt? Download yours first if you want to keep it. (Undo brings it back while this page is open.)")) return;
+  try {
+    baseText = await fetchText('../rooms/rooms.txt');
+  } catch (e) {
+    if (baseText == null) {
+      toast(`Couldn't fetch rooms.txt: ${e.message}`, 'warn');
+      return;
+    }
+  }
+  const err = loadText(baseText, 'rooms.txt');
+  if (err) toast(err, 'warn');
+  $('banner').hidden = true;
+}
+
+function ask(title, text, value, check) {
+  return new Promise(resolve => {
+    const d = $('dlgAsk'), inp = $('askIn'), ok = $('askOk');
+    $('askTitle').textContent = title;
+    $('askText').textContent = text;
+    inp.value = value;
+    const recheck = () => {
+      const m = check(inp.value.trim());
+      $('askErr').textContent = m;
+      ok.disabled = !!m;
+    };
+    let answered = false;
+    const done = v => {
+      if (answered) return;
+      answered = true;
+      d.close();
+      resolve(v);
+    };
+    inp.oninput = recheck;
+    inp.onkeydown = e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (!ok.disabled) done(inp.value.trim());
+      }
+    };
+    ok.onclick = () => done(inp.value.trim());
+    $('askCancel').onclick = () => done(null);
+    d.onclose = () => done(null);
+    recheck();
+    d.showModal();
+    inp.select();
+  });
+}
+
+// --- Keys ----------------------------------------------------------------------------------------
+
+document.addEventListener('keydown', e => {
+  if (!doc || document.querySelector('dialog[open]')) return;
+  const t = e.target;
+  const typing = t.matches && t.matches('input:not([type=checkbox]), textarea, select');
+  const mod = e.ctrlKey || e.metaKey, key = e.key.toLowerCase();
+  if (typing) {
+    if (e.key === 'Escape') t.blur();
+    return;
+  }
+  if (mod && key === 'z') {
+    e.preventDefault();
+    if (e.shiftKey) redo(); else undo();
+    return;
+  }
+  if (mod && key === 'y') {
+    e.preventDefault();
+    redo();
+    return;
+  }
+  if (mod || e.altKey) return;
+  const tools = {p: 'paint', r: 'rect', t: 'thing', s: 'start'};
+  if (tools[key]) setTool(tools[key]);
+  else if (key === 'i' && ui.hover) pickTile(ui.hover);
+  else if (key === 'f') setPhase(1 - ui.phase);
+  else if (key === 'g') { ui.grid = $('cGrid').checked = !ui.grid; redraw(false); persistSoon(); }
+  else if (key === '[') goRoom(ui.cur - 1);
+  else if (key === ']') goRoom(ui.cur + 1);
+  else if ((e.key === 'Delete' || e.key === 'Backspace') && ui.selThing >= 0) { e.preventDefault(); removeThing(ui.selThing); }
+  else if (e.key === 'Escape') {
+    if (ui.drag && ui.drag.kind === 'rect') ui.drag = null;
+    ui.selThing = ui.selBand = -1;
+    renderThings();
+    markBandRow();
+    redraw(false);
+  } else if (e.key === '?') $('dlgHelp').showModal();
+  else return;
+  e.preventDefault();
+});
+
+// --- Start-up ------------------------------------------------------------------------------------
+
+function wire() {
+  $('bOpen').onclick = () => $('fileIn').click();
+  $('fileIn').onchange = async e => {
+    const f = e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    const err = loadText(await f.text(), f.name);
+    if (err) banner(`That file didn't load: ${err}`, 'err');
+  };
+  $('bPaste').onclick = () => {
+    $('pasteErr').textContent = '';
+    $('dlgPaste').showModal();
+    $('pasteText').focus();
+  };
+  $('pasteCancel').onclick = () => $('dlgPaste').close();
+  $('pasteLoad').onclick = () => {
+    const err = loadText($('pasteText').value, 'pasted text');
+    if (err) $('pasteErr').textContent = err;
+    else $('dlgPaste').close();
+  };
+  $('bDownload').onclick = download;
+  $('bCopy').onclick = copyText;
+  $('bUndo').onclick = undo;
+  $('bRedo').onclick = redo;
+  $('bDiscard').onclick = discard;
+  $('bHelp').onclick = () => $('dlgHelp').showModal();
+  $('helpClose').onclick = () => $('dlgHelp').close();
+  $('roomSel').onchange = e => goRoom(+e.target.value);
+  $('bNew').onclick = newRoom;
+  $('bDup').onclick = duplicateRoom;
+  $('bRename').onclick = renameRoom;
+  $('bDelete').onclick = deleteRoom;
+  for (const b of $('tools').children) b.onclick = () => setTool(b.dataset.tool);
+  for (const b of $('phaseSeg').children) b.onclick = () => setPhase(+b.dataset.phase);
+  $('cGrid').onchange = e => { ui.grid = e.target.checked; redraw(false); persistSoon(); };
+  $('cMarkers').onchange = e => { ui.markers = e.target.checked; redraw(); persistSoon(); };
+  $('zoomSel').onchange = e => { ui.zoom = e.target.value; layout(); persistSoon(); };
+  window.addEventListener('resize', () => { if (doc) layout(); });
+  // A last save, in case the page goes before the debounce does.
+  window.addEventListener('pagehide', writeStore);
+  updateUndo();
+}
+
+async function boot() {
+  wire();
+  let tilesText;
+  try {
+    tilesText = await fetchText('../gfx/tiles.txt');
+  } catch (e) {
+    const pick = h('input', {type: 'file', accept: '.txt', onchange: async ev => {
+      const f = ev.target.files[0];
+      if (f) start(await f.text());
+    }});
+    banner(`Couldn't fetch the tiles (${e.message}). Serve the repo over http (python3 -m http.server in its folder, then ` +
+      'open http://localhost:8000/editor/), or pick gfx/tiles.txt here:', 'err', pick);
+    return;
+  }
+  start(tilesText);
+}
+
+async function start(tilesText) {
+  try {
+    tiles = RS.parseTiles(tilesText);
+  } catch (e) {
+    banner(`The tiles didn't load: ${e.message}`, 'err');
+    return;
+  }
+  tileMap = new Map(tiles.map(t => [t.key, t]));
+  const [spr, rooms, mk] = await Promise.allSettled(
+    [fetchText('../gfx/sprites.txt'), fetchText('../rooms/rooms.txt'), fetchText('../tools/mkrooms.py')]);
+  if (spr.status === 'fulfilled') {
+    try {
+      sprites = new Map(RS.parseSprites(spr.value).map(s => [s.name, s]));
+    } catch (e) {
+      console.warn('No sprites:', e.message);
+    }
+  }
+  // The thing types and their sizes come from mkrooms.py when it's there to read, so the page keeps
+  // up with the game without an edit here.
+  if (mk.status === 'fulfilled') {
+    const m = mk.value.match(/^THING_TYPES\s*=\s*\[([^\]]*)\]/m);
+    const list = m ? [...m[1].matchAll(/["']([^"']+)["']/g)].map(x => x[1]) : [];
+    if (list.length) THING_TYPES = list;
+    const b = mk.value.match(/^THING_BOX\s*=\s*\{([^}]*)\}/m);
+    const boxes = b ? [...b[1].matchAll(/["'](\w+)["']\s*:\s*\(\s*(-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*\)/g)] : [];
+    if (boxes.length) THING_BOX = Object.fromEntries(boxes.map(x => [x[1], [+x[2], +x[3], +x[4]]]));
+  }
+  baseText = rooms.status === 'fulfilled' ? rooms.value : null;
+
+  const saved = readStore();
+  if (saved && saved.prefs) for (const k of PREFS) if (k in saved.prefs) ui[k] = saved.prefs[k];
+  let note = '';
+  // Saved work that matches what it started from is just a stale copy of the repo's rooms.txt.
+  if (saved && saved.text && (saved.text !== saved.base || baseText == null)) {
+    try {
+      doc = RS.parseRooms(saved.text, 'your saved work');
+      ui.cur = clamp(saved.cur | 0, 0, doc.rooms.length - 1);
+      note = "Your work from last time is back: it's kept in this browser.";
+      if (baseText != null && saved.base !== baseText) {
+        note += " rooms.txt in the repo has changed since you started, and your copy doesn't have those changes.";
+      }
+    } catch (e) {
+      note = `Your saved work didn't load (${e.message}), so this is the repo's rooms.txt.`;
+    }
+  }
+  if (!doc && baseText != null) {
+    try {
+      doc = RS.parseRooms(baseText, 'rooms.txt');
+    } catch (e) {
+      banner(`The repo's rooms.txt didn't load: ${e.message}`, 'err');
+    }
+  }
+  if (!doc || !doc.rooms.length) {
+    doc = {header: [], rooms: [RS.newRoom('start')], tail: [], eol: '\n', finalNewline: true};
+    doc.rooms[0].pre = [];
+    if (baseText == null) banner("Couldn't fetch rooms.txt, so this is a new room. Open a rooms.txt, or paste one, to work on it.", 'err');
+  }
+  if (note) banner(note);
+  if (!tileMap.has(ui.tile)) ui.tile = (tiles[1] || tiles[0]).key;
+  if (!THING_TYPES.includes(ui.thingType)) ui.thingType = THING_TYPES[0];
+  $('cGrid').checked = ui.grid;
+  $('cMarkers').checked = ui.markers;
+  $('zoomSel').value = ui.zoom;
+  buildPalette();
+  buildThingTypes();
+  setTool(ui.tool);
+  setPhase(ui.phase);
+  layout();
+  refreshAll();
+  updateDirty();
+}
+
+boot();
+})();
+</script>
+</body>
+</html>

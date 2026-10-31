@@ -168,6 +168,18 @@ def _colour(word, where):
     return red, blue
 
 
+def _int(word, where):
+    try:
+        return int(word)
+    except (TypeError, ValueError):
+        raise SystemExit(f"{where}: expected a number, got {word!r}")
+
+
+def _words(words, n, where, usage):
+    if len(words) < n:
+        raise SystemExit(f"{where}: {usage}")
+
+
 def read_rooms(path=ROOT / "rooms/rooms.txt"):
     rooms = []
     lines = Path(path).read_text().splitlines()
@@ -182,12 +194,16 @@ def read_rooms(path=ROOT / "rooms/rooms.txt"):
         words = raw.split()
         key = words[0]
         if key == "room":
+            _words(words, 2, where, "room <id>")
             room = Room(words[1])
             rooms.append(room)
         elif room is None:
             raise SystemExit(f"{where}: expected 'room <id>'")
         elif key == "name":
+            _words(words, 2, where, "name <text>")
             room.name = raw.split(None, 1)[1].strip()
+            if '"' in room.name:
+                raise SystemExit(f"{where}: a name can't have a \" in it")
         elif key == "exits":
             for w in words[1:]:
                 d, _, target = w.partition("=")
@@ -201,14 +217,16 @@ def read_rooms(path=ROOT / "rooms/rooms.txt"):
         elif key == "band":
             if len(words) != 4:
                 raise SystemExit(f"{where}: band <line> <logical 1-3> <colour>")
-            line, logical = int(words[1]), int(words[2])
+            line, logical = _int(words[1], where), _int(words[2], where)
             if not 1 <= logical <= 3:
                 raise SystemExit(f"{where}: a band changes logical colour 1, 2 or 3")
             room.bands.append((line, logical) + _colour(words[3], where))
         elif key == "sector":
-            room.sector = int(words[1])
+            _words(words, 2, where, "sector <1-5>")
+            room.sector = _int(words[1], where)
         elif key == "start":
-            room.start = (int(words[1]), int(words[2]))
+            _words(words, 3, where, "start <x> <y>")
+            room.start = (_int(words[1], where), _int(words[2], where))
         elif key == "map":
             # The map's lines are taken whole (spaces matter), and padded.
             rows = []
@@ -222,7 +240,10 @@ def read_rooms(path=ROOT / "rooms/rooms.txt"):
             room.map = rows
             i += MAP_H
         elif key == "thing":
-            room.things.append((words[1], int(words[2]), int(words[3]), words[4:]))
+            _words(words, 4, where, "thing <type> <x> <y> [arg]")
+            for w in words[4:]:
+                _int(w, where)
+            room.things.append((words[1], _int(words[2], where), _int(words[3], where), words[4:]))
         else:
             raise SystemExit(f"{where}: unknown line {key!r}")
     sector = 1

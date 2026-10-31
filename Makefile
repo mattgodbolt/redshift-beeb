@@ -4,7 +4,8 @@
 #                 build/listing.txt), and the art and room previews in
 #                 build/preview
 #   make run      boot it in jsbeeb, screenshot to shots/run.png
-#   make check    the smoke test (tools/smoke.mjs) on MODEL (B-DFS1.2)
+#   make check    the smoke test (tools/smoke.mjs) on MODEL (B-DFS1.2), and
+#                 the level editor's checks (editor/check.mjs)
 #   make ROOM=n   a test build that starts in room n (0 first), at its start
 #   make disc     rebuild from a clean tree and copy the disc to redshift.ssd,
 #                 which the README's play link boots
@@ -48,6 +49,7 @@ run: $(TARGET)
 
 check: $(TARGET)
 	node tools/smoke.mjs --model $(MODEL)
+	node editor/check.mjs > build/editor-check.txt || { cat build/editor-check.txt; exit 1; }
 
 # Always from a clean tree, so the stamp names the commit the disc holds.
 disc:
