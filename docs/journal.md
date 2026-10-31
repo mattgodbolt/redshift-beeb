@@ -66,3 +66,13 @@ What was done, in order, with what worked and what didn't.
   `RSLOAD` finds the bank, loads `RSDATA` and copies it in. Main RAM goes
   from about 4K free to 10.7K, with 9.9K free in the bank. Both of
   jsbeeb's B and Master find bank 7.
+
+## 2026-10-31: sound
+
+- `sound.6502`: table-driven effects on the SN76489 (shots, blasts,
+  deaths, pickups, enemy fire, an armour ping, a refusal buzz, and a sweep
+  for each phase shift), one step a game frame, from the main loop. The
+  interrupt writes nothing to the chip, because a write there could fall
+  inside `key_down`'s use of the same VIA port. Checked with jsbeeb's
+  sound capture: the periods and volumes arrive as tabled.
+- `sound_write` now keeps Y: `sound_update` indexes with it.

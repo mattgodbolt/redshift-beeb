@@ -12,10 +12,12 @@
     LDA sysvia_ora_nh : AND #&80
     RTS
 
-\ Write A to the sound chip, through the System VIA's slow bus. X is kept.
+\ Write A to the sound chip, through the System VIA's slow bus. X and Y
+\ are kept.
 .sound_write
 {
-    PHP : SEI                       ; (the interrupt's sound_tick writes too)
+    STY sw_y
+    PHP : SEI
     \ The keyboard off the bus first: key_down leaves it enabled, and then
     \ it drives port A's bit 7 (the addressed key's state), which would
     \ replace the byte's top bit.
@@ -28,5 +30,7 @@
     DEY : BNE hold
     LDY #8 : STY sysvia_orb
     PLP
+    LDY sw_y
     RTS
+.sw_y EQUB 0
 }

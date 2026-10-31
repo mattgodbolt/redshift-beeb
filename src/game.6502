@@ -45,6 +45,7 @@
     JSR things_update
     JSR ebolts_update
     JSR render
+    JSR sound_update
     JMP loop
 }
 
@@ -112,6 +113,7 @@
 \ drawn again.
 .shift_show
 {
+    JSR sound_shift
     JSR wait_vsync
     JSR set_colours
     JSR draw_room_phase

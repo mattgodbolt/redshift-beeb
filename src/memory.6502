@@ -136,6 +136,12 @@ OS_SHOWN = &80              ; on the screen, at o_*
 MAX_ROOMS = 64
 .room_gone  SKIP MAX_ROOMS  ; a bit for each thing in each room: killed or taken
 .gr_i       SKIP 1          ; how far through the grenade's arc
+\ The sound effects playing (sound.6502): each voice's place in its
+\ effect (high byte 0: none) and priority, and the noise last set.
+.snd_lo     SKIP 3
+.snd_hi     SKIP 3
+.snd_pri    SKIP 3
+.snd_noise  SKIP 1
 \ Each row of the rectangle being drawn: where it starts in the target.
 .trow_lo    SKIP MAP_H
 .trow_hi    SKIP MAP_H

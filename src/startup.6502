@@ -25,6 +25,12 @@
     LDA #&BF : JSR sound_write
     LDA #&DF : JSR sound_write
     LDA #&FF : JSR sound_write
+    LDA #0
+    LDX #2
+.voices
+    STA snd_hi,X : STA snd_pri,X
+    DEX : BPL voices
+    LDA #&FF : STA snd_noise
     JMP game_start
 }
 

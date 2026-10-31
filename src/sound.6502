@@ -1,16 +1,162 @@
 \ ***************************************************************************
-\ Sound: the effects, played a step each VSync (from the interrupt).
-\ Every effect keeps X and Y: callers are in the middle of loops.
+\ Sound: effects on the SN76489, a step each game frame (sound_update, from
+\ the main loop, not the interrupt: a chip write there could fall inside
+\ key_down's use of the same VIA port, and spoil a key or a note).
+\
+\ Three voices: tone channel 0 for the player's sounds, tone channel 1 for
+\ the enemies', and the noise channel for blasts and deaths. An effect is
+\ a header byte (its voice, and its priority in the top bits: a sound only
+\ takes a voice from one that's no more important) and then a step a
+\ frame: attenuation (0 loudest, 15 silent; &FF ends it), then a tone's
+\ period N (the note is 125000 / N Hz) as two bytes, or the noise's
+\ control and a spare byte.
+\
+\ Every effect's entry keeps X and Y: callers are in the middle of loops.
 \ ***************************************************************************
 
 .sound_tick
     RTS
 
-.sound_fire
-.sound_die
-.sound_buzz
-.sound_ping
-.sound_boom
-.sound_take
-.sound_zap
+V_TONE0 = 0 : V_TONE1 = 1 : V_NOISE = 3
+NVOICES = 3
+\ Each voice's effect and priority: voice v at index v, noise at 2.
+ZA_AUTO1 sv_tmp
+
+\ Start effect (X, Y kept): A = the effect's index (SFX_*).
+.sound_play
+{
+    STX sp_x : STY sp_y
+    TAX
+    LDA sfx_lo,X : STA sp_ptr
+    LDA sfx_hi,X : STA sp_ptr+1
+    LDY #0 : LDA (sp_ptr),Y         ; voice, priority << 4
+    PHA : AND #3 : TAX
+    CPX #V_NOISE : BNE tone
+    LDX #2
+.tone
+    PLA : AND #&F0
+    CMP snd_pri,X : BCC busy        ; something more important is playing
+    STA snd_pri,X
+    LDA sp_ptr : CLC : ADC #1 : STA snd_lo,X
+    LDA sp_ptr+1 : ADC #0 : STA snd_hi,X
+.busy
+    LDX sp_x : LDY sp_y
     RTS
+.sp_x EQUB 0
+.sp_y EQUB 0
+}
+sp_ptr = text_ptr                   ; (fixed zero page: nothing prints in sound_play)
+
+\ A step of each voice's effect: its volume, and its note or noise.
+.sound_update
+{
+    LDX #NVOICES - 1
+.voice
+    LDA snd_hi,X : BEQ next         ; (nothing playing)
+    STA su_ptr+1
+    LDA snd_lo,X : STA su_ptr
+    LDY #0 : LDA (su_ptr),Y
+    CMP #&FF : BEQ finished
+    \ The volume: &90 + 32 * channel + attenuation.
+    ORA vol_cmd,X : JSR sound_write
+    CPX #2 : BEQ noise
+    \ A tone: the period's low 4 bits with the channel, then the top 6.
+    INY : LDA (su_ptr),Y : STA sv_tmp
+    AND #15 : ORA tone_cmd,X : JSR sound_write
+    INY : LDA (su_ptr),Y            ; the high byte (period >> 8)
+    ASL A : ASL A : ASL A : ASL A : STA sv_hi
+    LDA sv_tmp : LSR A : LSR A : LSR A : LSR A : ORA sv_hi
+    JSR sound_write
+    JMP stepped
+.noise
+    INY : LDA (su_ptr),Y : CMP snd_noise : BEQ stepped    ; (writing it restarts it)
+    STA snd_noise
+    ORA #&E0 : JSR sound_write
+.stepped
+    LDA su_ptr : CLC : ADC #3 : STA snd_lo,X
+    LDA su_ptr+1 : ADC #0 : STA snd_hi,X
+.next
+    DEX : BPL voice
+    RTS
+.finished
+    LDA #15 : ORA vol_cmd,X : JSR sound_write    ; silent
+    LDA #0 : STA snd_hi,X : STA snd_pri,X
+    LDA #&FF : STA snd_noise
+    JMP next
+.sv_hi EQUB 0
+}
+su_ptr = map_row                    ; (fixed zero page: not drawing now)
+.vol_cmd  EQUB &90, &B0, &F0
+.tone_cmd EQUB &80, &A0
+
+\ The effects (sound_play's A).
+SFX_FIRE = 0 : SFX_DIE = 1 : SFX_BUZZ = 2 : SFX_PING = 3
+SFX_BOOM = 4 : SFX_TAKE = 5 : SFX_ZAP = 6 : SFX_SHIFT_RED = 7 : SFX_SHIFT_BLUE = 8
+
+.sound_fire  : PHA : LDA #SFX_FIRE : JMP play_it
+.sound_die   : PHA : LDA #SFX_DIE : JMP play_it
+.sound_buzz  : PHA : LDA #SFX_BUZZ : JMP play_it
+.sound_ping  : PHA : LDA #SFX_PING : JMP play_it
+.sound_boom  : PHA : LDA #SFX_BOOM : JMP play_it
+.sound_take  : PHA : LDA #SFX_TAKE : JMP play_it
+.sound_zap   : PHA : LDA #SFX_ZAP : JMP play_it
+.sound_shift
+    PHA : LDA phase : CLC : ADC #SFX_SHIFT_RED
+.play_it
+    JSR sound_play
+    PLA
+    RTS
+
+\ A tone step: attenuation and period. A noise step: attenuation and
+\ control (4: white noise; + 0-2 for the rate, fastest first).
+MACRO TONE att, n
+    EQUB att, LO(n), HI(n)
+ENDMACRO
+MACRO NOISE att, ctl
+    EQUB att, ctl, 0
+ENDMACRO
+MACRO END_SFX
+    EQUB &FF
+ENDMACRO
+
+.sfx_fire
+    EQUB V_TONE0 + &40
+    FOR k = 0..5 : TONE k * 2, 60 + k * 30 : NEXT
+    END_SFX
+.sfx_die
+    EQUB V_NOISE + &F0
+    FOR k = 0..15 : NOISE k, 4 + (k DIV 6) : NEXT
+    END_SFX
+.sfx_buzz
+    EQUB V_TONE0 + &30
+    FOR k = 0..3 : TONE 2, 900 : TONE 6, 980 : NEXT
+    END_SFX
+.sfx_ping
+    EQUB V_TONE1 + &20
+    TONE 2, 40 : TONE 5, 40 : TONE 9, 42 : TONE 12, 44
+    END_SFX
+.sfx_boom
+    EQUB V_NOISE + &E0
+    FOR k = 0..12 : NOISE k, 4 + (k DIV 5) : NEXT
+    END_SFX
+.sfx_take
+    EQUB V_TONE0 + &50
+    TONE 2, 180 : TONE 2, 143 : TONE 2, 120 : TONE 3, 90 : TONE 6, 90 : TONE 10, 90
+    END_SFX
+.sfx_zap
+    EQUB V_TONE1 + &30
+    FOR k = 0..4 : TONE 3 + k * 2, 120 - k * 15 : NEXT
+    END_SFX
+\ The phase shift: a sweep, down into the Red, up into the Blue.
+.sfx_shift_red
+    EQUB V_TONE0 + &60
+    FOR k = 0..7 : TONE k DIV 2, 60 + k * 45 : NEXT
+    END_SFX
+.sfx_shift_blue
+    EQUB V_TONE0 + &60
+    FOR k = 0..7 : TONE k DIV 2, 375 - k * 45 : NEXT
+    END_SFX
+.sfx_lo EQUB LO(sfx_fire), LO(sfx_die), LO(sfx_buzz), LO(sfx_ping), LO(sfx_boom)
+        EQUB LO(sfx_take), LO(sfx_zap), LO(sfx_shift_red), LO(sfx_shift_blue)
+.sfx_hi EQUB HI(sfx_fire), HI(sfx_die), HI(sfx_buzz), HI(sfx_ping), HI(sfx_boom)
+        EQUB HI(sfx_take), HI(sfx_zap), HI(sfx_shift_red), HI(sfx_shift_blue)
