@@ -117,6 +117,7 @@ su_ptr = map_row                    ; (fixed zero page: not drawing now)
 \ The effects (sound_play's A).
 SFX_FIRE = 0 : SFX_DIE = 1 : SFX_BUZZ = 2 : SFX_PING = 3
 SFX_BOOM = 4 : SFX_TAKE = 5 : SFX_ZAP = 6 : SFX_SHIFT_RED = 7 : SFX_SHIFT_BLUE = 8
+SFX_FALL = 9
 
 .sound_fire  : PHA : LDA #SFX_FIRE : JMP play_it
 .sound_die   : PHA : LDA #SFX_DIE : JMP play_it
@@ -125,6 +126,7 @@ SFX_BOOM = 4 : SFX_TAKE = 5 : SFX_ZAP = 6 : SFX_SHIFT_RED = 7 : SFX_SHIFT_BLUE =
 .sound_boom  : PHA : LDA #SFX_BOOM : JMP play_it
 .sound_take  : PHA : LDA #SFX_TAKE : JMP play_it
 .sound_zap   : PHA : LDA #SFX_ZAP : JMP play_it
+.sound_fall  : PHA : LDA #SFX_FALL : JMP play_it
 .sound_shift
     PHA : LDA phase : CLC : ADC #SFX_SHIFT_RED
 .play_it
@@ -149,8 +151,9 @@ ENDMACRO
     FOR k = 0..5 : TONE k * 2, 60 + k * 30 : NEXT
     END_SFX
 .sfx_die
+    \ (Periodic noise, a metallic rumble: a blast is white noise.)
     EQUB V_NOISE + &F0
-    FOR k = 0..15 : NOISE k, 4 + (k DIV 6) : NEXT
+    FOR k = 0..15 : NOISE k, (k DIV 6) : NEXT
     END_SFX
 .sfx_buzz
     EQUB V_TONE0 + &30
@@ -181,7 +184,12 @@ ENDMACRO
     EQUB V_TONE0 + &60
     FOR k = 0..7 : TONE k DIV 2, 375 - k * 45 : NEXT
     END_SFX
+\ With a death's rumble: a falling whine, the harness failing.
+.sfx_fall
+    EQUB V_TONE0 + &F0
+    FOR k = 0..15 : TONE k DIV 2, 150 + k * k * 4 : NEXT
+    END_SFX
 .sfx_lo EQUB LO(sfx_fire), LO(sfx_die), LO(sfx_buzz), LO(sfx_ping), LO(sfx_boom)
-        EQUB LO(sfx_take), LO(sfx_zap), LO(sfx_shift_red), LO(sfx_shift_blue)
+        EQUB LO(sfx_take), LO(sfx_zap), LO(sfx_shift_red), LO(sfx_shift_blue), LO(sfx_fall)
 .sfx_hi EQUB HI(sfx_fire), HI(sfx_die), HI(sfx_buzz), HI(sfx_ping), HI(sfx_boom)
-        EQUB HI(sfx_take), HI(sfx_zap), HI(sfx_shift_red), HI(sfx_shift_blue)
+        EQUB HI(sfx_take), HI(sfx_zap), HI(sfx_shift_red), HI(sfx_shift_blue), HI(sfx_fall)

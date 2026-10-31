@@ -192,4 +192,10 @@ Matt was away is marked *provisional* until reviewed.
     and an `ASSERT` says if it does. `tools/musiccap.mjs` records what the
     game writes to the chip for each piece and checks it, frame by frame,
     against the tool's model of the player.
+34. **2026-10-31: a death that shows.** Matt: "there's no 'death' effect.
+    the player just vanishes." Ash's harness fails: they flicker between
+    themself and their dotted outline (the out-of-phase look), come apart
+    into it, and burst. The rumble is periodic noise, not the white noise
+    of a blast, with a falling whine over it, so a death doesn't sound like
+    a kill.
 
