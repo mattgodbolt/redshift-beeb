@@ -139,18 +139,19 @@ variant space br
 ........
 
 # --- Masonry: the rock and brick of the Leach Works. Deep in a wall it's
-# --- just its brick lines, so the wall's mass stays dark; facing air it's
-# --- solid brick, lit along that side, and its top is a lip.
+# --- shaded brick (dithered, so the wall's mass reads as solid but sits
+# --- back); facing air it's solid brick, lit along that side, and its top
+# --- is a lip.
 
 tile # stone solid
-1111111.
-1......1
-1......1
-11111111
-...1....
-...1....
-...1....
-11111111
+1.1.1.1.
+.1.1.1..
+1.1.1.1.
+........
+1.1.1.1.
+.1.1.1.1
+1.1.1.1.
+........
 
 # A ledge's ends: a capstone with its corner worn round.
 variant # up+left
@@ -215,35 +216,25 @@ variant # right
 
 alt # base
 1111111.
-1....1.1
-1......1
-11111111
-...1....
-...1..1.
-...1....
-11111111
-
-alt # base
 1111111.
-1......1
-1.1.1..1
-11111111
-...1....
-...1....
-...1....
-11111111
+1111111.
+........
+1.1.1.1.
+.1.1.1.1
+1.1.1.1.
+........
 
-# Plating: the machines, floors and crates. The same: lines inside, solid
+# Plating: the machines, floors and crates. The same: shaded inside, solid
 # at the edges.
 tile H panel solid
-11111111
-1.......
-1.....1.
-1.......
-1.......
-1.......
-1.......
-1.......
+1.1.1.1.
+.1.1.1..
+1.1.1.1.
+.1.1.1..
+1.1.1.1.
+.1.1.1..
+1.1.1.1.
+........
 
 # A block's top corners are rolled, both of them on a post one tile wide.
 variant H up+left+right
@@ -317,14 +308,14 @@ variant H right
 .......2
 
 alt H base
-11111111
-1.......
-1.11....
-1.11....
-1.......
-1.......
-1.......
-1.......
+1.1.1.1.
+.11111..
+11...11.
+.1...1..
+11...11.
+.11111..
+1.1.1.1.
+........
 
 # A girder: a lattice to stand on. Where it ends in the open, an end
 # plate and a knee bracket under it.
@@ -426,14 +417,35 @@ tile ~ acidtop hazard
 3.3.3.3.
 
 tile w acid hazard
+3.333.33
+33.333.3
+.333.333
+333.333.
+3.333.33
+33.333.3
+.333.333
+333.333.
+
+# Just under the crest, thinner.
+variant w up
 .3.3.3.3
 3.3.3.3.
 .3.3.3.3
-3...3.3.
-.3.3.3.3
 3.3.3.3.
-.3.3...3
-3.3.3.3.
+.333.3.3
+3.3.333.
+.333.333
+3.333.33
+
+alt w base
+3.333.33
+33.3.3.3
+.33...33
+33.....3
+.33...33
+33.3.3.3
+.333.333
+333.333.
 
 # --- Scenery: in front of the back wall, not solid.
 

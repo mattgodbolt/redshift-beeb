@@ -130,4 +130,17 @@ Matt was away is marked *provisional* until reviewed.
     first room teaches. Every room now gives its Blue Phase colours where
     the swap would make anything but acid green, and acid is green in
     both.
+28. **2026-10-31: ghosts keep their shape.** A second outside review found
+    the dotted ghosts too broken to see, worst in the blue rooms. A ghost is
+    now an enemy's whole outline with a sparse diagonal fill that moves
+    between frames: its shape survives, and the shimmer and the missing
+    fill say it isn't there. (Out of phase, blocks keep decision 21's
+    dotted outline and hatch.)
+29. **2026-10-31: walls shaded, floors in the room's colour, rooms told
+    apart.** Deep in a wall, brick is now dithered, so a mass reads as
+    solid and sits back, where brick lines read as backdrop. Floors take
+    the room's own colour (a magenta floor clashed with red rock), and
+    rooms alternate red and magenta rock and yellow and cyan lips, so
+    neighbours don't blur together. The room's name is centred, apart from
+    the counts.
 

@@ -169,10 +169,24 @@ def hollow(pixels, parity=None):
     return out
 
 
-def ghost_sprite(pixels, parity=None):
-    """An enemy out of phase: its dotted outline, never white (colour 3 is
-    drawn as 2), since white marks what can hurt you or be taken."""
-    return [[2 if c == 3 else c for c in row] for row in hollow(pixels, parity)]
+def ghost_sprite(pixels, parity=0):
+    """An enemy out of phase: its whole outline, so its shape still reads,
+    and inside it a sparse diagonal fill that moves between the two
+    parities (the game shows them in turn, so the ghost shimmers). Never
+    white: colour 3 is drawn as 2, since white marks what can hurt you or
+    be taken."""
+    h, w = len(pixels), len(pixels[0])
+    out = [[0] * w for _ in range(h)]
+    for y in range(h):
+        for x in range(w):
+            c = pixels[y][x]
+            if not c:
+                continue
+            edge = x in (0, w - 1) or y in (0, h - 1) or any(
+                not pixels[y + dy][x + dx] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+            if edge or (x + y + 2 * parity) % 4 == 0:
+                out[y][x] = 2 if c == 3 else c
+    return out
 
 
 def ghost_tile(pixels):

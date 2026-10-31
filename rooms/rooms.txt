@@ -28,7 +28,6 @@ sector 1
 exits left=- right=pump up=- down=-
 start 2 17
 colours red yellow white
-band 144 1 magenta/magenta
 band 146 3 green/green
 map
 #|    |#########################
@@ -60,8 +59,7 @@ room pump
 name PUMP HOUSE
 exits left=- right=vatrow up=- down=-
 start 1 17
-colours magenta/blue yellow white
-band 144 1 red/magenta
+colours magenta/magenta yellow white
 map
 ################################
 ################################
@@ -92,7 +90,7 @@ room vatrow
 name VAT ROW
 exits left=- right=- up=- down=jar
 start 0 10
-colours red yellow white
+colours red cyan white
 band 112 1 magenta/magenta
 band 128 3 green/green
 map
@@ -126,10 +124,9 @@ room jar
 name THE PICKLE JAR
 exits left=- right=tanks up=- down=-
 start 28 6
-colours magenta/blue yellow white
+colours magenta/magenta cyan white
 band 104 3 green/green
 band 112 3 white
-band 144 1 red/magenta
 map
 ###########################T  T#
 ####nnnnnnnnnnnnnnnnnnnnnnnT  T#
@@ -161,7 +158,6 @@ name SETTLING TANKS
 exits left=- right=hut up=- down=-
 start 0 17
 colours red yellow white
-band 144 1 magenta/magenta
 band 146 3 green/green
 map
 ################################
@@ -193,8 +189,7 @@ room hut
 name FOREMAN'S HUT
 exits left=- right=catwalks up=- down=-
 start 0 16
-colours red yellow white
-band 136 1 magenta/magenta
+colours red cyan white
 map
 ################################
 ################################
@@ -226,7 +221,7 @@ room catwalks
 name THE CATWALKS
 exits left=- right=- up=- down=slurry
 start 0 16
-colours magenta/blue yellow white
+colours magenta/magenta yellow white
 band 160 3 green/green
 map
 ################################
@@ -260,7 +255,7 @@ room slurry
 name SLURRY RUN
 exits left=- right=- up=- down=skip
 start 28 14
-colours red yellow white
+colours red cyan white
 band 144 3 green/green
 map
 ############################   #
@@ -294,8 +289,7 @@ room skip
 name SKIP SHAFT
 exits left=- right=- up=- down=engine_shed
 start 1 5
-colours red yellow white
-band 144 1 magenta/magenta
+colours magenta/magenta yellow white
 band 146 3 green/green
 map
 #   ############################

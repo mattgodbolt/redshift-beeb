@@ -4,7 +4,7 @@
 \ rule (print_at draws it) that keeps the bar off the playfield.
 \
 \   SCORE 000000         c5  g5  l5
-\   LANDING ZONE
+\             LANDING ZONE
 \ ***************************************************************************
 
 \ The icons, drawn over characters the bar never prints (grab_font).
@@ -15,14 +15,23 @@ COL_CELL = 21 : COL_GREN = 25 : COL_LIFE = 29
 {
     PRINT_AT 0, 0, top_text
     PRINT_AT 0, 1, blank_text
+    \ The room's name, centred: a title, apart from the counts above it.
     LDA room_name : STA text_ptr
     LDA room_name+1 : STA text_ptr+1
-    LDX #0 : LDY #1 : JSR print_at
+    LDY #0
+.length
+    LDA (text_ptr),Y : BEQ measured
+    INY : BNE length
+.measured
+    STY ds_len
+    LDA #SCREEN_COLS : SEC : SBC ds_len : LSR A : TAX
+    LDY #1 : JSR print_at
     JSR show_score
     JMP show_counts
 .top_text   EQUS "SCORE 000000         "
 .top_icons  EQUB ICON_CELL, '5', ' ', ' ', ICON_GREN, '5', ' ', ' ', ICON_LIFE, '5', ' ', 0
 .blank_text EQUS "                                ", 0
+.ds_len EQUB 0
 ASSERT top_icons - top_text = COL_CELL AND COL_GREN = COL_CELL + 4 AND COL_LIFE = COL_CELL + 8
 }
 
