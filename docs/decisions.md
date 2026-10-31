@@ -143,4 +143,15 @@ Matt was away is marked *provisional* until reviewed.
     rooms alternate red and magenta rock and yellow and cyan lips, so
     neighbours don't blur together. The room's name is centred, apart from
     the counts.
+30. **2026-10-31: a death brings the room back.** Ash starts again in the
+    room as they came into it: its map reloaded, its enemies where they
+    started, in the phase they entered with. A Sliver that had homed onto
+    the way in used to wait there for the respawn. The dead stay dead, and
+    pickups taken stay taken (decision 10); a wall blown open closes again,
+    as it does when you leave and come back.
+31. **2026-10-31: a shot you can see land.** A bolt that strikes armour or
+    a wall, or wounds without killing, is a spark there for a moment, so a
+    Drill Sergeant's armour is seen, not only heard. A bolt can't start
+    beyond a thin wall Ash stands against: it strikes the wall. A shift
+    the game refuses turns the status bar red a moment, as well as buzzing.
 

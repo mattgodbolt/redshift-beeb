@@ -81,8 +81,12 @@ FOR l = 0..3 : FOR n = 0..3 : EQUB ula_index(l, n) * 16 : NEXT : NEXT
     LDA top_red,Y : EOR #7 : STA phys,X     ; (as the ULA wants it)
     ZA_INDEXEDBY 0..3
     INY : INX : CPX #4 : BNE top
-    \ The status bar: black paper, the phase's ink.
-    LDX phase : LDA status_ink,X : EOR #7 : STA ink
+    \ The status bar: black paper, the phase's ink (red while a refused
+    \ shift's flash lasts).
+    LDA #RED : LDX shift_flash : BNE inked
+    LDX phase : LDA status_ink,X
+.inked
+    EOR #7 : STA ink
     LDX #5
 .status
     LDA room_idx + 10,X : ORA #7    ; (logical 0: black)

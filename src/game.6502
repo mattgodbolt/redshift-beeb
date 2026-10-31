@@ -12,7 +12,7 @@
     LDA #&FF : STA obj_spr,X
     LDA #0 : STA obj_st,X
     DEX : BPL clear
-    LDA #0 : STA phase : STA pl_dead : STA pl_safe : STA pl_air : STA fire_cool
+    LDA #0 : STA phase : STA pl_dead : STA pl_safe : STA pl_air : STA fire_cool : STA shift_flash
     STA score : STA score+1 : STA score+2
     LDX #MAX_ROOMS - 1
 .gone
@@ -55,6 +55,10 @@ ENDIF
     JSR ebolts_update
     JSR render
     JSR sound_update
+    LDA shift_flash : BEQ no_flash
+    DEC shift_flash : BNE no_flash
+    JSR set_colours                 ; (the bar's own ink again)
+.no_flash
     LDA cage_go : BEQ loop
     JSR take_cage
     JMP loop
@@ -121,6 +125,7 @@ ENDIF
 
 \ SHIFT: into the other phase, at the cost of a cell, unless the player
 \ would be inside something solid there.
+FLASH_FRAMES = 8                ; a refused shift's red, in frames
 .try_shift
 {
     LDA cells : BEQ refused
@@ -130,6 +135,9 @@ ENDIF
     LDA #TF_SOLID : JSR test_area : BEQ shifted
     JSR flip
 .refused
+    \ Refused: the buzz, and the status bar red a moment.
+    LDA #FLASH_FRAMES : STA shift_flash
+    JSR set_colours
     JMP sound_buzz
 .shifted
     DEC cells

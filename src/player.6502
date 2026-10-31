@@ -304,6 +304,7 @@ CATCH = 6                       ; lines below the top that still catch
 .free
     LDA #FIRE_GAP : STA fire_cool
     LDA #SPR_BOLT : STA obj_spr,X
+    LDA #0 : STA th_boom,X
     LDA obj_face + PL : STA obj_face,X
     LDA #OS_CHANGED : STA obj_st,X
     LDA #PL_GUN : LDY pl_crouch : BEQ standing
@@ -313,13 +314,15 @@ CATCH = 6                       ; lines below the top that still catch
     LDA obj_face + PL : BNE leftward
     LDA #SHOT_SPEED : STA shot_dx,X
     LDA obj_x + PL : CLC : ADC #PL_W - 2 : STA obj_x,X
-    JMP sound_fire
+    JMP fired
 .leftward
     LDA #256 - SHOT_SPEED : STA shot_dx,X
     LDA obj_x + PL : SEC : SBC #2 : BCS on
     LDA #0
 .on
     STA obj_x,X
+.fired
+    JSR bolt_clear
     JMP sound_fire
 }
 
@@ -329,6 +332,11 @@ CATCH = 6                       ; lines below the top that still catch
     LDX #NSHOTS
 .shot
     LDA obj_spr,X : CMP #&FF : BEQ next
+    LDA th_boom,X : BEQ flying
+    \ A spark: there a moment, then gone.
+    DEC th_boom,X : BNE next
+    BEQ gone                        ; (always)
+.flying
     LDA obj_x,X : CLC : ADC shot_dx,X
     CMP #128 - 4 + 1 : BCS gone     ; (off either side: it wraps past 128)
     STA obj_x,X
@@ -340,6 +348,8 @@ CATCH = 6                       ; lines below the top that still catch
     LDA #TF_SOLID : JSR test_area
     PHP : LDX sh_x : PLP            ; (LDX would set Z for X)
     BEQ next
+    JSR spark                       ; (into a wall)
+    JMP next
 .gone
     LDA #&FF : STA obj_spr,X
     LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
@@ -347,6 +357,38 @@ CATCH = 6                       ; lines below the top that still catch
     DEX : BNE shot
     RTS
 .sh_x EQUB 0
+}
+
+\ Bolt X strikes what it can't hurt (armour, a wall): it's a spark there
+\ for a moment, so the player sees the shot land. X and Y kept.
+SPARK_FRAMES = 4
+.spark
+    LDA #SPR_SPARK : STA obj_spr,X
+    LDA #SPARK_FRAMES : STA th_boom,X
+    LDA obj_y,X : BEQ high : DEC obj_y,X    ; (centred on the bolt)
+.high
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+    RTS
+
+\ A bolt just fired, X: anything solid between the gun and where the bolt
+\ starts, and it strikes that instead of starting beyond a thin wall.
+.bolt_clear
+{
+    STX bc_x
+    LDA obj_x + PL : CLC : ADC #4 : LSR A : LSR A : STA ta_c0   ; Ash's middle
+    LDA obj_x,X : CLC : ADC #2 : LSR A : LSR A                ; the bolt's
+    CMP ta_c0 : BCS ordered
+    LDY ta_c0 : STA ta_c0 : TYA
+.ordered
+    STA ta_c1
+    LDA obj_y,X : CLC : ADC #1 : LSR A : LSR A : LSR A : STA ta_r0 : STA ta_r1
+    LDA #TF_SOLID : JSR test_area
+    PHP : LDX bc_x : PLP
+    BEQ clear
+    JMP spark
+.clear
+    RTS
+.bc_x EQUB 0
 }
 
 \ Off the room's edge X (0 left, 1 right, 2 up, 3 down): into the room
@@ -429,6 +471,12 @@ SAFE_FRAMES = 50
     INC grenades
 .grenades_ok
     JSR show_counts
+    \ The room afresh, as Ash came into it: its map, and its enemies where
+    \ they started (decision 30). The dead stay dead (room_gone).
+    LDA entry_phase : STA phase
+    LDA room : JSR enter_room
+    JSR spawn_things
+    JSR objs_forget
     LDA entry_x : STA obj_x + PL
     LDA entry_y : STA obj_y + PL
     LDA entry_face : STA obj_face + PL
@@ -436,8 +484,5 @@ SAFE_FRAMES = 50
     LDA obj_st + PL : ORA #OS_CHANGED : STA obj_st + PL
     LDA #0 : STA pl_air
     LDA #SAFE_FRAMES : STA pl_safe
-    LDA entry_phase : CMP phase : BEQ same_phase
-    JMP phase_shift
-.same_phase
     RTS
 }

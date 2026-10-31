@@ -242,8 +242,8 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
     JSR th_look
     LDA th_boom,X : JNE next
     \ It meets the player, or the player's bolts. Only in phase.
-    JSR th_in_phase : BNE next
-    LDA pl_dead : BNE next
+    JSR th_in_phase : JNE next
+    LDA pl_dead : JNE next
     JSR th_box
     JSR pl_box
     JSR boxes_overlap : BCC no_touch
@@ -263,17 +263,23 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
     LDY #NSHOTS
 .bolt
     LDA obj_spr,Y : CMP #&FF : BEQ no_bolt
+    LDA th_boom,Y : BNE no_bolt     ; (a spark)
     LDA obj_x,Y : STA bx0 : CLC : ADC #4 : STA bx1
     LDA obj_y,Y : STA by0 : CLC : ADC #3 : STA by1
     JSR boxes_overlap : BCC no_bolt
-    \ Hit: the bolt's gone, and the thing takes it (or not).
+    \ Hit: the thing takes it, or its armour does. The bolt's gone if it
+    \ killed, or else it sparks, so the player sees it land.
+    LDA th_hp,X : BEQ armoured
+    DEC th_hp,X : BEQ killed
+    JSR bolt_spark
+    JMP no_bolt
+.killed
     LDA #&FF : STA obj_spr,Y
     LDA obj_st,Y : ORA #OS_CHANGED : STA obj_st,Y
-    LDA th_hp,X : BEQ armoured
-    DEC th_hp,X : BNE no_bolt
     JSR th_kill
     JMP bolts_done
 .armoured
+    JSR bolt_spark
     JSR sound_ping
 .no_bolt
     DEY : BNE bolt
@@ -283,6 +289,10 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
     INX : CPX #TH0 + NTH : JNE thing
     JMP set_tile_ptrs               ; (attr_ptr back to this phase's)
 .tu_x EQUB 0
+\ Bolt Y sparks; X kept.
+.bolt_spark
+    STX tu_x : TYA : TAX : JSR spark : TXA : TAY : LDX tu_x
+    RTS
 }
 
 \ Thing X dies: it explodes, it scores, and it stays dead.

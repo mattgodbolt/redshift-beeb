@@ -144,6 +144,7 @@ MAX_ROOMS = 64
 .room_gone  SKIP MAX_ROOMS  ; a bit for each thing in each room: killed or taken
 .gr_i       SKIP 1          ; how far through the grenade's arc
 .gr_roll    SKIP 1          ; non-zero: rolling along the floor (thrown crouching)
+.shift_flash SKIP 1         ; frames left of the status bar's red: a shift refused
 \ The sound effects playing (sound.6502): each voice's place in its
 \ effect (high byte 0: none) and priority, and the noise last set.
 .snd_lo     SKIP 3
