@@ -16,7 +16,8 @@ A teletext title page, then Sector 1, THE LEACH WORKS: nine rooms from
 the LANDING ZONE down to the cage in the SKIP SHAFT, and the first room of
 Sector 2. Each **SHIFT** costs a phase cell. Blocks and enemies of the
 other phase are dotted ghosts: you walk through them, and they can't touch
-you. A Drill Sergeant is armoured, and dies only to a grenade.
+you. Green is always acid. A Drill Sergeant is armoured and dies only to a
+grenade: lob one from a crate, or crouch under its fire and roll one at it.
 
 | Key | Does |
 |---|---|
@@ -24,7 +25,7 @@ you. A Drill Sergeant is armoured, and dies only to a grenade.
 | : (or ↑) | jump |
 | / (or ↓) | crouch |
 | RETURN | fire |
-| SPACE | throw a grenade |
+| SPACE | throw a grenade (crouching, roll it) |
 | SHIFT | flip the phase |
 | P | pause |
 
