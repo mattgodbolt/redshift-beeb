@@ -24,39 +24,356 @@
 room landing
 name LANDING ZONE
 sector 1
-exits left=- right=- up=- down=-
+exits left=- right=pump up=- down=-
 start 2 17
 colours red yellow white
-band 40 1 magenta
-band 96 1 red
-band 144 1 green
-band 152 2 green
+band 48 1 magenta
+band 55 2 white
+band 57 1 red
+band 143 2 yellow
+band 145 1 green
+map
+#|    |#########################
+#|    |#########################
+ |    |#########################
+======== #####L ##|##  L #######
+ |    |   ### |  :|        #####
+ |    |    L  |   |      :   ###
+ |    |----------------------###
+ |    |          ===  |       ##
+ |  : |       :       |       ##
+ |    |  :            |    :  ##
+ |    |         :     |       ##
+ |    |               |
+ | :  |      :       ===
+ |    | :                 :
+ |    |                     :
+ |    |    :     ===
+ |    |           |     HH
+ |    |vv   v     |    vHH   Hvv
+_________~~~____~~~~~~~_________
+HHHHHHHHHwwwHHHHwwwwwwwHHHHHHHHH
+HHHHHHHHHwwwHHHHwwwwwwwHHHHHHHHH
+HHHHHHHHHwwwHHHHwwwwwwwHHHHHHHHH
+thing cell 18 6
+thing crawler 26 16
+
+room pump
+name PUMP HOUSE
+exits left=- right=vatrow up=- down=-
+start 1 17
+colours red yellow white
+band 32 1 magenta
+band 48 1 red
+band 111 2 white
+band 143 2 yellow
+band 145 1 magenta
 map
 ################################
-######  : ::######   :  ::######
-###  :      :  ##   :     :  ###
-#  :    :         :    :      ##
-#    :       :       :     :   #
-  :   |   :     :     :   |  :  
-      |  :   :     :      |     
-------|------    :   -----|-----
-  :   |    :     :    :   |   : 
-      |  :    :     :     |     
-   :  |     :     :   :   |  :  
-      |   :    :     :    |     
- :  =========  : =====^^====  : 
-      |      :     :     R    : 
-   :  |   :     :      : R  :   
-      |     :     :      R      
-  v   |  :     :     :   R   v  
- vv v |     :      :     R  vvv 
-____________BBBBBBBB____________
-HHHHHHHHHHHH~~~~~~~~HHHHHHHHHHHH
-HHHHHHHHHHHHwwwwwwwwHHHHHHHHHHHH
-HHHHHHHHHHHHwwwwwwwwHHHHHHHHHHHH
-thing drone 14 8
-thing sentry 8 10
-thing crawler 27 16
-thing shard 2 4
-thing cell 29 17
-thing grenades 1 17
+################################
+#    |  L    ###################
+#    |       ###################
+#  ----------########## L | L ##
+#    |     | ##########   |   ##
+#   BBB    | ##########  :|   ##
+#    |  :  | ##########   |   ##
+#    |     |   ########:  |
+#    |     |   ########   |
+#    |     |  :########   |
+ BB  | :   |   ########   |  ===
+     |     |   ########   |  ###
+  :  |     |   ########   | :###
+     |     |     PP      === ###
+    HHH  HHHH    PP          ###
+    HHH  HHHH    PP          ###
+    HHH  HHHH    PP          ###
+________________________________
+HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+thing drone 13 13 1
+thing grenades 5 5
+
+room vatrow
+name VAT ROW
+exits left=- right=- up=- down=jar
+start 0 10
+colours red yellow white
+band 24 1 magenta
+band 40 1 red
+band 129 1 green
+map
+################################
+################################
+#                L          L ##
+#-----------------------------##
+#    |     |           |      ##
+#    |     |           |      ##
+#    |     |           |      ##
+#    |     |           |      ##
+     |     |           |      ##
+     |     |           |      ##
+     |     |           |      ##
+===  |     |           |      ##
+###  |     |     x     |      ##
+###=====bbbbbbb=====bbbbbbb=  ##
+###HHHHH       HHHHH       H  ##
+###HHHHH       HHHHH       H  ##
+###HHHHH~~~~~~~HHHHH~~~~~~~H  ##
+###HHHHHwwwwwwwHHHHHwwwwwwwH  ##
+###HHHHHwwwwwwwHHHHHwwwwwwwH  ##
+###HHHHHwwwwwwwHHHHHwwwwwwwH  ##
+###HHHHHwwwwwwwHHHHHwwwwwwwH  ##
+###HHHHHwwwwwwwHHHHHwwwwwwwH  ##
+thing crawler 4 11
+thing crawler 17 11 1
+thing drone 20 10 1
+
+room jar
+name THE PICKLE JAR
+exits left=- right=tanks up=- down=-
+start 28 6
+colours red yellow white
+band 103 2 green
+band 105 1 green
+band 111 2 yellow
+band 113 1 magenta
+band 145 1 red
+map
+###########################H  H#
+###########################H  H#
+####HHHHHHHHHHHHHHHHHHHHHHHH  H#
+###H    L      L      L       ##
+###H                          ##
+###H   :                      ##
+###H               :          ##
+###H          :        =======##
+###H                      HHHH##
+###H  vv                  HHHH##
+###H  ==  PPPP   PPPP     HHHH##
+###H  HH    :        :    HHHH##
+###H  HH :      :       : HHHH##
+###H  HH~~~~~~~~~~~~~~~~~~HHHH##
+###H  HHHHHHHHHHHHHHHHHHHHHHHHHH
+###H  --------------------------
+###H
+###H
+####____________________________
+################################
+################################
+################################
+thing drone 12 7
+thing crawler 18 16
+
+room tanks
+name SETTLING TANKS
+exits left=- right=hut up=- down=-
+start 0 17
+colours red yellow white
+band 24 1 magenta
+band 40 1 red
+band 104 2 white
+band 128 1 green
+band 136 2 yellow
+map
+################################
+################################
+################################
+#####   ####   #################
+#--------------------###########
+#  L  |   |  L  |  L ###########
+#     |   |     |    ###########
+#     |   |     |    ###########
+#     | : | :   |:   ###########
+# :   |   |     |    ###########
+#     |   |   : |    ###########
+#     |   |     |    ###########
+#     |   |     | :  ###########
+#  :  |   |     |    ###########
+#     =====     |      %    L
+                |      %
+    H       HH     H
+    H~~~~~~~HH  ~~~H   #########
+____HwwwwwwwH___www____#########
+####HwwwwwwwH###www#############
+####HwwwwwwwH###www#############
+####HwwwwwwwH###www#############
+thing grenades 14 17
+thing drone 13 11
+
+room hut
+name FOREMAN'S HUT
+exits left=- right=catwalks up=- down=-
+start 0 16
+colours red yellow white
+band 32 1 magenta
+band 40 1 red
+band 63 2 red
+band 65 1 yellow
+band 111 2 yellow
+band 113 1 red
+map
+################################
+################################
+#########    ####    ###########
+###### L       L          ######
+#####-----------------        ##
+#####    |          |     ====##
+#####    |  :       |   ========
+#####    |        : | ==========
+#####    |   :      |  HHHHHHHHH
+#####  : |          |  HHH L HHH
+#####    |          |  HHH   HHH
+#####    |      :   |  HHH   HHH
+#####    |          |  HHHHHHHHH
+##### :  |    :     |  HHHHHHHHH
+         |          |    L
+           HH       |
+           HH    HH
+________________________________
+################################
+################################
+################################
+################################
+thing sentry 24 15 1
+thing life 28 16
+thing grenades 3 16
+
+room catwalks
+name THE CATWALKS
+exits left=- right=- up=- down=slurry
+start 0 16
+colours red yellow white
+band 24 1 magenta
+band 40 1 red
+band 161 1 green
+map
+################################
+################################
+#### |       |       |         #
+####---------------------------#
+#### |   L   |   L   |       L #
+#### |       |       |         #
+#### |       | :     |  :      #
+#### |    :  |       |         #
+#### |       |       |    ==   #
+#### |       |  :    |    ##   #
+#### |:      |       |    ##   #
+#### |       |       PP   ##   #
+#### |      PPP           ## : #
+#### |  :                 ##   #
+     |            :     PP##   #
+  :  |                    ##   #
+     |                    ##   #
+____====bbbbbbbbbbbb====  ##:  #
+####                      ##   #
+####       :              ##   #
+####~~~~~~~~~~~~~~~~~~~~~~##   #
+####wwwwwwwwwwwwwwwwwwwwww##   #
+thing cell 13 11
+thing cell 22 16
+thing shard 28 13
+thing shard 30 15
+
+room slurry
+name SLURRY RUN
+exits left=- right=- up=- down=skip
+start 28 14
+colours red yellow white
+band 24 1 magenta
+band 40 1 red
+band 145 1 green
+map
+############################   #
+############################   #
+#                     ######   #
+#-------------------------##   #
+#  L    |   L    |    L  ###   #
+#       |        |       ###   #
+#       |        |             #
+#    :  |        |  :          #
+#       |        |             #
+#       |     :  |             #
+#       |        |             #
+#       |        |       :     #
+# :     | :      | :           #
+#       |        |             #
+#       |        |             #
+#   PPPPPPP====bbbbbbb=========#
+#           HH         H     H #
+#           HH         H     H #
+#   ~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#   wwwwwwwwwwwwwwwwwwwwwwwwwww#
+#   wwwwwwwwwwwwwwwwwwwwwwwwwww#
+#   wwwwwwwwwwwwwwwwwwwwwwwwwww#
+thing crawler 5 13
+thing cell 13 14
+thing shard 2 12
+thing shard 5 13
+
+room skip
+name SKIP SHAFT
+exits left=- right=- up=- down=engine_shed
+start 1 5
+colours red yellow white
+band 56 1 magenta
+band 81 1 red
+band 143 2 yellow
+band 145 1 green
+map
+#   ############################
+#   ############################
+#                       |  |   #
+#                       |  |   #
+#                       |  |   #
+#                       |  |   #
+#======                 |  |   #
+#                       HHHH   #
+#                       HHHH   #
+#        ======         HHHH   #
+#                     ##########
+#                     ##########
+# ======              ##########
+#                     ##########
+#                     =========#
+#                              #
+#        HH                    #
+#        HH                    #
+__________________~~____________
+HHHHHHHHHHHHHHHHHHwwHHHHHHHHHHHH
+HHHHHHHHHHHHHHHHHHwwHHHHHHHHHHHH
+HHHHHHHHHHHHHHHHHHwwHHHHHHHHHHHH
+thing sentry 23 16 1
+thing exit 28 15
+
+room engine_shed
+name ENGINE SHED
+sector 2
+exits left=- right=- up=- down=-
+start 3 17
+colours magenta yellow white
+band 40 2 red
+band 48 2 yellow
+map
+################################
+################################
+################################
+################################
+#==============================#
+#     |   L   |   L   |   L    #
+#     |       |       |        #
+#     |       |       |        #
+#     |       |       |        #
+#     |       |       |        #
+#     |       |       |        #
+#     |       |       |        #
+#     |       |       |        #
+#     |       |       |        #
+#     |       |       |        #
+#     |       |       |        #
+#     |       |       |        #
+#------------------------------#
+________________________________
+################################
+################################
+################################

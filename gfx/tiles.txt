@@ -163,3 +163,60 @@ tile v weed
 22.222..
 .2222...
 ...2....
+
+# Swarm crystal, the Blue Phase's: a span to walk on, and spikes. Out of
+# phase, as dotted outlines in colour 2 and 3, they still show.
+
+tile b span solid blue
+33333333
+23222322
+22322232
+.22.222.
+..2..2..
+..3..3..
+........
+........
+
+tile x crystalspikes hazard blue
+........
+...3....
+...2..3.
+..32..2.
+..22.32.
+.322.22.
+.2223223
+22222222
+
+# Boiling water, the Red Phase's hazard (the Sump boils only in the Red).
+tile o boiling hazard red
+........
+.3...3..
+3.3.....
+...1.3.1
+1.111111
+11111111
+12111211
+11111111
+
+# A lamp hung from the rock: scenery. Colour 2 is its light.
+tile L lamp
+...11...
+...11...
+..1111..
+.111111.
+.122221.
+..2332..
+...33...
+........
+
+# Welded plate, the Red Phase's: its seams are colour 2, so its outline
+# still shows in the Blue (redblock's would be dark there).
+tile P plate solid red
+2222222.
+2111112.
+2131312.
+2111112.
+2111112.
+2131312.
+2222222.
+........
