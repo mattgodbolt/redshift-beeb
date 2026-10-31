@@ -176,9 +176,9 @@ ASSERT T_EMPTY = 0
     STA (pr_dst),Y
     TYA : AND #7 : TAY
     DEY : BPL row
-    \ On the bar's second row, its bottom line is the dotted rule.
+    \ On the bar's second row, its bottom line is the rule.
     LDA pr_dst+1 : CMP #HI(screen + ROW_BYTES) : BCC no_rule
-    LDA #&0A                        ; (logical 1, 0, 1, 0)
+    LDA #&0F                        ; (logical 1 across: a solid line)
     LDY #7 : STA (pr_dst),Y
     LDY #15 : STA (pr_dst),Y
 .no_rule

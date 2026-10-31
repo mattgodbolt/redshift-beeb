@@ -211,4 +211,11 @@ Matt was away is marked *provisional* until reviewed.
     where a player shifts, and the landmarks grew: the Pump House's
     flywheel, the Settling Tanks' gauge, a hoist in the Catwalks, an
     outflow in Slurry Run, in place of the ceiling rail and lamps.
+36. **2026-10-31: a shift changes the whole room.** A third outside review
+    found the phase swap barely showed in the magenta rooms: decision 29
+    had kept their rock magenta in the Blue, so only the lips changed.
+    Every room's rock is now blue in the Blue Phase, so a shift turns the
+    room from warm to cold (green stays acid's alone). The status bar names
+    the phase, and its rule is solid. The scattered solid bricks are gone,
+    since they read as blocks.
 

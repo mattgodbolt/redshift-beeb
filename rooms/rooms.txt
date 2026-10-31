@@ -59,7 +59,7 @@ room pump
 name PUMP HOUSE
 exits left=- right=vatrow up=- down=-
 start 1 17
-colours magenta/magenta yellow white
+colours magenta/blue yellow white
 map
 ################################
 ################################
@@ -124,7 +124,7 @@ room jar
 name THE PICKLE JAR
 exits left=- right=tanks up=- down=-
 start 28 6
-colours magenta/magenta cyan white
+colours magenta/blue cyan white
 band 104 3 green/green
 band 112 3 white
 map
@@ -221,7 +221,7 @@ room catwalks
 name THE CATWALKS
 exits left=- right=- up=- down=slurry
 start 0 16
-colours magenta/magenta yellow white
+colours magenta/blue yellow white
 band 160 3 green/green
 map
 ################################
@@ -289,7 +289,7 @@ room skip
 name SKIP SHAFT
 exits left=- right=- up=- down=engine_shed
 start 1 5
-colours magenta/magenta yellow white
+colours magenta/blue yellow white
 band 146 3 green/green
 map
 #   ############################
