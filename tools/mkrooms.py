@@ -4,6 +4,8 @@
     mkrooms.py build/data/rooms.6502 [--preview build/preview]
 
 Each room's record (rooms.6502 reads it):
+    sector      its sector, 1-5 (a room with none is in the last one's)
+    start       x, y in tiles where the cage brings you in, &FF if none
     exits       left, right, up, down: room numbers, &FF for none
     colours     logical 1-3 at the top, Red Phase then Blue Phase
     bands       a count, then each band's line, logical colour, Red, Blue
@@ -107,7 +109,9 @@ def main():
     total = 0
     for i, r in enumerate(rooms):
         where = f"room {r.ident}"
-        rec = []
+        if not 1 <= r.sector <= 5:
+            raise SystemExit(f"{where}: sectors are 1-5")
+        rec = [r.sector] + (list(r.start) if r.start else [0xFF, 0xFF])
         for d in ("left", "right", "up", "down"):
             t = r.exits[d]
             if t == "-":

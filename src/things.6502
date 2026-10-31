@@ -24,7 +24,7 @@ ASSERT EB0 + NEB = NOBJ
 \ By type (TH_*): sprite, phase, bolts it takes (0: only a grenade kills
 \ it), and score in hundreds (BCD).
 .type_spr   EQUB SPR_SENTRY, SPR_DRONE0, SPR_CRAWLER0, SPR_SHARD0
-            EQUB SPR_CELL, SPR_GRENADES, SPR_LIFE, SPR_CELL
+            EQUB SPR_CELL, SPR_GRENADES, SPR_LIFE, SPR_CAGE
 .type_phase EQUB 1, 1, 1, 2, 0, 0, 0, 0
 .type_hp    EQUB 0, 1, 2, 1, 0, 0, 0, 0
 .type_score EQUB &05, &01, &02, &01, &01, &01, &01, &00
@@ -58,8 +58,11 @@ SENTRY_GAP = 48                 ; frames between a sentry's shots
     JSR rd_byte : STA st_n
     LDA #0 : STA st_k
 .thing
-    LDA st_k : CMP st_n : BCS done
-    CMP #NTH : BCS done
+    LDA st_k : CMP st_n : BCS to_done
+    CMP #NTH : BCC more
+.to_done
+    JMP done
+.more
     JSR rd_byte : PHA
     JSR rd_byte : STA st_x
     JSR rd_byte : STA st_y
@@ -76,7 +79,11 @@ SENTRY_GAP = 48                 ; frames between a sentry's shots
     LDA type_phase,Y : STA th_phase,X
     LDA type_hp,Y : STA th_hp,X
     LDA st_x : ASL A : ASL A : STA obj_x,X
-    LDA st_y : ASL A : ASL A : ASL A : STA obj_y,X : STA th_y0,X
+    LDA st_y : ASL A : ASL A : ASL A
+    CPY #TH_CRAWLER : BNE not_crawler
+    CLC : ADC #4                    ; (12 lines high: its tracks on the floor)
+.not_crawler
+    STA obj_y,X : STA th_y0,X
     LDA st_arg : AND #1 : ASL A : STA obj_face,X    ; 1: facing left
     LDA st_k : STA th_idx,X
     ASL A : ASL A : ASL A : STA th_t,X  ; (staggered, so they don't fire together)
@@ -207,7 +214,7 @@ ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
     JSR sentry_fire
 .look
     JSR th_look
-    LDA th_boom,X : BNE next
+    LDA th_boom,X : JNE next
     \ It meets the player, or the player's bolts. Only in phase.
     JSR th_in_phase : BNE next
     LDA pl_dead : BNE next
@@ -218,7 +225,11 @@ ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
     JSR player_die
     JMP next
 .pickup
+    CMP #TH_EXIT : BEQ cage
     JSR take
+    JMP next
+.cage
+    STA cage_go                     ; (non-zero)
     JMP next
 .no_touch
     LDA th_type,X : CMP #TH_ENEMIES : BCS next

@@ -28,6 +28,7 @@ ENDSECTION
 SECTION Data, org = &8000, load = &FFFF3000, filename = "RSDATA", guard = &C000
     INCLUDE "../build/data/gfx.6502"
     INCLUDE "../build/data/rooms.6502"
+    INCLUDE "text.6502"
 .data_end
     PRINT "data &8000-&", ~data_end, " (", &C000 - data_end, " bytes free)"
 ENDSECTION

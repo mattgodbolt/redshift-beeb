@@ -26,7 +26,8 @@
     LDA #(START_Y + 1) * 8 - PL_H : STA obj_y + PL
     LDA #0 : STA obj_face + PL
     LDA #SPR_ASH_STAND : STA obj_spr + PL
-    LDA #0 : JSR change_room
+    LDA #0 : STA cur_sector : STA cage_go
+    JSR change_room
     LDA vsyncs : STA last_vs
 .loop
     \ A game frame every two VSyncs.
@@ -46,20 +47,45 @@
     JSR ebolts_update
     JSR render
     JSR sound_update
+    LDA cage_go : BEQ loop
+    JSR take_cage
     JMP loop
 }
 
-\ Into room A, the player where they are: the room drawn while the screen
-\ is black, then shown. The shots go.
+\ Into the cage: down to the next sector (the room's down exit), in at the
+\ start the room there gives.
+.take_cage
+{
+    LDA #0 : STA cage_go
+    LDA room_exits + 3 : CMP #&FF : BEQ done
+    JSR sound_take
+    LDA #1 : STA at_start
+    LDA room_exits + 3 : JMP change_room
+.done
+    RTS
+}
+
+\ Into room A, the player where they are (or, with at_start set, where the
+\ room's start is): the room drawn while the screen is black, then shown.
+\ A new sector shows its card first. The shots go.
 .change_room
 {
     PHA
-    LDX #NSHOTS
-.shots
-    LDA #&FF : STA obj_spr,X
-    DEX : BNE shots
+    JSR sector_of
+    CMP cur_sector : BEQ same_sector
+    STA cur_sector
+    JSR show_card
+.same_sector
     PLA
     JSR enter_room
+    LDA at_start : BEQ placed
+    LDA #0 : STA at_start
+    LDA room_sx : CMP #&FF : BEQ placed
+    ASL A : ASL A : STA obj_x + PL
+    LDA room_sy : CLC : ADC #1 : ASL A : ASL A : ASL A
+    SEC : SBC #PL_H : STA obj_y + PL
+    LDA #0 : STA obj_face + PL : STA pl_air
+.placed
     JSR spawn_things
     JSR objs_forget
     LDA obj_x + PL : STA entry_x
@@ -125,6 +151,57 @@
     JMP objs_touch
 }
 
+\ Sector A's card: three lines in the middle of a black screen, for a
+\ few seconds or until a key.
+.show_card
+{
+    ZA_AUTO1 sc_row, sc_n
+    PHA
+    LDX #1 : STX blackout
+    JSR cls
+    \ No bands: logical 1 yellow, in either phase.
+    LDA #0 : STA band_n
+    LDX #3
+.colours
+    LDA card_colours,X : STA top_red,X : STA top_blue,X
+    DEX : BPL colours
+    JSR set_timing
+    JSR set_colours
+    PLA : SEC : SBC #1 : TAX
+    LDA card_lo,X : STA text_ptr
+    LDA card_hi,X : STA text_ptr+1
+    LDA #10 : STA sc_row
+    LDA #3 : STA sc_n
+.line
+    \ Centred: (32 - its length) / 2.
+    LDY #0
+.len
+    LDA (text_ptr),Y : BEQ got_len
+    INY : BNE len
+.got_len
+    TYA : EOR #&FF : SEC : ADC #32 : LSR A : TAX
+    LDY sc_row : JSR print_at
+    INC text_ptr : BNE nc           ; (past the 0)
+    INC text_ptr+1
+.nc
+    LDA sc_row : CLC : ADC #2 : STA sc_row
+    DEC sc_n : BNE line
+    JSR wait_vsync
+    LDA #0 : STA blackout
+    LDA #8 : STA crtc_reg
+    LDA #CRTC_SHOW : STA crtc_data
+    \ Three seconds, or a key once all are up. (read_keys uses X and Y.)
+    LDA #150 : STA sc_n
+.wait
+    JSR wait_vsync
+    JSR read_keys
+    LDA keys_new : BNE done
+    DEC sc_n : BNE wait
+.done
+    RTS
+.card_colours EQUB BLACK, YELLOW, WHITE, CYAN
+}
+
 START_LIVES = 5
 START_CELLS = 5
 START_GRENADES = 5
@@ -142,6 +219,6 @@ START_GRENADES = 5
     JSR read_keys
     LDA keys : BEQ key
     JMP game_start
-.over_text EQUS "      GAME OVER - PRESS A KEY   ", 0
+.over_text EQUS "   OUT OF LIVES. OUT OF PHASE.  ", 0
 }
 

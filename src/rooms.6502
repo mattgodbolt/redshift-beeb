@@ -14,6 +14,17 @@
     RTS
 }
 
+\ Room A's sector.
+.sector_of
+{
+    TAX
+    LDA room_lo,X : STA rd_ptr
+    LDA room_hi,X : STA rd_ptr+1
+.name
+    JSR rd_byte : BNE name
+    JMP rd_byte
+}
+
 \ Read room A: its name, exits, colours and bands, and its map unpacked.
 .load_room
 {
@@ -25,6 +36,9 @@
     LDA room_hi,X : STA rd_ptr+1 : STA room_name+1
 .name
     JSR rd_byte : BNE name
+    JSR rd_byte : STA room_sector
+    JSR rd_byte : STA room_sx
+    JSR rd_byte : STA room_sy
     LDX #0
 .exits
     JSR rd_byte : STA room_exits,X

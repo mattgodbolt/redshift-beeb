@@ -86,6 +86,12 @@ MAXEV = 8                   ; palette changes in a room, below its top
 .top_blue   SKIP 4
 .room_exits SKIP 4          ; left, right, up, down: room numbers, &FF none
 .room_name  SKIP 2          ; the room's name (in its record)
+.room_sector SKIP 1         ; its sector, 1-5
+.room_sx    SKIP 1          ; where the cage brings you in (tiles), &FF none
+.room_sy    SKIP 1
+.cur_sector SKIP 1          ; the sector whose card was shown last
+.cage_go    SKIP 1          ; the player stepped into the cage this frame
+.at_start   SKIP 1          ; change_room: put the player at the room's start
 .things_ptr SKIP 2          ; its things (in its record)
 
 \ The things on screen (render.6502): the player, shots, enemies,

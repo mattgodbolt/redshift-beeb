@@ -148,6 +148,7 @@ class Room:
         self.map = []
         self.things = []               # (type, x, y, args)
         self.start = None
+        self.sector = None
 
 
 def _colour(word, where):
@@ -198,6 +199,8 @@ def read_rooms(path=ROOT / "rooms/rooms.txt"):
             if not 1 <= logical <= 3:
                 raise SystemExit(f"{where}: a band changes logical colour 1, 2 or 3")
             room.bands.append((line, logical) + _colour(words[3], where))
+        elif key == "sector":
+            room.sector = int(words[1])
         elif key == "start":
             room.start = (int(words[1]), int(words[2]))
         elif key == "map":
@@ -216,7 +219,11 @@ def read_rooms(path=ROOT / "rooms/rooms.txt"):
             room.things.append((words[1], int(words[2]), int(words[3]), words[4:]))
         else:
             raise SystemExit(f"{where}: unknown line {key!r}")
+    sector = 1
     for r in rooms:
+        if r.sector is None:
+            r.sector = sector
+        sector = r.sector
         if not r.map:
             raise SystemExit(f"{path}: room {r.ident} has no map")
         if r.colours is None:

@@ -1,0 +1,22 @@
+\ ***************************************************************************
+\ The words on screen (docs/story.md, section 6), in the sideways bank.
+\ ***************************************************************************
+
+\ Each sector's card: three lines, each ending in a 0.
+.card_1 EQUS "SECTOR 1: THE LEACH WORKS", 0
+        EQUS "ACID GETS THE ORE OUT OF ROCK.", 0
+        EQUS "IT ISN'T FUSSY ABOUT ROCK.", 0
+.card_2 EQUS "SECTOR 2: MARSHALLING YARD", 0
+        EQUS "THE ORE TRUCKS DRIVE THEMSELVES.", 0
+        EQUS "THE CRANES HAVE GROWN GUNS.", 0
+.card_3 EQUS "SECTOR 3: THE SUMP", 0
+        EQUS "IN THE RED, IT BOILS.", 0
+        EQUS "IN THE BLUE, THE SWARM DRANK IT.", 0
+.card_4 EQUS "SECTOR 4: THE SPAR SEAMS", 0
+        EQUS "THE RICHEST SPAR ON KHARON-4.", 0
+        EQUS "DON'T STOP TO FILL YOUR POCKETS.", 0
+.card_5 EQUS "SECTOR 5: INSIDE THE PRISM", 0
+        EQUS "THE ROCK STOPS HERE.", 0
+        EQUS "WHATEVER THIS IS, IT'S AWAKE.", 0
+.card_lo EQUB LO(card_1), LO(card_2), LO(card_3), LO(card_4), LO(card_5)
+.card_hi EQUB HI(card_1), HI(card_2), HI(card_3), HI(card_4), HI(card_5)
