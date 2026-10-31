@@ -7,6 +7,8 @@
 #   make ROOM=n   a test build that starts in room n (0 first), at its start
 #   make disc     rebuild from a clean tree and copy the disc to redshift.ssd,
 #                 which the README's play link boots
+#   make ship     make disc from HEAD in a scratch worktree (so work in
+#                 progress in this tree isn't on it), then commit the disc
 
 BARON   ?= $(firstword $(wildcard ../baron/build/src/baron $(HOME)/dev/baron/build/src/baron) baron)
 # Baron, failing on a warning too.
@@ -23,7 +25,7 @@ ROOMDEF  = $(if $(ROOM),-D START_ROOM=$(ROOM))
 BUILD   := $(shell date -u '+%Y-%m-%d %H:%M') $(shell git rev-parse --short HEAD 2>/dev/null || echo NOGIT)$(shell git diff --quiet HEAD -- . ':(exclude)$(DISC)' 2>/dev/null || echo +)
 
 .DELETE_ON_ERROR:
-.PHONY: all run disc clean FORCE
+.PHONY: all run disc ship clean FORCE
 
 all: $(TARGET)
 
@@ -49,6 +51,15 @@ disc:
 	rm -f $(TARGET)
 	$(MAKE) $(TARGET) ROOM=
 	cp $(TARGET) $(DISC)
+
+SHIP_TREE = build/ship
+ship:
+	rm -rf $(SHIP_TREE) && git worktree prune
+	git worktree add -q --detach $(SHIP_TREE) HEAD
+	$(MAKE) -C $(SHIP_TREE) disc BARON=$(abspath $(BARON))
+	cp $(SHIP_TREE)/$(DISC) $(DISC)
+	git worktree remove --force $(SHIP_TREE)
+	git add $(DISC) && git commit -q -m "Disc: $$(git log -1 --format=%s)" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 clean:
 	rm -rf build
