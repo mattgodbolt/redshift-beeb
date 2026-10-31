@@ -9,13 +9,21 @@ romshad  = &F4                  ; the OS's copy of romsel: always write both
 romtypes = &02A1                ; the OS's ROM type per bank; 0: no ROM there
 RS_TRY   = &70                  ; (the loader's own zero page)
 RS_RES   = &71
+RS_P     = &72
 
 .rsload
 {
-    LDX #0
-.hello
-    LDA hello_text,X : BEQ find
-    JSR &FFEE : INX : BNE hello
+    \ The title page, which stays up while RSDATA loads.
+    LDA #LO(title_page) : STA RS_P
+    LDA #HI(title_page) : STA RS_P+1
+    LDY #0
+.page
+    LDA (RS_P),Y : JSR &FFEE
+    INC RS_P : BNE same
+    INC RS_P+1
+.same
+    LDA RS_P : CMP #LO(title_page_end) : BNE page
+    LDA RS_P+1 : CMP #HI(title_page_end) : BNE page
 .find
     \ The highest bank with no ROM that holds what's written to it.
     LDX #15
@@ -55,11 +63,49 @@ RS_RES   = &71
     INC copy+2 : INC copy+5
     DEX : BNE copy
     CLI
+    \ PRESS SPACE, and wait for it.
+    LDX #0
+.press
+    LDA press_text,X : BEQ space
+    JSR &FFEE : INX : BNE press
+.space
+    LDA #&81 : LDX #&9D : LDY #&FF : JSR &FFF4    ; INKEY -99: SPACE
+    CPX #&FF : BNE space
     LDX #LO(run_cmd) : LDY #HI(run_cmd) : JMP &FFF7
-.hello_text EQUS 22, 7, "REDSHIFT ", build_stamp, 13, 10, 0
-.none_text  EQUS 13, 10, "REDSHIFT needs 16K of sideways RAM", 13, 10
+.none_text  EQUS 31, 0, 21, "REDSHIFT needs 16K of sideways RAM", 13, 10
             EQUS "(a Model B with a RAM board, or a", 13, 10
             EQUS "Master 128).", 13, 10, 0
 .load_cmd   EQUS "LOAD RSDATA", 13
 .run_cmd    EQUS "RUN REDSHFT", 13
+.press_text EQUS 31, 8, 22, 136, 131, "PRESS SPACE TO PLAY", 0
 }
+
+\ Teletext: 129 red, 131 yellow, 132 blue, 134 cyan, 135 white, 136 flash,
+\ 141 double height, 157 the colour as background, 156 black background.
+T_RED = 129 : T_YEL = 131 : T_BLUE = 132 : T_CYAN = 134 : T_WHITE = 135
+T_DBL = 141 : T_BG = 157
+MACRO TT_TITLE
+    EQUS T_DBL, T_RED, "    R  E  D", T_CYAN, "S  H  I  F  T"
+ENDMACRO
+.title_page
+    EQUS 22, 7                              ; MODE 7
+    EQUS 23, 1, 0, 0, 0, 0, 0, 0, 0, 0      ; no cursor
+    EQUS 31, 0, 1 : TT_TITLE
+    EQUS 31, 0, 2 : TT_TITLE
+    EQUS 31, 0, 4, T_WHITE, "    KHARON-4, 2189. THE DEEP MINE"
+    EQUS 31, 0, 5, T_WHITE, "    HAS DUG INTO THE PRISM, AND"
+    EQUS 31, 0, 6, T_WHITE, "    REALITY HAS COME APART."
+    EQUS 31, 0, 7, T_RED, "    THE RED BELONGS TO THE MACHINES."
+    EQUS 31, 0, 8, T_CYAN, "    THE BLUE BELONGS TO THE SWARM."
+    EQUS 31, 0, 9, T_WHITE, "    ONE TROOPER. ONE HARNESS."
+    EQUS 31, 0, 10, T_WHITE, "    THE NIGHT SHIFT NEVER CAME UP."
+    EQUS 31, 0, 11, T_YEL, "    YOURS STARTS NOW."
+    EQUS 31, 0, 13, T_YEL, " Z X ", T_WHITE, "left, right   ", T_YEL, ":  ", T_WHITE, "jump"
+    EQUS 31, 0, 14, T_YEL, " /   ", T_WHITE, "crouch        ", T_YEL, "RETURN ", T_WHITE, "fire"
+    EQUS 31, 0, 15, T_YEL, " SPACE ", T_WHITE, "grenade     ", T_YEL, "SHIFT ", T_WHITE, "phase"
+    EQUS 31, 0, 16, T_WHITE, " (or the cursor keys to move)"
+    EQUS 31, 0, 18, T_CYAN, "Each shift costs a phase cell. The"
+    EQUS 31, 0, 19, T_CYAN, "other phase is dotted: it can't touch"
+    EQUS 31, 0, 20, T_CYAN, "you, and you can't touch it."
+    EQUS 31, 0, 24, T_BLUE, build_stamp
+.title_page_end

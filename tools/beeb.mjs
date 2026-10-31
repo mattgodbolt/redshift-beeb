@@ -160,6 +160,12 @@ export async function startBeeb({ disc, model = process.env.REDSHIFT_MODEL || "B
     };
     if (disc) {
         await beeb.boot(disc);
+        // The title page waits for SPACE (rsload.6502): press it on the way to
+        // anything in the game.
+        if (bootUntil && "rsload.space" in syms && !bootUntil.startsWith("rsload")) {
+            await beeb.runUntil("rsload.space");
+            await beeb.tap("SPACE", 0.1);
+        }
         if (bootUntil) await beeb.runUntil(bootUntil);
         if (bootSecs) await beeb.run(bootSecs);
     }
