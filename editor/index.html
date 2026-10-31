@@ -462,7 +462,9 @@ function parseGfx(text, fname) {
     } else {
       const flags = words.slice(4), bad = flags.filter(f => !SPRITE_FLAGS.includes(f));
       if (bad.length) fail(where, `unknown sprite flags ${bad.join(' ')}`);
-      sprites.push({name: words[1], w, h, flags, pixels, hollow: hollow(pixels)});
+      // (ghost: gfxlib's ghost_sprite, never white, as the game shows an enemy out of phase.)
+      const ghost = hollow(pixels).map(row => row.map(c => (c === 3 ? 2 : c)));
+      sprites.push({name: words[1], w, h, flags, pixels, hollow: hollow(pixels), ghost});
     }
   }
   return {tiles, sprites};
@@ -740,7 +742,7 @@ function renderRoom(room, tileMap, phase, buf) {
 
 // A sprite takes the colours of the lines it's on, as in the game.
 function drawSprite(buf, s, px, py, pal, ghost, flip) {
-  const pix = ghost ? s.hollow : s.pixels;
+  const pix = ghost ? s.ghost : s.pixels;
   for (let sy = 0; sy < s.h; sy++) {
     const y = py + sy;
     if (y < 0 || y >= LINES) continue;
@@ -1316,7 +1318,7 @@ function paintPalette() {
     const c = b.querySelector('canvas');
     if (!c) continue;
     const look = thingLook({type: b.dataset.type, args: []});
-    paintPixels(c, look.ghost ? look.sprite.hollow : look.sprite.pixels, pal, +c.dataset.k);
+    paintPixels(c, look.ghost ? look.sprite.ghost : look.sprite.pixels, pal, +c.dataset.k);
   }
   const t = tileMap.get(ui.tile);
   const box = $('curTile');

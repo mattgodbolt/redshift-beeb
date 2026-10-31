@@ -14,7 +14,8 @@ PL_BOX_L = 2                    ; the box, in steps from the sprite's left
 PL_BOX_R = 5
 PL_X_MAX = 128 - PL_W
 PL_GUN = 7                      ; the bolt's top, below the sprite's
-PL_GUN_CROUCH = 13
+PL_GUN_CROUCH = 16
+PL_CROUCH_TOP = 12              ; crouched, the box starts this far down (under a sergeant's bolts)
 FALL_MAX = 6                    ; lines a frame
 NSHOTS = 2                      ; things 1 and 2
 SHOT_SPEED = 4                  ; steps a frame
@@ -124,8 +125,11 @@ JUMP_LEN = P% - jump_tab
     LDA #2 : STA obj_face + PL
     LDA pl_crouch : BNE horiz_done
     LDA obj_x + PL : BEQ off_left
-    SEC : SBC #1 : JSR side_clear : BNE horiz_done
+    SEC : SBC #1 : JSR side_clear : BNE blocked
     DEC obj_x + PL : INC pl_moved
+    JMP horiz_done
+.blocked
+    LDA obj_x + PL : SEC : SBC #1 : JSR catch_corner
     JMP horiz_done
 .off_left
     LDX #0 : JSR go_exit            ; (left)
@@ -135,8 +139,11 @@ JUMP_LEN = P% - jump_tab
     LDA #0 : STA obj_face + PL
     LDA pl_crouch : BNE horiz_done
     LDA obj_x + PL : CMP #PL_X_MAX : BCS off_right
-    ADC #1 : JSR side_clear : BNE horiz_done
+    ADC #1 : JSR side_clear : BNE blocked_r
     INC obj_x + PL : INC pl_moved
+    JMP horiz_done
+.blocked_r
+    LDA obj_x + PL : CLC : ADC #1 : JSR catch_corner
     JMP horiz_done
 .off_right
     LDX #1 : JSR go_exit            ; (right)
@@ -228,6 +235,38 @@ JUMP_LEN = P% - jump_tab
     LDA obj_st + PL : ORA #OS_CHANGED : STA obj_st + PL
 .fire
     JMP player_fire
+}
+
+\ Falling, and stopped by the corner of a ledge with the feet just below
+\ its top: up onto it, rather than sliding down its face into whatever's
+\ under it. A = the x the player was stopped from.
+CATCH = 6                       ; lines below the top that still catch
+.catch_corner
+{
+    LDX pl_air : CPX #2 : BNE done
+    LDX obj_y + PL : CPX #CATCH : BCC done
+    STA cc_x
+    STX cc_y
+    LDA #CATCH : STA cc_n
+.try
+    DEC obj_y + PL
+    LDA cc_x : JSR side_clear : BNE next
+    LDA #PL_H : STA ta_dy : LDA #0 : STA ta_h
+    LDA cc_x : JSR box_at
+    LDA #TF_SOLID : JSR test_area : BNE caught
+.next
+    DEC cc_n : BNE try
+    LDA cc_y : STA obj_y + PL       ; (no ledge there: as it was)
+.done
+    RTS
+.caught
+    LDA cc_x : STA obj_x + PL
+    LDA #0 : STA pl_air
+    INC pl_moved
+    RTS
+.cc_x EQUB 0
+.cc_y EQUB 0
+.cc_n EQUB 0
 }
 
 \ Is the player's box clear at x = A, for the lines it covers (crouched

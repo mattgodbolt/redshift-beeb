@@ -28,8 +28,8 @@ sector 1
 exits left=- right=pump up=- down=-
 start 2 17
 colours red yellow white
-band 144 1 magenta
-band 146 3 green
+band 144 1 magenta/magenta
+band 146 3 green/green
 map
 #|    |#########################
 #|    |#########################
@@ -60,8 +60,8 @@ room pump
 name PUMP HOUSE
 exits left=- right=vatrow up=- down=-
 start 1 17
-colours magenta yellow white
-band 144 1 red
+colours magenta/blue yellow white
+band 144 1 red/magenta
 map
 ################################
 ################################
@@ -93,8 +93,8 @@ name VAT ROW
 exits left=- right=- up=- down=jar
 start 0 10
 colours red yellow white
-band 112 1 magenta
-band 128 3 green
+band 112 1 magenta/magenta
+band 128 3 green/green
 map
 ################################
 ################################
@@ -108,7 +108,7 @@ map
      |     |           |      ##
      |     |           |      ##
 ===  |     |           |      ##
-###  |     |     x     |      ##
+###  |    x|           |      ##
 ###=====bbbbbbb=====bbbbbbb=  ##
 ###HHHHH       HHHHH       H  ##
 ###HHiHH       HHiHH       H  ##
@@ -126,22 +126,22 @@ room jar
 name THE PICKLE JAR
 exits left=- right=tanks up=- down=-
 start 28 6
-colours magenta yellow white
-band 104 3 green
+colours magenta/blue yellow white
+band 104 3 green/green
 band 112 3 white
-band 144 1 red
+band 144 1 red/magenta
 map
-###########################T  T#
 ###########################T  T#
 ####nnnnnnnnnnnnnnnnnnnnnnnT  T#
 ###H    L      L      L       ##
+###H                          ##
 ###H                          ##
 ###H   :                      ##
 ###H               :          ##
 ###H          :        =======##
 ###H                      HHHH##
 ###H  vv                  HHHH##
-###H  ==  PPPP   PPPP     HHHH##
+###H  ==  PPPP   PPPPP    HHHH##
 ###H  HH    :        :    HHHH##
 ###H  HH :      :       : HHHH##
 ###H  HH~~~~~~~~~~~~~~~~~~HHHH##
@@ -154,15 +154,15 @@ map
 ################################
 ################################
 thing drone 12 7
-thing crawler 18 16
+thing crawler 29 16
 
 room tanks
 name SETTLING TANKS
 exits left=- right=hut up=- down=-
 start 0 17
 colours red yellow white
-band 144 1 magenta
-band 146 3 green
+band 144 1 magenta/magenta
+band 146 3 green/green
 map
 ################################
 ################################
@@ -194,7 +194,7 @@ name FOREMAN'S HUT
 exits left=- right=catwalks up=- down=-
 start 0 16
 colours red yellow white
-band 136 1 magenta
+band 136 1 magenta/magenta
 map
 ################################
 ################################
@@ -226,8 +226,8 @@ room catwalks
 name THE CATWALKS
 exits left=- right=- up=- down=slurry
 start 0 16
-colours magenta yellow white
-band 160 3 green
+colours magenta/blue yellow white
+band 160 3 green/green
 map
 ################################
 ################################
@@ -261,7 +261,7 @@ name SLURRY RUN
 exits left=- right=- up=- down=skip
 start 28 14
 colours red yellow white
-band 144 3 green
+band 144 3 green/green
 map
 ############################   #
 ############################   #
@@ -295,8 +295,8 @@ name SKIP SHAFT
 exits left=- right=- up=- down=engine_shed
 start 1 5
 colours red yellow white
-band 144 1 magenta
-band 146 3 green
+band 144 1 magenta/magenta
+band 146 3 green/green
 map
 #   ############################
 #   ############################
@@ -328,9 +328,7 @@ name ENGINE SHED
 sector 2
 exits left=- right=- up=- down=-
 start 3 17
-colours magenta yellow white
-band 40 2 red
-band 48 2 yellow
+colours magenta/blue yellow white
 map
 ################################
 ################################

@@ -40,9 +40,12 @@ TH_ENEMIES = TH_CELL            ; types below are enemies
 \ The grenade's arc: lines a frame, up negative.
 .arc_tab    EQUB -5, -4, -4, -3, -3, -2, -2, -1, -1, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5
 ARC_LEN = P% - arc_tab
+ARC_FALL = 11                   ; where the arc starts to fall (a roll off an edge)
 GR_FRAMES = 40                  ; it goes off after this long anyway
 BOOM_FRAMES = 8
 SENTRY_GAP = 48                 ; frames between a sentry's shots
+SENTRY_GUN = 1                  ; its bolt's top, below its own
+ASSERT PL_H - 16 + SENTRY_GUN + 3 <= PL_CROUCH_TOP   ; (a sergeant is 16 high)
 
 \ Into a new room: the shots and blasts gone, the room's things out.
 .spawn_things
@@ -171,7 +174,7 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
     LDA obj_x + PL : CLC : ADC #PL_BOX_L : STA bx0
     ADC #PL_BOX_R - PL_BOX_L + 1 : STA bx1
     LDA obj_y + PL : LDY pl_crouch : BEQ standing
-    CLC : ADC #8
+    CLC : ADC #PL_CROUCH_TOP
 .standing
     STA by0
     LDA obj_y + PL : CLC : ADC #PL_H : STA by1
@@ -395,19 +398,43 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
     JSR th_in_phase : BNE done
     LDA obj_x + PL : CLC : ADC #2 : CMP obj_x,X
     BEQ y_axis : BCC left
-    INC obj_x,X : BNE y_axis        ; (always)
+    INC obj_x,X
+    JSR th_solid : BEQ y_axis
+    DEC obj_x,X : JMP y_axis        ; (a wall: not that way)
 .left
     DEC obj_x,X
+    JSR th_solid : BEQ y_axis
+    INC obj_x,X
 .y_axis
     LDA obj_y + PL : CLC : ADC #8 : CMP obj_y,X
     BEQ moved : BCC up
-    INC obj_y,X : INC obj_y,X : BNE moved       ; (always)
+    INC obj_y,X : INC obj_y,X
+    JSR th_solid : BEQ moved
+    DEC obj_y,X : DEC obj_y,X : JMP moved
 .up
     DEC obj_y,X : DEC obj_y,X
+    JSR th_solid : BEQ moved
+    INC obj_y,X : INC obj_y,X
 .moved
     LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
 .done
     RTS
+}
+
+\ Is anything solid (in thing X's own phase: attr_ptr) under thing X's
+\ box? Z clear (BNE) if so. X is kept.
+.th_solid
+{
+    JSR th_box
+    LDA ox0 : LSR A : LSR A : STA ta_c0
+    LDA ox1 : SEC : SBC #1 : LSR A : LSR A : STA ta_c1
+    LDA oy0 : LSR A : LSR A : LSR A : STA ta_r0
+    LDA oy1 : SEC : SBC #1 : LSR A : LSR A : LSR A : STA ta_r1
+    STX ts_x
+    LDA #TF_SOLID : JSR test_area
+    PHP : LDX ts_x : PLP
+    RTS
+.ts_x EQUB 0
 }
 
 \ Thing X steps the way it faces, unless the screen's edge or something
@@ -490,7 +517,9 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
 .free
     LDA #SPR_EBOLT : STA obj_spr,Y
     LDA #OS_CHANGED : STA obj_st,Y
-    LDA obj_y,X : CLC : ADC #4 : STA obj_y,Y
+    \ From the gun on top of its head: high enough that a crouch ducks it
+    \ (on one floor, the bolt's foot is above the crouched box's top).
+    LDA obj_y,X : CLC : ADC #SENTRY_GUN : STA obj_y,Y
     LDA obj_face,X : BNE leftward
     LDA #3 : STA shot_dx,Y
     LDA obj_x,X : CLC : ADC #8 : STA obj_x,Y
@@ -551,7 +580,13 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
     LDA #SPR_GRENADE : STA obj_spr + GR
     LDA #OS_CHANGED : STA obj_st + GR
     LDA #0 : STA gr_i : STA th_boom + GR : STA th_t + GR
-    LDA obj_y + PL : CLC : ADC #4 : STA obj_y + GR
+    \ Crouching, it's rolled along the floor instead: under a sergeant's
+    \ fire, into its plinth (decision 25).
+    LDA pl_crouch : STA gr_roll
+    LDA #4 : LDY pl_crouch : BEQ lob
+    LDA #PL_H - 4
+.lob
+    CLC : ADC obj_y + PL : STA obj_y + GR
     LDA obj_x + PL : CLC : ADC #3 : STA obj_x + GR
     LDA obj_face + PL : BNE left
     LDA #2 : BNE set                ; (always)
@@ -588,14 +623,25 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
 .in_time
     LDA obj_st + GR : ORA #OS_CHANGED : STA obj_st + GR
     LDA obj_x + GR : CLC : ADC shot_dx + GR
-    CMP #128 - 2 + 1 : BCS bang     ; (the screen's edge)
+    CMP #128 - 2 + 1 : BCC across
+    JMP grenade_bang                ; (the screen's edge)
+.across
     STA obj_x + GR
+    LDA gr_roll : BEQ arc
+    \ Rolling: on along the floor while there is one, or else falling.
+    LDA obj_x + GR : CLC : ADC #1 : LSR A : LSR A : STA ta_c0 : STA ta_c1
+    LDA obj_y + GR : CLC : ADC #4 : LSR A : LSR A : LSR A : STA ta_r0 : STA ta_r1
+    LDA #TF_SOLID : JSR test_area : BNE hits
+    LDA #0 : STA gr_roll
+    LDA #ARC_FALL : STA gr_i
+.arc
     LDX gr_i : CPX #ARC_LEN - 1 : BCS fast
     INC gr_i
 .fast
     LDA obj_y + GR : CLC : ADC arc_tab,X
     CMP #PLAY_LINES - 4 : BCS bang
     STA obj_y + GR
+.hits
     \ Into anything solid, or any enemy in phase: bang.
     LDA obj_x + GR : CLC : ADC #1 : LSR A : LSR A : STA ta_c0 : STA ta_c1
     LDA obj_y + GR : CLC : ADC #2 : LSR A : LSR A : LSR A : STA ta_r0 : STA ta_r1

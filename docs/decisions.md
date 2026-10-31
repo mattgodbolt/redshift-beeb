@@ -110,4 +110,24 @@ Matt was away is marked *provisional* until reviewed.
     playfield. Its ink is white in both phases, so it doesn't share the
     playfield's yellow. The icons are drawn over three characters the bar
     never prints.
+24. **2026-10-31: the corner catch.** Falling against a ledge's corner
+    with the feet a few lines below its top (`CATCH`), Ash steps up onto
+    it, where before they slid down its face into whatever was below,
+    while looking as if they'd landed. Walking still doesn't climb a step.
+25. **2026-10-31: crouching ducks a sergeant, and rolls a charge.** A
+    crouched Ash is lower (`PL_CROUCH_TOP`), and a Drill Sergeant's gun
+    is on top of its head, so on one floor its bolts pass over a crouch.
+    A charge thrown crouching rolls along the floor until it hits
+    something or the floor ends, so a sergeant can be fought up close, at
+    the cost of a charge. Lobbing from a crate still works.
+26. **2026-10-31: ghosts are never white, and Slivers stop at walls.** A
+    newcomer took ghost Slivers for white gems to collect: a ghost's
+    colour 3 is now drawn as 2, and the Sliver is redrawn so its outline
+    can shimmer. A Sliver in phase used to fly through solid brick; now a
+    wall stops it.
+27. **2026-10-31: green is acid, in both phases.** The phase swap turned
+    green acid magenta and a magenta floor green, undoing the lesson the
+    first room teaches. Every room now gives its Blue Phase colours where
+    the swap would make anything but acid green, and acid is green in
+    both.
 

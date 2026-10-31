@@ -160,3 +160,28 @@ What was done, in order, with what worked and what didn't.
   thing to compress, since they're unpacked once a room; the art is read
   every frame.
 
+## 2026-10-31: landmarks, and a newcomer's playtest
+
+- An agent dressed every room with a landmark from a small kit of new
+  tiles: the beacon and pad, the flywheel, sight glasses, the jar's lid,
+  a gauge, the hut's roof and windows, railings, an outflow, a sheave and
+  skip, and a signal for the Engine Shed. A script compared every cell's
+  flags before and after: only air became scenery.
+- Another agent played every room as a newcomer, from screenshots, with
+  no map. It finished all of them, and found:
+  - Ash sliding down a ledge's corner into acid while looking landed (the
+    corner catch, decision 24);
+  - THE PICKLE JAR's opening: the lid a tile too low, so the first jumps
+    had a window of a few steps. The lid is a row higher, the second plate
+    reaches under the ledge, and the drain's Trundler starts at the far
+    end facing away, so the drop into it can be timed by watching;
+  - VAT ROW's crystal spike hidden under a Trundler's ghost (moved onto a
+    span);
+  - ghost Slivers taken for gems, and Slivers flying through brick
+    (decision 26);
+  - the phase swap making acid magenta (decision 27);
+  - crouching not ducking a sergeant (decision 25, which also answers the
+    question of how to fight one up close);
+  - horizontal pipes and the crystal span's teeth read as ledges and
+    ghosts: the pipe is thinner and in the body colour, the span solid.
+

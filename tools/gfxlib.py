@@ -136,8 +136,8 @@ def read_sprites(path=ROOT / "gfx/sprites.txt", ghosts=True):
         s = Sprite(name, w, h, _pixels(art, w, f"{path}:{line}"), flags)
         out.append(s)
         if ghosts and "phase" in s.flags:
-            out.append(Sprite(name + "_ghost", w, h, hollow(s.pixels, 0), s.flags - {"phase"}))
-            out.append(Sprite(name + "_ghost2", w, h, hollow(s.pixels, 1), s.flags - {"phase"}))
+            out.append(Sprite(name + "_ghost", w, h, ghost_sprite(s.pixels, 0), s.flags - {"phase"}))
+            out.append(Sprite(name + "_ghost2", w, h, ghost_sprite(s.pixels, 1), s.flags - {"phase"}))
     return out
 
 
@@ -167,6 +167,12 @@ def hollow(pixels, parity=None):
     for x, y in keep:
         out[y][x] = pixels[y][x]
     return out
+
+
+def ghost_sprite(pixels, parity=None):
+    """An enemy out of phase: its dotted outline, never white (colour 3 is
+    drawn as 2), since white marks what can hurt you or be taken."""
+    return [[2 if c == 3 else c for c in row] for row in hollow(pixels, parity)]
 
 
 def ghost_tile(pixels):
