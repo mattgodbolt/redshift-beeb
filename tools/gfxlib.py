@@ -107,19 +107,25 @@ def read_sprites(path=ROOT / "gfx/sprites.txt", ghosts=True):
 
 def hollow(pixels):
     """The out-of-phase look of a phase tile or sprite: a dotted outline.
-    A pixel stays if it's lit and on the edge (a neighbour or the border is
-    dark) and on the even squares of a checkerboard."""
+    The outline is the lit pixels on the edge (a neighbour or the border is
+    dark). The dots are the squares of a checkerboard that keep more of it
+    (the even ones, on a tie); a tiny thing keeps its whole outline, so it
+    never vanishes."""
     h, w = len(pixels), len(pixels[0])
-    out = [[0] * w for _ in range(h)]
+    edge = []
     for y in range(h):
         for x in range(w):
-            c = pixels[y][x]
-            if not c or (x + y) & 1:
-                continue
-            edge = x in (0, w - 1) or y in (0, h - 1) or any(
-                not pixels[y + dy][x + dx] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
-            if edge:
-                out[y][x] = c
+            if pixels[y][x] and (x in (0, w - 1) or y in (0, h - 1) or any(
+                    not pixels[y + dy][x + dx] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))):
+                edge.append((x, y))
+    even = [(x, y) for x, y in edge if not (x + y) & 1]
+    odd = [(x, y) for x, y in edge if (x + y) & 1]
+    keep = even if len(even) >= len(odd) else odd
+    if len(keep) < 8:
+        keep = edge
+    out = [[0] * w for _ in range(h)]
+    for x, y in keep:
+        out[y][x] = pixels[y][x]
     return out
 
 
