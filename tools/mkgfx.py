@@ -90,6 +90,10 @@ def main():
         out.append("    EQUB " + ", ".join(f"HI(tile_gfx + {k * 16})" for k in idx))
     out.append(".tile_attr")
     out.append(eqb(sum(FLAG_BITS[f] for f in t.flags) for t in tiles))
+    # What each tile is in each phase: out of its phase, nothing at all.
+    for phase, other in (("red", "blue"), ("blue", "red")):
+        out.append(f".attr_{phase}")
+        out.append(eqb(0 if other in t.flags else sum(FLAG_BITS[f] for f in t.flags) for t in tiles))
     for i, t in enumerate(tiles):
         out.append(f"T_{t.name.upper()} = {i}")
 

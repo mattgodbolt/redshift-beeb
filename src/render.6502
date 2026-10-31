@@ -1,0 +1,336 @@
+\ ***************************************************************************
+\ Drawing the things that move, without flicker and without a second
+\ screen (decision 6).
+\
+\ Each frame, every thing that has moved or changed (OS_CHANGED), appeared
+\ or gone has a footprint: where it was drawn and where it is now, as one
+\ rectangle of byte columns and character rows. A rectangle grows to take
+\ in every other thing it touches (whose own footprint is then drawn too),
+\ until it touches nothing more. It's then put together in the compose
+\ buffer, laid out like the screen: the room's tiles first, then every
+\ thing in it, masked, in slot order. Then it's copied to the screen in
+\ one go, so no byte is ever seen half drawn: a thing is never missing for
+\ a frame. A rectangle too big for the buffer is drawn on the screen
+\ itself, which can flicker; things are small, so it's rare.
+\
+\ A thing's position: x in 2-pixel steps, so its sprite is one of two
+\ versions (0, or 2 pixels on: gfx.6502), y in lines.
+\ ***************************************************************************
+
+\ The rectangle being drawn, and how.
+ZA_AUTO1 rc0, rc1, rr0, rr1     ; columns and rows, ends exclusive
+
+\ Nothing on screen: for a new room (its tiles are drawn whole).
+.objs_forget
+{
+    LDX #NOBJ - 1
+.loop
+    LDA obj_st,X : AND #&FF EOR OS_SHOWN : ORA #OS_CHANGED : STA obj_st,X
+    DEX : BPL loop
+    RTS
+}
+
+\ Draw everything that's changed since the last render.
+.render
+{
+    ZA_AUTO1 ri, rgrew
+    \ Where each thing is now, and its footprint.
+    LDX #NOBJ - 1
+.where
+    LDA #0 : STA obj_pend,X
+    STA f_c1,X                      ; (no footprint: an empty rectangle)
+    LDY obj_spr,X : INY : BEQ gone  ; (&FF: none)
+    \ The sprite's version: face + x's low bit.
+    LDA obj_x,X : AND #1 : ORA obj_face,X
+    CLC : ADC obj_spr,X : TAY
+    LDA obj_x,X : LSR A : STA n_c0,X
+    CLC : ADC spr_w,Y : STA n_c1,X
+    LDA obj_y,X : LSR A : LSR A : LSR A : STA n_r0,X
+    LDA obj_y,X : CLC : ADC spr_h,Y : SEC : SBC #1
+    LSR A : LSR A : LSR A : CLC : ADC #1 : STA n_r1,X
+    \ Not shown yet, or changed: pending, and the footprint takes in where
+    \ it was, if it was shown. Otherwise just where it is.
+    LDA n_c0,X : STA f_c0,X
+    LDA n_c1,X : STA f_c1,X
+    LDA n_r0,X : STA f_r0,X
+    LDA n_r1,X : STA f_r1,X
+    LDA obj_st,X : BPL pending      ; (not shown)
+    AND #OS_CHANGED : BEQ next
+    JSR take_in_old
+.pending
+    INC obj_pend,X
+    BNE next                        ; (always)
+.gone
+    \ Gone but still shown: pending, the footprint where it was.
+    LDA obj_st,X : BPL next
+    LDA o_c0,X : STA f_c0,X
+    LDA o_c1,X : STA f_c1,X
+    LDA o_r0,X : STA f_r0,X
+    LDA o_r1,X : STA f_r1,X
+    INC obj_pend,X
+.next
+    DEX : BMI where_done
+    JMP where
+.where_done
+
+    \ Each pending thing's rectangle in turn.
+    LDA #0 : STA ri
+.each
+    LDX ri
+    LDA obj_pend,X : JEQ next_rect
+    LDA f_c0,X : STA rc0
+    LDA f_c1,X : STA rc1
+    LDA f_r0,X : STA rr0
+    LDA f_r1,X : STA rr1
+    LDY #NOBJ - 1
+    LDA #0
+.clear_in
+    STA obj_in,Y
+    DEY : BPL clear_in
+    INC obj_in,X
+.grow
+    LDA #0 : STA rgrew
+    LDX #NOBJ - 1
+.touch
+    LDA obj_in,X : BNE no_touch
+    LDA f_c0,X : CMP f_c1,X : BCS no_touch     ; (empty)
+    \ Overlap: f_c0 < rc1, rc0 < f_c1, f_r0 < rr1, rr0 < f_r1.
+    LDA f_c0,X : CMP rc1 : BCS no_touch
+    LDA rc0 : CMP f_c1,X : BCS no_touch
+    LDA f_r0,X : CMP rr1 : BCS no_touch
+    LDA rr0 : CMP f_r1,X : BCS no_touch
+    INC obj_in,X : INC rgrew
+    LDA f_c0,X : CMP rc0 : BCS c0ok
+    STA rc0
+.c0ok
+    LDA f_r0,X : CMP rr0 : BCS r0ok
+    STA rr0
+.r0ok
+    LDA rc1 : CMP f_c1,X : BCS c1ok
+    LDA f_c1,X : STA rc1
+.c1ok
+    LDA rr1 : CMP f_r1,X : BCS r1ok
+    LDA f_r1,X : STA rr1
+.r1ok
+.no_touch
+    DEX : BPL touch
+    LDA rgrew : BNE grow
+
+    JSR draw_rect
+    \ Everything in it is now shown where it is (or gone), and its
+    \ footprint is just that.
+    LDX #NOBJ - 1
+.done_in
+    LDA obj_in,X : BEQ not_in
+    LDA #0 : STA obj_pend,X
+    STA obj_st,X : STA f_c1,X
+    LDY obj_spr,X : INY : BEQ not_in            ; (gone: not shown, no footprint)
+    LDA #OS_SHOWN : STA obj_st,X
+    LDA n_c0,X : STA o_c0,X : STA f_c0,X
+    LDA n_c1,X : STA o_c1,X : STA f_c1,X
+    LDA n_r0,X : STA o_r0,X : STA f_r0,X
+    LDA n_r1,X : STA o_r1,X : STA f_r1,X
+.not_in
+    DEX : BPL done_in
+.next_rect
+    INC ri : LDA ri : CMP #NOBJ : JNE each
+    RTS
+
+\ The footprint (f_*, X) takes in where thing X was drawn (o_*).
+.take_in_old
+    LDA o_c0,X : CMP f_c0,X : BCS t0
+    STA f_c0,X
+.t0 LDA o_r0,X : CMP f_r0,X : BCS t1
+    STA f_r0,X
+.t1 LDA f_c1,X : CMP o_c1,X : BCS t2
+    LDA o_c1,X : STA f_c1,X
+.t2 LDA f_r1,X : CMP o_r1,X : BCS t3
+    LDA o_r1,X : STA f_r1,X
+.t3 RTS
+}
+
+\ Draw the rectangle rc0-rc1, rr0-rr1: the tiles, then each thing in it
+\ (obj_in), then out to the screen.
+.draw_rect
+{
+    ZA_AUTO1 cw8, rh, direct, dj
+    ZA_AUTO2 dsrc, ddst
+    LDA rr1 : SEC : SBC rr0 : STA rh
+    LDA #0 : STA direct
+    \ The buffer's rows, if it fits: its rows must be under 256 bytes.
+    LDA rc1 : SEC : SBC rc0
+    CMP #32 : BCS to_screen
+    ASL A : ASL A : ASL A : STA cw8 ; the width in bytes
+    LDA #LO(cbuf) : STA ddst
+    LDA #HI(cbuf) : STA ddst+1
+    LDX #0
+.buf_rows
+    LDA ddst : STA trow_lo,X
+    LDA ddst+1 : STA trow_hi,X
+    CLC : LDA ddst : ADC cw8 : STA ddst
+    BCC nc
+    INC ddst+1
+.nc
+    INX : CPX rh : BNE buf_rows
+    LDA ddst+1 : CMP #HI(cbuf + CBUF_SIZE) : BCC fits
+    BNE to_screen
+    LDA ddst : CMP #LO(cbuf + CBUF_SIZE) : BCC fits
+    BEQ fits
+.to_screen
+    \ Straight onto the screen: row r is play_screen + 512r, column c 8c on.
+    INC direct
+    LDA rc0 : ASL A : ASL A : ASL A : STA ddst
+    LDA #0 : ROL A : STA ddst+1         ; (rc0 < 64: one bit over)
+    LDA rr0 : ASL A : ADC ddst+1 : ADC #HI(play_screen) : STA ddst+1
+    LDX #0
+.scr_rows
+    LDA ddst : STA trow_lo,X
+    LDA ddst+1 : STA trow_hi,X
+    CLC : ADC #2 : STA ddst+1
+    INX : CPX rh : BNE scr_rows
+.fits
+
+    \ The tiles: for each row of cells, each byte column's eight lines from
+    \ its tile (the left or right half).
+    LDA #0 : STA dj
+.tile_row
+    LDX dj
+    LDA trow_lo,X : STA ddst
+    LDA trow_hi,X : STA ddst+1
+    \ The map's row: map + 32 (rr0 + dj).
+    TXA : CLC : ADC rr0
+    LDY #0 : STY dsrc+1
+    ASL A : ASL A : ASL A : ROL dsrc+1 : ASL A : ROL dsrc+1 : ASL A : ROL dsrc+1
+    ADC #LO(map) : STA map_row
+    LDA dsrc+1 : ADC #HI(map) : STA map_row+1
+    LDX rc0
+.tile_col
+    TXA : LSR A : TAY
+    LDA (map_row),Y : TAY
+    LDA (tp_lo),Y : STA dsrc
+    LDA (tp_hi),Y : STA dsrc+1
+    TXA : AND #1 : BEQ left
+    LDA dsrc : CLC : ADC #8 : STA dsrc
+    BCC left
+    INC dsrc+1
+.left
+    LDY #7
+.cell
+    LDA (dsrc),Y : STA (ddst),Y
+    DEY : BPL cell
+    LDA ddst : CLC : ADC #8 : STA ddst
+    BCC nc2
+    INC ddst+1
+.nc2
+    INX : CPX rc1 : BNE tile_col
+    INC dj : LDA dj : CMP rh : BNE tile_row
+
+    \ The things in it.
+    LDX #0
+.things
+    LDA obj_in,X : BEQ no_thing
+    LDA obj_spr,X : CMP #&FF : BEQ no_thing
+    STX dj
+    JSR draw_thing
+    LDX dj
+.no_thing
+    INX : CPX #NOBJ : BNE things
+
+    \ Out to the screen, a row at a time, unless it's already there.
+    LDA direct : BNE done
+    LDA rc0 : ASL A : ASL A : ASL A : STA ddst
+    LDA #0 : ROL A : STA ddst+1
+    LDA rr0 : ASL A : ADC ddst+1 : ADC #HI(play_screen) : STA ddst+1
+    LDX #0
+.out_row
+    LDA trow_lo,X : STA dsrc
+    LDA trow_hi,X : STA dsrc+1
+    LDY cw8 : DEY
+.out
+    LDA (dsrc),Y : STA (ddst),Y
+    DEY : CPY #&FF : BNE out
+    LDA ddst+1 : CLC : ADC #2 : STA ddst+1
+    INX : CPX rh : BNE out_row
+.done
+    RTS
+}
+map_row = text_ptr                  ; (fixed zero page: render uses no text)
+
+\ Draw thing X, masked, into the rectangle's target (trow_*): its sprite's
+\ columns one at a time, each in runs of up to eight lines, one run per
+\ character row. One index, Y, steps both the sprite's column and the
+\ target, whose pointer is set back by the line the run starts at.
+.draw_thing
+{
+    ZA_AUTO2 ts_src, ts_dst, ts_col
+    ZA_AUTO1 ts_w, ts_h, ts_line, ts_end, ts_row, ts_y
+    LDA obj_x,X : AND #1 : ORA obj_face,X
+    CLC : ADC obj_spr,X : TAY
+    LDA spr_lo,Y : STA ts_src
+    LDA spr_hi,Y : STA ts_src+1
+    LDA spr_w,Y : STA ts_w
+    LDA spr_h,Y : STA ts_h
+    \ Its first column's offset in the target's rows: 8 a column.
+    LDA obj_x,X : LSR A : SEC : SBC rc0
+    LDY #0 : STY ts_col+1
+    ASL A : ASL A : ASL A : ROL ts_col+1 : STA ts_col
+    \ Its first line within the rectangle.
+    LDA rr0 : ASL A : ASL A : ASL A : STA ts_line
+    LDA obj_y,X : SEC : SBC ts_line : STA ts_line
+.column
+    \ The first run: from the line's place in its row to the row's end.
+    LDA ts_line : LSR A : LSR A : LSR A : STA ts_row
+    LDA ts_line : AND #7 : STA ts_y
+    EOR #7 : CLC : ADC #1           ; 8 - (line AND 7)
+    CMP ts_h : BCC first_ok
+    LDA ts_h
+.first_ok
+    STA ts_end
+    JSR base                        ; trow[row] + col
+    LDA ts_dst : CLC : ADC ts_y : STA ts_dst
+    BCC nc0
+    INC ts_dst+1
+.nc0
+    LDY #0
+.pixel
+    LDA (ts_src),Y : BEQ clear
+    TAX
+    LDA (ts_dst),Y : AND mask_tab,X : ORA (ts_src),Y : STA (ts_dst),Y
+.clear
+    INY : CPY ts_end : BNE pixel
+    CPY ts_h : BEQ column_done
+    \ The next run: the next row, from its first line, up to 8 more.
+    STY ts_y
+    TYA : CLC : ADC #8
+    CMP ts_h : BCC next_ok
+    LDA ts_h
+.next_ok
+    STA ts_end
+    INC ts_row
+    JSR base
+    LDA ts_dst : SEC : SBC ts_y : STA ts_dst
+    BCS nb
+    DEC ts_dst+1
+.nb
+    LDY ts_y
+    JMP pixel
+.column_done
+    DEC ts_w : BEQ done
+    \ The next column: the sprite's next h bytes, the target's next 8.
+    LDA ts_src : CLC : ADC ts_h : STA ts_src
+    BCC nc1
+    INC ts_src+1
+.nc1
+    LDA ts_col : CLC : ADC #8 : STA ts_col
+    BCC column
+    INC ts_col+1
+    JMP column
+.done
+    RTS
+\ ts_dst = trow[ts_row] + ts_col
+.base
+    LDX ts_row
+    LDA trow_lo,X : CLC : ADC ts_col : STA ts_dst
+    LDA trow_hi,X : ADC ts_col+1 : STA ts_dst+1
+    RTS
+}

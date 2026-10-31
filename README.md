@@ -11,8 +11,16 @@ Micro (Model B and Master 128), in 6502 assembly.
 
 ### ▶ [Play it in your browser](https://bbc.xania.org/?disc=github:mattgodbolt/redshift-beeb/redshift.ssd&autoboot)
 
-So far: the first room in MODE 1 with its palette bands. **SHIFT** flips
-the phase.
+So far: the first room, with Ash walking, jumping and firing. Try to
+get across the acid. Then press **SHIFT**.
+
+| Key | Does |
+|---|---|
+| Z / X (or ← →) | left / right |
+| : (or ↑) | jump |
+| / (or ↓) | crouch |
+| RETURN | fire |
+| SHIFT | flip the phase |
 
 ## The idea
 

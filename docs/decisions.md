@@ -18,3 +18,15 @@ Matt was away is marked *provisional* until reviewed.
    editor (Matt asked for one).
 5. **2026-10-31: every step is pushed as it lands** (Matt asked), with
    the disc at the root kept current for the play link.
+6. **2026-10-31: flicker-free drawing without a second screen**
+   (*provisional*). Each thing that moves is redrawn by composing its
+   old and new rectangle (tiles, then every overlapping sprite, masked)
+   in a buffer laid out like the screen, then copying it out, so no byte
+   is seen half drawn. Overlapping things are pulled into one rectangle.
+   A rectangle too big for the buffer is drawn on the screen directly.
+7. **2026-10-31: 25 frames a second, 2-pixel steps** (*provisional*).
+   Sprites need only two shifted versions (0 and 2 pixels), each also
+   mirrored, made by `tools/mkgfx.py`. Walking crosses the screen in
+   about five seconds. That's deliberate and weighty, but easy to change.
+8. **2026-10-31: the keys** (*provisional*): Z X : / RETURN SPACE, SHIFT
+   for the phase, and the cursor keys too.

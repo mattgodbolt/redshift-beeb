@@ -1,0 +1,367 @@
+\ ***************************************************************************
+\ Ash Calder: walking, jumping, crouching, firing, and the room's edges.
+\
+\ The player is thing 0 (render.6502): x in 2-pixel steps, y the line of
+\ the sprite's top. Ash collides as a box narrower than the sprite
+\ (PL_BOX_L-PL_BOX_R in x, all PL_H lines in y), against the tiles that are
+\ solid in this phase (attr_ptr). A game frame is two VSyncs (25 a second).
+\ ***************************************************************************
+
+PL = 0                          ; the player's thing
+PL_W = 8                        ; the sprite's width in 2-pixel steps
+PL_H = 24
+PL_BOX_L = 2                    ; the box, in steps from the sprite's left
+PL_BOX_R = 5
+PL_X_MAX = 128 - PL_W
+PL_GUN = 7                      ; the bolt's top, below the sprite's
+PL_GUN_CROUCH = 13
+FALL_MAX = 6                    ; lines a frame
+NSHOTS = 2                      ; things 1 and 2
+SHOT_SPEED = 4                  ; steps a frame
+FIRE_GAP = 4                    ; frames between shots
+
+\ The keys, a bit each (read_keys).
+KB_LEFT = 1 : KB_RIGHT = 2 : KB_JUMP = 4 : KB_DOWN = 8
+KB_FIRE = 16 : KB_GRENADE = 32 : KB_SHIFT = 64
+
+\ Each key and the bit it sets: Z X : / RETURN SPACE SHIFT, and the cursor
+\ keys as well, for the left hand.
+.key_codes  EQUB K_Z, K_X, K_COLON, K_SLASH, K_RETURN, K_SPACE, K_SHIFT
+            EQUB K_LEFT, K_RIGHT, K_UP, K_DOWN
+.key_bits   EQUB KB_LEFT, KB_RIGHT, KB_JUMP, KB_DOWN, KB_FIRE, KB_GRENADE, KB_SHIFT
+            EQUB KB_LEFT, KB_RIGHT, KB_JUMP, KB_DOWN
+NKEYS = P% - key_bits
+
+\ keys = what's down now, keys_new = what's gone down since last frame.
+.read_keys
+{
+    ZA_AUTO1 rk
+    LDA #0 : STA rk
+    LDY #NKEYS - 1
+.key
+    LDX key_codes,Y : JSR key_down : BEQ up
+    LDA rk : ORA key_bits,Y : STA rk
+.up
+    DEY : BPL key
+    LDA keys : EOR #&FF : AND rk : STA keys_new
+    LDA rk : STA keys
+    RTS
+}
+
+\ The jump: lines up, each frame. Then it falls.
+.jump_tab   EQUB 6, 6, 5, 5, 5, 4, 4, 3, 3, 2, 1, 0
+JUMP_LEN = P% - jump_tab
+
+\ --- Tests against the map ---------------------------------------------------
+
+\ Map row addresses.
+.maprow_lo  EQUB LO(map + MAP_W * (0..MAP_H - 1))
+.maprow_hi  EQUB HI(map + MAP_W * (0..MAP_H - 1))
+
+\ Does any tile in columns ta_c0-ta_c1 and rows ta_r0-ta_r1 (inclusive,
+\ in tiles) have a flag in A, in this phase? Z clear (BNE) if so. Rows
+\ off the map have nothing in them.
+.test_area
+{
+    ZA_AUTO2 ta_row
+    STA ta_mask
+    LDX ta_r0
+.row
+    CPX #MAP_H : BCS no                 ; (off the bottom, or above the top)
+    LDA maprow_lo,X : STA ta_row
+    LDA maprow_hi,X : STA ta_row+1
+    LDY ta_c0
+.col
+    STY ta_y
+    LDA (ta_row),Y : TAY
+    LDA (attr_ptr),Y : AND ta_mask : BNE yes
+    LDY ta_y
+    CPY ta_c1 : INY : BCC col
+    CPX ta_r1 : INX : BCC row
+.no
+    LDA #0
+.yes
+    RTS
+.ta_y EQUB 0
+}
+
+\ The player's box, from x = A in steps and y lines dy below obj_y (dy
+\ in ta_dy, the box's height less one in ta_h), into ta_*: then test_area.
+.box_at
+{
+    PHA
+    CLC : ADC #PL_BOX_L : LSR A : LSR A : STA ta_c0
+    PLA
+    CLC : ADC #PL_BOX_R : LSR A : LSR A : STA ta_c1
+    LDA obj_y + PL : CLC : ADC ta_dy : PHA
+    LSR A : LSR A : LSR A : STA ta_r0
+    PLA : CLC : ADC ta_h : LSR A : LSR A : LSR A : STA ta_r1
+    RTS
+}
+
+\ --- The player each frame -------------------------------------------------
+
+.player_update
+{
+    LDA pl_dead : BEQ alive
+    JMP player_dying
+.alive
+    LDA obj_x + PL : STA pl_ox
+    LDA obj_y + PL : STA pl_oy
+    LDA obj_spr + PL : STA pl_ospr
+    LDA obj_face + PL : STA pl_oface
+
+    \ Crouching: down, on the ground.
+    LDA #0 : STA pl_crouch
+    LDA pl_air : BNE no_crouch
+    LDA keys : AND #KB_DOWN : BEQ no_crouch
+    INC pl_crouch
+.no_crouch
+
+    \ Left and right, unless crouching (which turns you, though).
+    LDA #0 : STA pl_moved
+    LDA keys : AND #KB_LEFT : BEQ not_left
+    LDA #2 : STA obj_face + PL
+    LDA pl_crouch : BNE horiz_done
+    LDA obj_x + PL : BEQ off_left
+    SEC : SBC #1 : JSR side_clear : BNE horiz_done
+    DEC obj_x + PL : INC pl_moved
+    JMP horiz_done
+.off_left
+    LDX #0 : JSR go_exit            ; (left)
+    JMP horiz_done
+.not_left
+    LDA keys : AND #KB_RIGHT : BEQ horiz_done
+    LDA #0 : STA obj_face + PL
+    LDA pl_crouch : BNE horiz_done
+    LDA obj_x + PL : CMP #PL_X_MAX : BCS off_right
+    ADC #1 : JSR side_clear : BNE horiz_done
+    INC obj_x + PL : INC pl_moved
+    JMP horiz_done
+.off_right
+    LDX #1 : JSR go_exit            ; (right)
+.horiz_done
+
+    \ Up and down.
+    LDA pl_air : BNE in_air
+    LDA keys_new : AND #KB_JUMP : BEQ no_jump
+    LDA pl_crouch : BNE no_jump
+    LDA #1 : STA pl_air
+    LDA #0 : STA pl_ji
+    JMP in_air
+.no_jump
+    JSR ground_below : JNE vert_done
+    LDA #2 : STA pl_air             ; walked off an edge
+    LDA #0 : STA pl_fall
+.in_air
+    LDA pl_air : CMP #1 : BNE falling
+    \ Rising, a line at a time, until the jump's done or a head hits.
+    LDX pl_ji : INC pl_ji
+    LDA jump_tab,X : BEQ start_fall
+    STA pl_steps
+.rise
+    LDA obj_y + PL : BEQ start_fall ; (the top: rooms are closed above)
+    LDA #&FF : STA ta_dy : LDA #0 : STA ta_h
+    LDA obj_x + PL : JSR box_at
+    LDA #TF_SOLID : JSR test_area : BNE start_fall
+    DEC obj_y + PL
+    DEC pl_steps : BNE rise
+    JMP vert_done
+.start_fall
+    LDA #2 : STA pl_air
+    LDA #0 : STA pl_fall
+    JMP vert_done
+.falling
+    LDA pl_fall : CMP #FALL_MAX : BCS fall_max
+    INC pl_fall
+.fall_max
+    LDA pl_fall : STA pl_steps
+.drop
+    JSR ground_below : BNE landed
+    INC obj_y + PL
+    LDA obj_y + PL : CMP #PLAY_LINES - PL_H + 1 : BCS fell_out
+    DEC pl_steps : BNE drop
+    JMP vert_done
+.landed
+    LDA #0 : STA pl_air
+    JMP vert_done
+.fell_out
+    LDX #3 : JSR go_exit            ; (down: or into the pit)
+.vert_done
+
+    \ What it looks like.
+    LDA pl_crouch : BEQ not_crouched
+    LDA #SPR_ASH_CROUCH : BNE look
+.not_crouched
+    LDA pl_air : BEQ on_ground
+    LDA #SPR_ASH_JUMP : BNE look
+.on_ground
+    LDA pl_moved : BEQ standing
+    INC pl_anim
+    LDA pl_anim : AND #6 : ASL A    ; a frame every two steps: 4 * frame
+    CLC : ADC #SPR_ASH_WALK0
+    ASSERT SPR_ASH_WALK1 = SPR_ASH_WALK0 + 4 AND SPR_ASH_WALK3 = SPR_ASH_WALK0 + 12
+    BNE look
+.standing
+    LDA #SPR_ASH_STAND
+.look
+    STA obj_spr + PL
+
+    \ Hazards: anything deadly in the box.
+    LDA #0 : STA ta_dy : LDA #PL_H - 1 : STA ta_h
+    LDA obj_x + PL : JSR box_at
+    LDA #TF_HAZARD : JSR test_area : BEQ safe
+    JMP player_die
+.safe
+    \ Changed?
+    LDA obj_x + PL : CMP pl_ox : BNE changed
+    LDA obj_y + PL : CMP pl_oy : BNE changed
+    LDA obj_spr + PL : CMP pl_ospr : BNE changed
+    LDA obj_face + PL : CMP pl_oface : BEQ fire
+.changed
+    LDA obj_st + PL : ORA #OS_CHANGED : STA obj_st + PL
+.fire
+    JMP player_fire
+}
+
+\ Is the player's box clear at x = A, for the lines it covers (crouched
+\ or not)? Z set (BEQ) if so.
+.side_clear
+{
+    PHA
+    LDA #0 : STA ta_dy : LDA #PL_H - 1 : STA ta_h
+    PLA : JSR box_at
+    LDA #TF_SOLID : JMP test_area
+}
+
+\ Is there ground under the player's feet? Z clear (BNE) if so.
+.ground_below
+{
+    LDA #PL_H : STA ta_dy : LDA #0 : STA ta_h
+    LDA obj_x + PL : JSR box_at
+    LDA #TF_SOLID : JMP test_area
+}
+
+\ Firing: a bolt from the gun, if one of the shots is free.
+.player_fire
+{
+    LDA fire_cool : BEQ ready
+    DEC fire_cool
+    RTS
+.ready
+    LDA keys : AND #KB_FIRE : BEQ done
+    LDX #NSHOTS
+.find
+    LDA obj_spr,X : CMP #&FF : BEQ free
+    DEX : BNE find
+.done
+    RTS
+.free
+    LDA #FIRE_GAP : STA fire_cool
+    LDA #SPR_BOLT : STA obj_spr,X
+    LDA obj_face + PL : STA obj_face,X
+    LDA #OS_CHANGED : STA obj_st,X
+    LDA #PL_GUN : LDY pl_crouch : BEQ standing
+    LDA #PL_GUN_CROUCH
+.standing
+    CLC : ADC obj_y + PL : STA obj_y,X
+    LDA obj_face + PL : BNE leftward
+    LDA #SHOT_SPEED : STA shot_dx,X
+    LDA obj_x + PL : CLC : ADC #PL_W - 2 : STA obj_x,X
+    JMP sound_fire
+.leftward
+    LDA #256 - SHOT_SPEED : STA shot_dx,X
+    LDA obj_x + PL : SEC : SBC #2 : BCS on
+    LDA #0
+.on
+    STA obj_x,X
+    JMP sound_fire
+}
+
+\ The shots fly: off the screen, or into anything solid, and they're gone.
+.shots_update
+{
+    LDX #NSHOTS
+.shot
+    LDA obj_spr,X : CMP #&FF : BEQ next
+    LDA obj_x,X : CLC : ADC shot_dx,X
+    CMP #128 - 4 + 1 : BCS gone     ; (off either side: it wraps past 128)
+    STA obj_x,X
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+    \ The tile under the bolt's middle.
+    STX sh_x
+    LDA obj_x,X : CLC : ADC #2 : LSR A : LSR A : STA ta_c0 : STA ta_c1
+    LDA obj_y,X : CLC : ADC #1 : LSR A : LSR A : LSR A : STA ta_r0 : STA ta_r1
+    LDA #TF_SOLID : JSR test_area
+    PHP : LDX sh_x : PLP            ; (LDX would set Z for X)
+    BEQ next
+.gone
+    LDA #&FF : STA obj_spr,X
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+.next
+    DEX : BNE shot
+    RTS
+.sh_x EQUB 0
+}
+
+\ Off the room's edge X (0 left, 1 right, 2 up, 3 down): into the room
+\ there, at the other side. With no room there: a wall, or (down) a pit.
+.go_exit
+{
+    LDA room_exits,X : CMP #&FF : BEQ none
+    PHA
+    CPX #1 : BCC left
+    BEQ right
+    CPX #2 : BEQ up
+    LDA #0 : STA obj_y + PL         ; down
+    JMP go
+.up
+    LDA #PLAY_LINES - PL_H : STA obj_y + PL
+    JMP go
+.left
+    LDA #PL_X_MAX : STA obj_x + PL
+    JMP go
+.right
+    LDA #0 : STA obj_x + PL
+.go
+    PLA
+    JMP change_room
+.none
+    CPX #3 : BNE wall
+    JMP player_die
+.wall
+    RTS
+}
+
+\ Losing a life: the player flickers for a while, then starts again where
+\ they came into the room.
+DIE_FRAMES = 25
+.player_die
+{
+    LDA #DIE_FRAMES : STA pl_dead
+    JMP sound_die
+}
+.player_dying
+{
+    DEC pl_dead : BEQ again
+    \ Flash: shown on odd frames, gone on even.
+    LDA pl_dead : AND #2 : BEQ hide
+    LDA #SPR_ASH_STAND : BNE set
+.hide
+    LDA #&FF
+.set
+    STA obj_spr + PL
+    LDA obj_st + PL : ORA #OS_CHANGED : STA obj_st + PL
+    RTS
+.again
+    LDA entry_x : STA obj_x + PL
+    LDA entry_y : STA obj_y + PL
+    LDA entry_face : STA obj_face + PL
+    LDA #SPR_ASH_STAND : STA obj_spr + PL
+    LDA obj_st + PL : ORA #OS_CHANGED : STA obj_st + PL
+    LDA #0 : STA pl_air
+    LDA entry_phase : CMP phase : BEQ same_phase
+    JMP phase_shift
+.same_phase
+    RTS
+}

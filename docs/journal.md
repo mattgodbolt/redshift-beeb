@@ -29,3 +29,17 @@ What was done, in order, with what worked and what didn't.
   the string loop indexed with it.
 - Bands and the phase shift work as planned. SHIFT recolours every band
   and redraws only the phase tiles (`draw_room_phase`).
+
+## 2026-10-31: Ash moves
+
+- `render.6502`: each changed thing's old and new rectangle grows to take
+  in anything it touches, is composed in the buffer (tiles, then sprites
+  masked in slot order), and is copied out. Walking and firing hold 25
+  frames a second (50 frames in 100 VSyncs).
+- `player.6502`: walking, a jump table, falling with gravity, crouching,
+  bolts, hazards, and room exits. The phase shift is refused if it would
+  put Ash inside something solid.
+- Bugs met: two more of the same kind as `rd_byte`'s. A load after a
+  routine set the flags its caller tested: `LDX sh_x` after `test_area`
+  made every bolt hit at once. Branches out of range were fixed with `JNE`
+  and an inverted branch.

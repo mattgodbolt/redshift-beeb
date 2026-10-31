@@ -18,7 +18,7 @@
 room landing
 name LANDING ZONE
 exits left=- right=- up=- down=-
-start 2 16
+start 2 17
 colours red yellow white
 band 40 1 magenta
 band 96 1 red

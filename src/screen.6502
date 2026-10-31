@@ -36,6 +36,14 @@
     STA tp_lo : STX tp_lo+1
     CLC : ADC #NTILES : STA tp_hi
     TXA : ADC #0 : STA tp_hi+1
+    \ ... and at what each tile is in this phase (attr_red, attr_blue).
+    LDA phase : BNE blue_attr
+    LDA #LO(attr_red) : STA attr_ptr
+    LDA #HI(attr_red) : STA attr_ptr+1
+    RTS
+.blue_attr
+    LDA #LO(attr_blue) : STA attr_ptr
+    LDA #HI(attr_blue) : STA attr_ptr+1
     RTS
 }
 

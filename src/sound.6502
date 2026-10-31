@@ -4,3 +4,8 @@
 
 .sound_tick
     RTS
+
+.sound_fire
+.sound_die
+.sound_buzz
+    RTS

@@ -1,27 +1,59 @@
 \ ***************************************************************************
-\ The game.
+\ The game: a new game, the frame loop, rooms and phase shifts.
 \ ***************************************************************************
 
 .game_start
 {
     LDX #&FF : TXS
     JSR cls
-    LDA #0 : JSR enter_room
+    \ Nothing anywhere.
+    LDX #NOBJ - 1
+.clear
+    LDA #&FF : STA obj_spr,X
+    LDA #0 : STA obj_st,X
+    DEX : BPL clear
+    LDA #0 : STA phase : STA pl_dead : STA pl_air : STA fire_cool
+    LDA #START_X * 4 : STA obj_x + PL
+    LDA #(START_Y + 1) * 8 - PL_H : STA obj_y + PL
+    LDA #0 : STA obj_face + PL
+    LDA #SPR_ASH_STAND : STA obj_spr + PL
+    LDA #0 : JSR change_room
+    LDA vsyncs : STA last_vs
 .loop
-    JSR wait_vsync : JSR wait_vsync
+    \ A game frame every two VSyncs.
+    LDA vsyncs : SEC : SBC last_vs : CMP #2 : BCC loop
+    LDA vsyncs : STA last_vs
     INC frame
-    LDX #K_SHIFT : JSR key_down : BEQ released
-    LDA shift_held : BNE loop
-    INC shift_held
-    JSR phase_shift
+    JSR read_keys
+    LDA keys_new : AND #KB_SHIFT : BEQ no_shift
+    LDA pl_dead : BNE no_shift
+    JSR try_shift
+.no_shift
+    JSR player_update
+    JSR shots_update
+    JSR render
     JMP loop
-.released
-    STA shift_held                  ; (A = 0)
-    JMP loop
-.shift_held EQUB 0
 }
 
-\ Go into room A: drawn while the screen is black, then shown.
+\ Into room A, the player where they are: the room drawn while the screen
+\ is black, then shown. The shots go.
+.change_room
+{
+    PHA
+    LDX #NSHOTS
+.shots
+    LDA #&FF : STA obj_spr,X
+    DEX : BNE shots
+    PLA
+    JSR enter_room
+    JSR objs_forget
+    LDA obj_x + PL : STA entry_x
+    LDA obj_y + PL : STA entry_y
+    LDA obj_face + PL : STA entry_face
+    LDA phase : STA entry_phase
+    RTS
+}
+
 .enter_room
 {
     LDX #1 : STX blackout
@@ -38,14 +70,32 @@
     RTS
 }
 
-\ Into the other phase: the colours, then the phase's tiles redrawn.
-.phase_shift
+\ SHIFT: into the other phase, unless the player would be inside
+\ something solid there.
+.try_shift
 {
+    JSR flip
+    LDA #0 : STA ta_dy : LDA #PL_H - 1 : STA ta_h
+    LDA obj_x + PL : JSR box_at
+    LDA #TF_SOLID : JSR test_area : BEQ shift_show
+    JSR flip
+    JMP sound_buzz
+.flip
     LDA phase : EOR #1 : STA phase
+    JMP set_tile_ptrs
+}
+
+\ Into the other phase, whatever's there.
+.phase_shift
+    JSR try_shift.flip
+\ The new phase shown: its colours, its tiles redrawn, everything on them
+\ drawn again.
+.shift_show
+{
     JSR wait_vsync
     JSR set_colours
-    JSR set_tile_ptrs
-    JMP draw_room_phase
+    JSR draw_room_phase
+    JMP objs_forget
 }
 
 .draw_status
