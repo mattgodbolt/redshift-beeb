@@ -206,6 +206,12 @@ JUMP_LEN = P% - jump_tab
     LDA #SPR_ASH_STAND
 .look
     STA obj_spr + PL
+    \ Just respawned: flashing, while enemies can't hurt.
+    LDA pl_safe : BEQ hazards
+    DEC pl_safe
+    AND #4 : BEQ hazards
+    LDA #&FF : STA obj_spr + PL
+.hazards
 
     \ Hazards: anything deadly in the box.
     LDA #0 : STA ta_dy : LDA #PL_H - 1 : STA ta_h
@@ -336,6 +342,14 @@ JUMP_LEN = P% - jump_tab
 \ Losing a life: the player flickers for a while, then starts again where
 \ they came into the room.
 DIE_FRAMES = 25
+\ After that, a while that enemies and their bolts can't hurt, to get
+\ away from whatever was there (decision 14). Hazards still kill.
+SAFE_FRAMES = 50
+
+\ An enemy or a bolt meets the player.
+.player_hit
+    LDA pl_safe : BEQ player_die
+    RTS
 .player_die
 {
     LDA pl_dead : BNE done
@@ -370,14 +384,19 @@ DIE_FRAMES = 25
     \ the player stuck behind a phase wall (decision 13).
     LDA cells : CMP #2 : BCS cells_ok
     LDA #2 : STA cells
-    JSR show_counts
 .cells_ok
+    \ And a grenade, so a cracked wall can't (decision 16).
+    LDA grenades : BNE grenades_ok
+    INC grenades
+.grenades_ok
+    JSR show_counts
     LDA entry_x : STA obj_x + PL
     LDA entry_y : STA obj_y + PL
     LDA entry_face : STA obj_face + PL
     LDA #SPR_ASH_STAND : STA obj_spr + PL
     LDA obj_st + PL : ORA #OS_CHANGED : STA obj_st + PL
     LDA #0 : STA pl_air
+    LDA #SAFE_FRAMES : STA pl_safe
     LDA entry_phase : CMP phase : BEQ same_phase
     JMP phase_shift
 .same_phase

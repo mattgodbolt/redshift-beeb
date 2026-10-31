@@ -38,6 +38,7 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 - **Routines that clobber registers callers loop with.** `read_keys` (X and Y), `print_char_a` (leaves Y at &FF), `sound_write` (now keeps Y). Count loops in memory, not registers, across calls.
 - **After tiles are drawn over things** (a phase shift, a blast), mark the things changed (`objs_touch`), never forgotten (`objs_forget`). Forgotten things lose their old rectangle and leave trails. `objs_forget` is only for a new room.
 - **The sideways bank must stay paged** (`RS_BANK`, `&F4` and `romsel`). Everything in RSDATA is read in place.
+- **Enemies and their bolts call `player_hit`, hazards and pits `player_die`.** `player_hit` does nothing in the safe spell after a respawn (decision 14); a pit must always kill, or Ash falls off the bottom of the room.
 - **The interrupt runs with D as the game left it**: `add_score` uses decimal mode, so the VSync path does `CLD` before anything that adds.
 
 ## House rules

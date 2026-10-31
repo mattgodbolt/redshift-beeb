@@ -12,7 +12,7 @@
     LDA #&FF : STA obj_spr,X
     LDA #0 : STA obj_st,X
     DEX : BPL clear
-    LDA #0 : STA phase : STA pl_dead : STA pl_air : STA fire_cool
+    LDA #0 : STA phase : STA pl_dead : STA pl_safe : STA pl_air : STA fire_cool
     STA score : STA score+1 : STA score+2
     LDX #MAX_ROOMS - 1
 .gone

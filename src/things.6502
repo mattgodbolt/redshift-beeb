@@ -222,7 +222,7 @@ ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
     JSR pl_box
     JSR boxes_overlap : BCC no_touch
     LDA th_type,X : CMP #TH_ENEMIES : BCS pickup
-    JSR player_die
+    JSR player_hit
     JMP next
 .pickup
     CMP #TH_EXIT : BEQ cage
@@ -363,10 +363,13 @@ ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
 .cm_x EQUB 0
 }
 
-\ A shard: towards the player, a step at a time, every other frame.
+\ A shard: towards the player, a step at a time, every other frame. Out
+\ of phase it hangs still: a ghost that homed would sit on the player,
+\ to kill them the moment they shifted (decision 15).
 .shard_move
 {
     LDA th_t,X : AND #1 : BNE done
+    JSR th_in_phase : BNE done
     LDA obj_x + PL : CLC : ADC #2 : CMP obj_x,X
     BEQ y_axis : BCC left
     INC obj_x,X : BNE y_axis        ; (always)
@@ -499,7 +502,7 @@ ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
     LDA obj_y,X : STA oy0 : CLC : ADC #3 : STA oy1
     JSR pl_box
     JSR boxes_overlap : BCC next
-    JSR player_die
+    JSR player_hit
     LDX eb_x
 .gone
     LDA #&FF : STA obj_spr,X
@@ -593,7 +596,9 @@ ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
 
 \ The grenade goes off: a blast a little bigger than its sprite, which
 \ kills any enemy in phase it touches, armoured or not, and clears any
-\ breakable tile in the three by three tiles about it.
+\ breakable tile three wide and four high about it: its own row, one
+\ above and two below. A grenade thrown at a wall goes off level with
+\ the player's head, and the two below reach their feet (decision 17).
 .grenade_bang
 {
     ZA_AUTO1 gb_c, gb_r, gb_cx, gb_ry
@@ -661,7 +666,7 @@ ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
     INC gb_c
     LDA gb_c : SEC : SBC gb_cx : CMP #2 : BNE col
     INC gb_r
-    LDA gb_r : SEC : SBC gb_ry : CMP #2 : BNE row
+    LDA gb_r : SEC : SBC gb_ry : CMP #3 : BNE row
     \ Tiles redrawn under things: draw them all again.
     LDA gb_broke : BEQ done
     JMP objs_touch
