@@ -10,6 +10,8 @@ oscli   = &FFF7
 
 \ --- Hardware -------------------------------------------------------------
 
+romsel      = &FE30         ; the sideways bank at &8000
+
 crtc_reg    = &FE00
 crtc_data   = &FE01
 ula_ctrl    = &FE20         ; the video ULA's control register
@@ -86,3 +88,7 @@ ENDMACRO
 MACRO JEQ target
     BNE @+ : JMP target : .@
 ENDMACRO
+
+\ RSLOAD (rsload.6502) leaves the sideways bank it filled here for the
+\ game: user zero page, which the DFS leaves alone, above the game's own.
+RS_BANK = &8F

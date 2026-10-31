@@ -9,6 +9,8 @@
     ZA_ENTRY
     JSR grab_font               ; (while the OS is still ours to call)
     SEI                         ; interrupts stay off until install_irq
+    \ The data's bank (RSLOAD's), paged in for good.
+    LDA RS_BANK : STA &F4 : STA romsel
     LDA #&D8 : STA ula_ctrl     ; MODE 1's pixels: 4 colours, 20 columns of bytes
     LDX #crtc_end - crtc_regs - 2
 .crtc

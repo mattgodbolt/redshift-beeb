@@ -1,7 +1,8 @@
 # REDSHIFT for the BBC Micro
 
 *Future home of* an original flip-screen run-and-gun game for the BBC
-Micro (Model B and Master 128), in 6502 assembly.
+Micro (a Model B with 16K of sideways RAM, or a Master 128), in 6502
+assembly.
 
 > Kharon-4, 2189. The colony's deep mine broke into the Prism, an alien
 > engine that splits reality in two. The Red Phase is overrun by the

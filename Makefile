@@ -26,7 +26,7 @@ all: $(TARGET)
 
 $(TARGET): $(SOURCES) $(DATA) | build
 	$(ASM) -D 'BUILD="$(BUILD)"' -o $@ --title REDSHIFT --opt 3 --warn 2 --symbols $(@:.ssd=.json) -v -log0 build/listing.txt src/main.6502
-	@grep -E '^code' build/listing.txt || true
+	@grep -E '^(code|data)' build/listing.txt || true
 
 build/data/gfx.6502: gfx/tiles.txt gfx/sprites.txt tools/mkgfx.py tools/gfxlib.py
 	python3 tools/mkgfx.py $@ --preview build/preview

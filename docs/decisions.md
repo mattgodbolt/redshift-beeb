@@ -39,3 +39,12 @@ Matt was away is marked *provisional* until reviewed.
 11. **2026-10-31: the enemies' phases.** Sentries, drones and crawlers are
     the Red Phase's machines; shards are the Blue Phase's crystals.
     Out of phase, each is drawn as its dotted ghost and goes on moving.
+12. **2026-10-31: a Model B with 16K of sideways RAM, or a Master**
+    (*provisional*; the porting kit's baseline, and chuckie-egg-2-beeb's
+    decision 8). With the rooms, art and code in main RAM, 4K was left
+    after one room. `RSLOAD` finds a free RAM bank with the OS still
+    running, loads `RSDATA` (the art and the rooms) and copies it in, then
+    runs the game with the bank paged in for good. jsbeeb's Model B has
+    sideways RAM, so the play link works. A stock-B edition that reads
+    each sector's rooms from the disc, as CE2S does, is possible later if
+    wanted.

@@ -59,3 +59,10 @@ What was done, in order, with what worked and what didn't.
 - The low pages filled up. The interrupt's page-aligned tables now come
   first, and the compose buffer is 768 bytes.
 - Memory is getting short below the screen: about 4K is left.
+
+## 2026-10-31: sideways RAM
+
+- The art and the rooms move to a sideways RAM bank (decision 12):
+  `RSLOAD` finds the bank, loads `RSDATA` and copies it in. Main RAM goes
+  from about 4K free to 10.7K, with 9.9K free in the bank. Both of
+  jsbeeb's B and Master find bank 7.

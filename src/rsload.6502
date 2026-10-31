@@ -1,0 +1,65 @@
+\ ***************************************************************************
+\ RSLOAD: run by !BOOT with the OS still in charge. It finds a sideways RAM
+\ bank (decision 12), loads RSDATA (the art and the rooms) into main RAM
+\ at &3000, copies it into the bank, leaves the bank paged in, and runs
+\ the game, which reads the bank's number from RS_BANK.
+\ ***************************************************************************
+
+romshad  = &F4                  ; the OS's copy of romsel: always write both
+romtypes = &02A1                ; the OS's ROM type per bank; 0: no ROM there
+RS_TRY   = &70                  ; (the loader's own zero page)
+RS_RES   = &71
+
+.rsload
+{
+    LDX #0
+.hello
+    LDA hello_text,X : BEQ find
+    JSR &FFEE : INX : BNE hello
+.find
+    \ The highest bank with no ROM that holds what's written to it.
+    LDX #15
+.bank
+    LDA romtypes,X : BNE next
+    STX RS_TRY
+    SEI
+    LDA romshad : PHA
+    STX romshad : STX romsel
+    LDA &8000 : TAY
+    EOR #&FF : STA &8000
+    EOR &8000 : STA RS_RES          ; 0 if what was written stayed
+    TYA : STA &8000                 ; (put it back)
+    PLA : STA romshad : STA romsel
+    CLI
+    LDX RS_TRY
+    LDA RS_RES : BEQ found
+.next
+    DEX : BPL bank
+    LDX #0
+.none
+    LDA none_text,X : BEQ stop
+    JSR &FFEE : INX : BNE none
+.stop
+    JMP stop
+.found
+    STX RS_BANK
+    LDX #LO(load_cmd) : LDY #HI(load_cmd) : JSR &FFF7
+    \ Into the bank, and leave it paged in.
+    SEI
+    LDA RS_BANK : STA romshad : STA romsel
+    LDX #HI(data_end - &8000 + &FF)
+    LDY #0
+.copy
+    LDA &3000,Y : STA &8000,Y
+    INY : BNE copy
+    INC copy+2 : INC copy+5
+    DEX : BNE copy
+    CLI
+    LDX #LO(run_cmd) : LDY #HI(run_cmd) : JMP &FFF7
+.hello_text EQUS 22, 7, "REDSHIFT ", build_stamp, 13, 10, 0
+.none_text  EQUS 13, 10, "REDSHIFT needs 16K of sideways RAM", 13, 10
+            EQUS "(a Model B with a RAM board, or a", 13, 10
+            EQUS "Master 128).", 13, 10, 0
+.load_cmd   EQUS "LOAD RSDATA", 13
+.run_cmd    EQUS "RUN REDSHFT", 13
+}

@@ -5,9 +5,7 @@ are MODE 1's eight, given for the Red Phase; the Blue swaps each for its
 opposite (red-blue, yellow-cyan, magenta-green; white stays), as in
 `rooms/rooms.txt`.
 
-## 1. The backstory
-
-*For the manual.*
+## 1. The backstory (for the manual)
 
 Kharon-4 is the fourth moon of a gas giant nobody got round to naming: cold,
 airless and dull, apart from **doublespar**, a clear crystal that splits a beam
@@ -16,8 +14,8 @@ through a sliver of it, and Kharon-4 is the only place it has ever been found.
 
 So Tallis Deepworks sank a shaft, built a town on top and shipped in nine
 hundred miners. The deeper they dug, the purer the spar. Chief Assayer Hedda
-Morrell wrote three memos asking why, as it looked to her like something
-further down was flaking. The memos were filed under LATER.
+Morrell wrote three memos asking why it should get purer with depth, unless
+something down there was shedding it. The memos were filed under LATER.
 
 At 03:12 on 14 March 2189, Bore Nine found out. The drill cut into a wall that
 was not rock: white, faceted, faintly warm and, once touched, awake. Every lamp
@@ -51,7 +49,8 @@ switch it off. There is no spar left for a ninth harness.
 
 ## 2. The two phases
 
-The Prism splits reality the way a prism splits light, by wavelength.
+The Prism splits reality the way a prism splits light: by wavelength, into a
+long half and a short half.
 
 **The Red Phase** is the long half: hot, heavy and slow. Light comes out
 stretched into reds and yellows, the air smells like a foundry, and sound
@@ -85,9 +84,8 @@ The rules, as Morrell's harness manual gives them:
 
 ### Sector 1: THE LEACH WORKS
 
-*Where the Company dissolved ore out of rock with acid, and left the acid
-behind. Pipes, vats, catwalks, and machines still finding their feet.*
-
+- **Mood:** where the Company dissolved ore out of rock with acid, and left the
+  acid behind. Pipes, vats, catwalks, and machines still finding their feet.
 - **Look:** rust-red rock over yellow lamps, magenta pipework, white girders;
   acid green in the pits. In the Blue: blue rock, cyan lamps, green pipes,
   magenta acid, as in LANDING ZONE.
@@ -99,9 +97,8 @@ behind. Pipes, vats, catwalks, and machines still finding their feet.*
 
 ### Sector 2: MARSHALLING YARD
 
-*The ore railway's hub, and the machines' home ground. Every ore cart has grown
-legs, every crane has grown a gun, and the timetable is still on the wall.*
-
+- **Mood:** the ore railway's hub, and the machines' home ground. Every ore
+  cart has grown legs, every crane a gun, and the timetable is still up.
 - **Look:** yellow hazard-striped steel and rails on magenta rock, red signal
   lamps, white sparks; in the Blue, cyan steel on green rock, blue lamps.
 - **Rooms:** ENGINE SHED, SIGNAL BOX, TURNTABLE, WEIGHBRIDGE, SIDING FOUR,
@@ -112,9 +109,8 @@ legs, every crane has grown a gun, and the timetable is still on the wall.*
 
 ### Sector 3: THE SUMP
 
-*Every mine leaks, and the leaks all run here. In the Red Phase the sump boils.
-In the Blue it is bone dry, because the swarm drank it.*
-
+- **Mood:** every mine leaks, and the leaks all run here. In the Red the sump
+  boils. In the Blue it is bone dry, because the swarm drank it.
 - **Look:** magenta steam over yellow sodium lamps on red brick, the water red
   and boiling at the bottom. In the Blue: green fog, cyan lamps, blue brick,
   and the water only a dotted outline over a dry bed.
@@ -127,9 +123,8 @@ In the Blue it is bone dry, because the swarm drank it.*
 
 ### Sector 4: THE SPAR SEAMS
 
-*The deepest the Company dug, and the reason it dug at all: doublespar in veins
-as thick as a man. The swarm grows here, and the light comes out of the walls.*
-
+- **Mood:** the deepest the Company dug, and the reason it dug at all:
+  doublespar in veins as thick as a man. The light comes out of the walls.
 - **Look:** the Blue is native here: cyan and white crystal on deep blue rock,
   a green glow along the floors. In the Red the seams go yellow and white on
   red over a magenta glow: the inside of a furnace.
@@ -141,9 +136,8 @@ as thick as a man. The swarm grows here, and the light comes out of the walls.*
 
 ### Sector 5: INSIDE THE PRISM
 
-*Past Bore Nine the rock stops. White walls, true angles, a hum you feel in
-your fillings, and floors that are only there in one phase at a time.*
-
+- **Mood:** past Bore Nine the rock stops. White walls, true angles, a hum you
+  feel in your fillings, and floors that are there in only one phase.
 - **Look:** the Prism's walls are white in both phases. Around them, thin bands
   step through every colour: red, magenta, yellow in the Red; blue, green, cyan
   in the Blue. Use every band the engine allows.
@@ -151,30 +145,25 @@ your fillings, and floors that are only there in one phase at a time.*
   WALK, INTERFERENCE, FOCAL LENGTH, THE DARK FRINGE, THE HINGE.
 - **Hazards and enemies:** floors of alternating Red and Blue blocks, so Ash
   shifts to stay standing as much as to fight; white spikes in both phases; few
-  cells. Every enemy, both phases at once. Then the Hinge.
+  cells. All four enemies, in both phases. Then the Hinge.
 
 ## 4. The enemies
-
-The machines are Red Phase; the swarm is Blue.
 
 - `sentry`: **DRILL SERGEANT** (Red). A Company drill head bolted into the
   rock, with a gun where the bit used to be. Blaster bolts spark off its plate;
   a grenade cracks it open. Or shift and walk past, if you can spare the cell.
 - `crawler`: **TRUNDLER** (Red). An ore truck that grew six legs and opinions.
-  Walks a floor end to end, turns at walls and edges, and does not stop for
-  anyone.
+  Walks a floor end to end, and turns at walls and edges.
 - `drone`: **CHIME** (Blue). A hollow crystal the size of a helmet, riding a
-  lazy wave through the air and ringing one note, slightly flat. Lovely to look
-  at. Lethal to touch.
+  lazy wave and ringing one note, slightly flat. Lethal to touch.
 - `shard`: **SLIVER** (Blue). A finger of crystal that turns to face Ash and
   then comes, slowly, without giving up. The smallest thing in the swarm, and
   the only one that takes an interest in you personally.
 
 The pickups, and the way out:
 
-- `cell`: **PHASE CELL.** A thumb of cut doublespar in a steel sleeve, glowing
-  faintly. Racked in Company emergency lockers, and lying wherever the seven
-  troopers before Ash dropped them.
+- `cell`: **PHASE CELL.** A thumb of cut doublespar in a steel sleeve, from
+  Company lockers or wherever the seven troopers before Ash dropped them.
 - `ammo`: **CHARGE PACK.** Blaster charge, cached by the first rescue teams,
   before rescue teams stopped going down.
 - `grenades`: **FRACTURE CHARGES.** Company blasting charges, repacked by the
@@ -188,14 +177,13 @@ The pickups, and the way out:
 At the Prism's focus sits the one thing in the mine that is in both phases at
 once. In the Red it is a war engine, all plate and guns, a Drill Sergeant the
 size of a house. In the Blue it is a crystal flower that sheds Slivers. Both
-halves share one core, and what happens to one half happens to the other.
-
-To kill it, grenade the plate in the Red until it cracks, and a matching crack
-opens in the crystal. Shift, and blast the core through it before the crystal
-grows back. Repeat. The floor is a patchwork of Red and Blue blocks, so every
-shift is also a choice of where Ash will be standing, and cells are few.
-Morrell's files call it the Hinge because everything turns on it. Pilot, lock
-or heart: nobody knows.
+halves share one core, and what happens to one happens to the other. To kill
+it, grenade the plate in the Red until it cracks, and a matching crack opens in
+the crystal. Shift, and blast the core through it before the crystal grows
+back. Repeat. The floor is a patchwork of Red and Blue blocks, so every shift
+is also a choice of where Ash will be standing, and cells are few. Morrell's
+files call it the Hinge because everything turns on it. Pilot, lock or heart:
+nobody knows.
 
 ## 5. The endings
 

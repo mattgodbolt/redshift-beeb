@@ -1,8 +1,10 @@
 \ ***************************************************************************
 \ REDSHIFT for the BBC Micro - build file
 \
-\ !BOOT runs REDSHFT: it loads at &1900, copies the game down to &0E00
-\ (over the DFS's workspace: the game never calls the DFS) and starts it.
+\ !BOOT runs RSLOAD (rsload.6502), which puts RSDATA, the art and the
+\ rooms, in a sideways RAM bank (decision 12) and runs REDSHFT: it loads at
+\ &1900, copies the game down to &0E00 (over the DFS's workspace: the game
+\ never calls the DFS) and starts it.
 \ ***************************************************************************
 
 INCLUDE "defs.6502"
@@ -19,7 +21,20 @@ ENDIF
 
 SECTION Boot, filename = "!BOOT", exec = &FFFFFFFF
     EQUS "*| REDSHIFT ", build_stamp, 13
-    EQUS "*RUN REDSHFT", 13
+    EQUS "*RUN RSLOAD", 13
+ENDSECTION
+
+\ The art and the rooms, read where they are in the sideways bank.
+SECTION Data, org = &8000, load = &FFFF3000, filename = "RSDATA", guard = &C000
+    INCLUDE "../build/data/gfx.6502"
+    INCLUDE "../build/data/rooms.6502"
+.data_end
+    PRINT "data &8000-&", ~data_end, " (", &C000 - data_end, " bytes free)"
+ENDSECTION
+
+\ Below MODE 7's screen, above where RSDATA loads.
+SECTION RsLoad, org = &7000, load = &FFFF7000, exec = &FFFF7000, filename = "RSLOAD", guard = &7C00
+    INCLUDE "rsload.6502"
 ENDSECTION
 
 SECTION Loader, org = &1900, load = &FFFF1900, exec = &FFFF0000 + loader, filename = "REDSHFT"
@@ -38,8 +53,6 @@ SECTION Loader, org = &1900, load = &FFFF1900, exec = &FFFF0000 + loader, filena
     INCLUDE "things.6502"
     INCLUDE "status.6502"
     INCLUDE "game.6502"
-    INCLUDE "../build/data/gfx.6502"
-    INCLUDE "../build/data/rooms.6502"
 \ The OS's font, characters 32-95 (startup.6502's grab_font), with a byte
 \ before it for OSWORD 10's block.
     SKIP 1
