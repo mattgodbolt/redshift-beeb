@@ -38,7 +38,17 @@ can't touch you.
 - MODE 1 at 256x192 with palette bands driven by interrupts, after
   [Chuckie Egg 2](https://github.com/mattgodbolt/chuckie-egg-2-beeb)'s, so
   each band of a room has its own four colours.
-- A level editor in the browser, so anyone can make rooms (coming soon).
+
+## Make your own rooms
+
+### ✎ [The level editor](https://mattgodbolt.github.io/redshift-beeb/editor/)
+
+Paint tiles, place enemies and pickups, set the palette bands and the
+exits, and flip between the phases to see both as the BBC draws them.
+Then press **Download rooms.txt** and send it in, as a pull request
+replacing `rooms/rooms.txt` or to Matt. See [`editor/README.md`](editor/README.md).
+To run it locally, serve the repo's root (`python3 -m http.server`) and
+open http://localhost:8000/editor/.
 
 ## Building it
 
