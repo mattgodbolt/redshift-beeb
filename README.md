@@ -12,7 +12,8 @@ assembly.
 
 ### ▶ [Play it in your browser](https://bbc.xania.org/?disc=github:mattgodbolt/redshift-beeb/redshift.ssd&autoboot)
 
-So far: one room with enemies and pickups. Get across the acid, mind the
+A teletext title page, then Sector 1's card, then (so far) one room
+with enemies and pickups. Get across the acid, mind the
 drone, and note that the sentry only dies to a grenade. Each **SHIFT**
 costs a phase cell. Enemies of the other phase are dotted ghosts, and
 can't touch you.
@@ -25,6 +26,7 @@ can't touch you.
 | RETURN | fire |
 | SPACE | throw a grenade |
 | SHIFT | flip the phase |
+| P | pause |
 
 ## The idea
 

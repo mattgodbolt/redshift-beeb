@@ -22,14 +22,14 @@ FIRE_GAP = 4                    ; frames between shots
 
 \ The keys, a bit each (read_keys).
 KB_LEFT = 1 : KB_RIGHT = 2 : KB_JUMP = 4 : KB_DOWN = 8
-KB_FIRE = 16 : KB_GRENADE = 32 : KB_SHIFT = 64
+KB_FIRE = 16 : KB_GRENADE = 32 : KB_SHIFT = 64 : KB_PAUSE = 128
 
-\ Each key and the bit it sets: Z X : / RETURN SPACE SHIFT, and the cursor
-\ keys as well, for the left hand.
+\ Each key and the bit it sets: Z X : / RETURN SPACE SHIFT, the cursor
+\ keys as well, and P to pause.
 .key_codes  EQUB K_Z, K_X, K_COLON, K_SLASH, K_RETURN, K_SPACE, K_SHIFT
-            EQUB K_LEFT, K_RIGHT, K_UP, K_DOWN
+            EQUB K_LEFT, K_RIGHT, K_UP, K_DOWN, K_P
 .key_bits   EQUB KB_LEFT, KB_RIGHT, KB_JUMP, KB_DOWN, KB_FIRE, KB_GRENADE, KB_SHIFT
-            EQUB KB_LEFT, KB_RIGHT, KB_JUMP, KB_DOWN
+            EQUB KB_LEFT, KB_RIGHT, KB_JUMP, KB_DOWN, KB_PAUSE
 NKEYS = P% - key_bits
 
 \ keys = what's down now, keys_new = what's gone down since last frame.
@@ -366,6 +366,12 @@ DIE_FRAMES = 25
     LDA lives : BNE more
     JMP game_over
 .more
+    \ At least two cells after a death, so an empty harness can't leave
+    \ the player stuck behind a phase wall (decision 13).
+    LDA cells : CMP #2 : BCS cells_ok
+    LDA #2 : STA cells
+    JSR show_counts
+.cells_ok
     LDA entry_x : STA obj_x + PL
     LDA entry_y : STA obj_y + PL
     LDA entry_face : STA obj_face + PL

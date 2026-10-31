@@ -40,6 +40,9 @@ ENDIF
     LDA vsyncs : STA last_vs
     INC frame
     JSR read_keys
+    LDA keys_new : BPL not_paused   ; (KB_PAUSE is bit 7)
+    JSR pause
+.not_paused
     LDA keys_new : AND #KB_SHIFT : BEQ no_shift
     LDA pl_dead : BNE no_shift
     JSR try_shift
@@ -208,6 +211,18 @@ ENDIF
     RTS
 .card_colours EQUB BLACK, YELLOW, WHITE, CYAN
 }
+
+\ P: everything stops until P again.
+.pause
+{
+.wait
+    JSR wait_vsync
+    JSR read_keys
+    LDA keys_new : BPL wait
+    LDA vsyncs : STA last_vs
+    RTS
+}
+ASSERT KB_PAUSE = &80
 
 START_LIVES = 5
 START_CELLS = 5

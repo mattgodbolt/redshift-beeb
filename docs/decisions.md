@@ -48,3 +48,7 @@ Matt was away is marked *provisional* until reviewed.
     sideways RAM, so the play link works. A stock-B edition that reads
     each sector's rooms from the disc, as CE2S does, is possible later if
     wanted.
+13. **2026-10-31: a death leaves at least two phase cells**
+    (*provisional*). A room may need a shift to get through. With no
+    cells and no pickup left, the player would be stuck for good, so
+    respawning tops cells up to 2.
