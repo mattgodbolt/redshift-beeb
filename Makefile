@@ -4,6 +4,7 @@
 #                 build/listing.txt), and the art and room previews in
 #                 build/preview
 #   make run      boot it in jsbeeb, screenshot to shots/run.png
+#   make check    the smoke test (tools/smoke.mjs) on MODEL (B-DFS1.2)
 #   make ROOM=n   a test build that starts in room n (0 first), at its start
 #   make disc     rebuild from a clean tree and copy the disc to redshift.ssd,
 #                 which the README's play link boots
@@ -25,7 +26,7 @@ ROOMDEF  = $(if $(ROOM),-D START_ROOM=$(ROOM))
 BUILD   := $(shell date -u '+%Y-%m-%d %H:%M') $(shell git rev-parse --short HEAD 2>/dev/null || echo NOGIT)$(shell git diff --quiet HEAD -- . ':(exclude)$(DISC)' 2>/dev/null || echo +)
 
 .DELETE_ON_ERROR:
-.PHONY: all run disc ship clean FORCE
+.PHONY: all run check disc ship clean FORCE
 
 all: $(TARGET)
 
@@ -44,6 +45,9 @@ build:
 
 run: $(TARGET)
 	node tools/play.mjs 'f25,!run' shots/ --disc $(TARGET) --until game_start
+
+check: $(TARGET)
+	node tools/smoke.mjs --model $(MODEL)
 
 # Always from a clean tree, so the stamp names the commit the disc holds.
 disc:
