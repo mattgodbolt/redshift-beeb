@@ -19,6 +19,7 @@
 
 \ The rectangle being drawn, and how.
 ZA_AUTO1 rc0, rc1, rr0, rr1     ; columns and rows, ends exclusive
+ZA_AUTO1 rrow5                  ; the row being composed, << 5 (back_look's)
 
 \ Nothing on screen: for a new room (its tiles are drawn whole).
 .objs_forget
@@ -210,6 +211,7 @@ ZA_AUTO1 rc0, rc1, rr0, rr1     ; columns and rows, ends exclusive
     LDA trow_hi,X : STA ddst+1
     \ The map's row: map + 32 (rr0 + dj).
     TXA : CLC : ADC rr0
+    PHA : ASL A : ASL A : ASL A : ASL A : ASL A : STA rrow5 : PLA   ; (for back_look)
     LDY #0 : STY dsrc+1
     ASL A : ASL A : ASL A : ROL dsrc+1 : ASL A : ROL dsrc+1 : ASL A : ROL dsrc+1
     ADC #LO(map) : STA map_row
@@ -217,7 +219,9 @@ ZA_AUTO1 rc0, rc1, rr0, rr1     ; columns and rows, ends exclusive
     LDX rc0
 .tile_col
     TXA : LSR A : TAY
-    LDA (map_row),Y : TAY
+    LDA (map_row),Y : TAY : BNE look
+    TXA : LSR A : ORA rrow5 : JSR back_look : TAY
+.look
     LDA (tp_lo),Y : STA dsrc
     LDA (tp_hi),Y : STA dsrc+1
     TXA : AND #1 : BEQ left

@@ -66,6 +66,9 @@
 .tile
     LDY #0 : LDA (dr_map),Y : TAY
     LDA tile_attr,Y : ORA #&80 : AND dr_mask : BEQ next  ; (&FF: every tile)
+    TYA : BNE look
+    LDA dr_map : SEC : SBC #LO(map) : JSR back_look : TAY
+.look
     LDA (tp_lo),Y : STA dr_src
     LDA (tp_hi),Y : STA dr_src+1
     LDY #15
@@ -85,17 +88,34 @@
     RTS
 }
 
+\ Air is drawn as the back wall: the look for where it falls on the wall's
+\ two by two grid. A = the cell's place in the map (row * 32 + column, its
+\ low byte: bit 5 is the row's parity, bit 0 the column's). X and Y kept.
+.back_look
+    AND #&21 : CMP #&20 : BCC got
+    SBC #&20 - 2                    ; (&20, &21: the bottom row, 2 and 3)
+.got
+    CLC : ADC #T_EMPTY_TL
+    RTS
+ASSERT T_EMPTY_TR = T_EMPTY_TL + 1 AND T_EMPTY_BL = T_EMPTY_TL + 2 AND T_EMPTY_BR = T_EMPTY_TL + 3
+ASSERT T_EMPTY = 0
+
 \ Draw the map's tile at column X, row Y of the playfield.
 .draw_tile_xy
 {
     ZA_AUTO2 dt_src, dt_dst
+    ZA_AUTO1 dt_row
+    STY dt_row
     TXA : ASL A : ASL A : ASL A : ASL A : STA dt_dst   ; 16 a tile
     TXA : LSR A : LSR A : LSR A : LSR A : STA dt_dst+1
     TYA : ASL A : ADC dt_dst+1 : ADC #HI(play_screen) : STA dt_dst+1
     LDA maprow_lo,Y : STA dt_src
     LDA maprow_hi,Y : STA dt_src+1
     TXA : TAY
-    LDA (dt_src),Y : TAY
+    LDA (dt_src),Y : TAY : BNE look
+    LDA dt_row : ASL A : ASL A : ASL A : ASL A : ASL A
+    STX dt_src : ORA dt_src : JSR back_look : TAY
+.look
     LDA (tp_lo),Y : STA dt_src
     LDA (tp_hi),Y : STA dt_src+1
     LDY #15

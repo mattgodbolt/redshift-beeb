@@ -28,11 +28,8 @@ sector 1
 exits left=- right=pump up=- down=-
 start 2 17
 colours red yellow white
-band 48 1 magenta
-band 55 2 white
-band 57 1 red
-band 143 2 yellow
-band 145 1 green
+band 144 1 magenta
+band 146 3 green
 map
 #|    |#########################
 #|    |#########################
@@ -63,12 +60,8 @@ room pump
 name PUMP HOUSE
 exits left=- right=vatrow up=- down=-
 start 1 17
-colours red yellow white
-band 32 1 magenta
-band 48 1 red
-band 111 2 white
-band 143 2 yellow
-band 145 1 magenta
+colours magenta yellow white
+band 144 1 red
 map
 ################################
 ################################
@@ -100,9 +93,8 @@ name VAT ROW
 exits left=- right=- up=- down=jar
 start 0 10
 colours red yellow white
-band 24 1 magenta
-band 40 1 red
-band 129 1 green
+band 112 1 magenta
+band 128 3 green
 map
 ################################
 ################################
@@ -134,12 +126,10 @@ room jar
 name THE PICKLE JAR
 exits left=- right=tanks up=- down=-
 start 28 6
-colours red yellow white
-band 103 2 green
-band 105 1 green
-band 111 2 yellow
-band 113 1 magenta
-band 145 1 red
+colours magenta yellow white
+band 104 3 green
+band 112 3 white
+band 144 1 red
 map
 ###########################H  H#
 ###########################H  H#
@@ -171,11 +161,8 @@ name SETTLING TANKS
 exits left=- right=hut up=- down=-
 start 0 17
 colours red yellow white
-band 24 1 magenta
-band 40 1 red
-band 104 2 white
-band 128 1 green
-band 136 2 yellow
+band 144 1 magenta
+band 146 3 green
 map
 ################################
 ################################
@@ -194,8 +181,8 @@ map
 #     =====     |      %    L
                 |      %
     H       HH     H   %
-    H~~~~~~~HH  ~~~H   #########
-____HwwwwwwwH___www____#########
+    H       HH     H   #########
+____H~~~~~~~H___~~~____#########
 ####HwwwwwwwH###www#############
 ####HwwwwwwwH###www#############
 ####HwwwwwwwH###www#############
@@ -207,12 +194,7 @@ name FOREMAN'S HUT
 exits left=- right=catwalks up=- down=-
 start 0 16
 colours red yellow white
-band 32 1 magenta
-band 40 1 red
-band 63 2 red
-band 65 1 yellow
-band 111 2 yellow
-band 113 1 red
+band 136 1 magenta
 map
 ################################
 ################################
@@ -244,10 +226,8 @@ room catwalks
 name THE CATWALKS
 exits left=- right=- up=- down=slurry
 start 0 16
-colours red yellow white
-band 24 1 magenta
-band 40 1 red
-band 161 1 green
+colours magenta yellow white
+band 160 3 green
 map
 ################################
 ################################
@@ -281,9 +261,7 @@ name SLURRY RUN
 exits left=- right=- up=- down=skip
 start 28 14
 colours red yellow white
-band 24 1 magenta
-band 40 1 red
-band 145 1 green
+band 144 3 green
 map
 ############################   #
 ############################   #
@@ -317,10 +295,8 @@ name SKIP SHAFT
 exits left=- right=- up=- down=engine_shed
 start 1 5
 colours red yellow white
-band 56 1 magenta
-band 81 1 red
-band 143 2 yellow
-band 145 1 green
+band 144 1 magenta
+band 146 3 green
 map
 #   ############################
 #   ############################

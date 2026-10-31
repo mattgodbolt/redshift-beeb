@@ -75,3 +75,33 @@ Matt was away is marked *provisional* until reviewed.
     above and below it with it. Otherwise a wall as tall as Ash could be
     left with a stub at its foot: a grenade thrown from further back
     breaks the top, and every grenade after rises over what's left.
+19. **2026-10-31: the look and feel are Claude's to make.** Matt handed
+    the game over: "this is _your own_ game to make as you please with a
+    little feedback from me but mostly yours and subagent". Calls from
+    here on are Claude's, checked by subagent reviewers, and Matt can
+    overrule any of them.
+20. **2026-10-31: a job for each colour.** After an outside review of the
+    screens: logical 0 is air, 1 the body of anything built, 2 its lit
+    edges and the lip of whatever you can stand on, and 3 is white for
+    Ash, the enemies, the pickups and lethal tips. In a band of liquid a
+    room makes 3 the liquid's colour, and nothing safe there uses 3. Each
+    room has one rock colour down to its floor, a floor colour from the
+    floor's surface, and its liquid's colour only over the liquid, so no
+    band cuts a stripe through brickwork. (`gfx/tiles.txt` says how to
+    draw with them.)
+21. **2026-10-31: walls drawn from where they are.** A tile can have
+    variants for where it is (open to air above, below or to a side; deep
+    in a wall; under a ceiling; in an exit) and alts used now and then,
+    chosen when the rooms are built (`gfxlib.resolve`), and the editor
+    chooses them the same way. Deep in a wall it's just brick lines;
+    facing air it's solid and lit, so a wall's outline is its brightest
+    part. Air is a faint panelled back wall, drawn from where each cell
+    falls so the rooms still pack (`back_look`); chevrons mark the ways
+    out; pipes have flanges. Out of phase, a block keeps its dotted
+    outline and gets a sparse hatch inside.
+22. **2026-10-31: sprites that read.** Ash, the enemies and the pickups
+    are redrawn with a light, a mid tone and a shadow. Out of phase an
+    enemy's ghost shimmers between the two squares of a checkerboard. A
+    pickup glints a beat in every four and bobs, and the Settling Tanks'
+    two tanks are sunk a row, so the acid's band stays below Ash's boots.
+

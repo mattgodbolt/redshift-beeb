@@ -3,7 +3,8 @@
 
     mkgfx.py build/data/gfx.6502 [--preview build/preview]
 
-Tiles: 16 bytes each in screen order (gfx_lib.tile_bytes), then the dotted
+Tiles: every look (gfxlib.looks: each tile as written, then its variants
+and alts), 16 bytes each in screen order (gfxlib.tile_bytes), then the dotted
 outlines the phase tiles show out of phase. tiles_red and tiles_blue are
 each phase's pointer per tile number (low bytes, then high bytes), so
 drawing a tile in either phase is one lookup.
@@ -65,10 +66,10 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--preview")
     a = ap.parse_args()
-    tiles = g.read_tiles()
+    tiles = g.looks(g.read_tiles())
     sprites = g.read_sprites()
     if len(tiles) > 128:
-        raise SystemExit("at most 128 tiles (the rooms' packing has 7 bits a tile)")
+        raise SystemExit(f"{len(tiles)} looks: at most 128 (the rooms' packing has 7 bits a tile)")
 
     out = ["\\ Made by tools/mkgfx.py from gfx/tiles.txt and gfx/sprites.txt: don't edit.", ""]
     out.append(f"NTILES = {len(tiles)}")
@@ -80,7 +81,7 @@ def main():
     for i, t in enumerate(tiles):
         if t.flags & {"red", "blue"}:
             hollow_of[i] = len(gfx)
-            gfx.append(g.tile_bytes(g.hollow(t.pixels)))
+            gfx.append(g.tile_bytes(g.ghost_tile(t.pixels)))
     out.append(".tile_gfx")
     for i, b in enumerate(gfx):
         out.append(eqb(b))
@@ -142,7 +143,7 @@ def main():
         p = Path(a.preview)
         p.mkdir(parents=True, exist_ok=True)
         imgs = [(t.name, t.pixels) for t in tiles]
-        imgs += [(t.name + "~", g.hollow(t.pixels)) for t in tiles if t.flags & {"red", "blue"}]
+        imgs += [(t.name + "~", g.ghost_tile(t.pixels)) for t in tiles if t.flags & {"red", "blue"}]
         preview(p / "tiles.png", imgs, scale=6)
         preview(p / "sprites.png", [(s.name, s.pixels) for s in sprites], scale=5)
 

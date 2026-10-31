@@ -24,7 +24,7 @@ ASSERT EB0 + NEB = NOBJ
 \ By type (TH_*): sprite, phase, bolts it takes (0: only a grenade kills
 \ it), and score in hundreds (BCD).
 .type_spr   EQUB SPR_SENTRY, SPR_DRONE0, SPR_CRAWLER0, SPR_SHARD0
-            EQUB SPR_CELL, SPR_GRENADES, SPR_LIFE, SPR_CAGE
+            EQUB SPR_CELL0, SPR_GRENADES0, SPR_LIFE0, SPR_CAGE
 .type_phase EQUB 1, 1, 1, 2, 0, 0, 0, 0
 .type_hp    EQUB 0, 1, 2, 1, 0, 0, 0, 0
 .type_score EQUB &05, &01, &02, &01, &01, &01, &01, &00
@@ -35,6 +35,8 @@ TH_ENEMIES = TH_CELL            ; types below are enemies
 \ The drone's bob, in lines from where it started.
 .bob_tab    EQUB 0, 1, 2, 3, 3, 4, 4, 4, 4, 4, 3, 3, 2, 1, 0, 0
             EQUB 0, -1, -2, -3, -3, -4, -4, -4, -4, -4, -3, -3, -2, -1, 0, 0
+\ A pickup's bob: lines up from where it lies.
+.pickup_bob EQUB 0, 1, 2, 1
 \ The grenade's arc: lines a frame, up negative.
 .arc_tab    EQUB -5, -4, -4, -3, -3, -2, -2, -1, -1, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5
 ARC_LEN = P% - arc_tab
@@ -118,14 +120,25 @@ SENTRY_GAP = 48                 ; frames between a sentry's shots
     LDY th_type,X
     LDA type_spr,Y
     CPY #TH_SENTRY : BEQ one_frame
-    CPY #TH_ENEMIES : BCS one_frame
+    CPY #TH_EXIT : BEQ one_frame
+    CPY #TH_ENEMIES : BCC two_frames
+    \ A pickup glints, a beat in every four.
     PHA
-    LDA th_t,X : AND #4 : ASL A     ; 0 or 8: drone1 is drone0 + 8
-    STA tl_f : PLA : CLC : ADC tl_f
+    LDA th_t,X : AND #12 : BNE no_glint
+    PLA : CLC : ADC #4 : BNE set    ; (cell1 is cell0 + 4)
+.no_glint
+    PLA : JMP set
+.two_frames
+    PHA
+    LDA th_t,X : AND #4 : STA tl_f
+    ASL A : ADC tl_f : STA tl_f     ; 0 or 12: drone1 is drone0 + 12
+    PLA : CLC : ADC tl_f
 .one_frame
     PHA
     JSR th_in_phase : BEQ in
-    PLA : CLC : ADC #4 : BNE set    ; (the ghost)
+    \ Out of phase: its ghosts in turn, so it shimmers.
+    LDA th_t,X : AND #2 : ASL A : ADC #4 : STA tl_f   ; 4 or 8
+    PLA : CLC : ADC tl_f : BNE set
 .in
     PLA
 .set
@@ -136,8 +149,10 @@ SENTRY_GAP = 48                 ; frames between a sentry's shots
     RTS
 .tl_f EQUB 0
 }
-ASSERT SPR_DRONE1 = SPR_DRONE0 + 8 AND SPR_CRAWLER1 = SPR_CRAWLER0 + 8 AND SPR_SHARD1 = SPR_SHARD0 + 8
-ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
+ASSERT SPR_DRONE1 = SPR_DRONE0 + 12 AND SPR_CRAWLER1 = SPR_CRAWLER0 + 12 AND SPR_SHARD1 = SPR_SHARD0 + 12
+ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_SENTRY_GHOST2 = SPR_SENTRY + 8
+ASSERT SPR_DRONE0_GHOST2 = SPR_DRONE0 + 8 AND SPR_SHARD1_GHOST2 = SPR_SHARD1 + 8
+ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_LIFE1 = SPR_LIFE0 + 4
 
 \ Thing X's box (ox0-ox1, oy0-oy1), from its sprite.
 .th_box
@@ -210,8 +225,16 @@ ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
     CMP #TH_SHARD : BNE not_shard
     JSR shard_move : JMP look
 .not_shard
-    CMP #TH_SENTRY : BNE look
-    JSR sentry_fire
+    CMP #TH_SENTRY : BNE not_sentry
+    JSR sentry_fire : JMP look
+.not_sentry
+    CMP #TH_EXIT : BEQ look
+    \ A pickup bobs.
+    LDA th_t,X : LSR A : LSR A : LSR A : AND #3 : TAY
+    LDA th_y0,X : SEC : SBC pickup_bob,Y
+    CMP obj_y,X : BEQ look
+    STA obj_y,X
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
 .look
     JSR th_look
     LDA th_boom,X : JNE next
@@ -688,7 +711,7 @@ ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
     LDY gb_c
     LDA (gb_ptr),Y : TAX
     LDA tile_attr,X : AND #TF_BREAKABLE : BEQ not_breakable
-    LDA #T_EMPTY : STA (gb_ptr),Y
+    LDA #T_EMPTY : STA (gb_ptr),Y   ; (air: drawn as the back wall)
     LDX gb_c : LDY gk_r : JSR draw_tile_xy
     INC gb_broke
     LDY gk_r

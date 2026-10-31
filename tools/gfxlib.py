@@ -32,12 +32,12 @@ def _blocks(path):
         if not raw or raw.startswith("#"):
             continue
         words = raw.split()
-        if words[0] == "tile":
+        if words[0] in ("tile", "variant", "alt"):
             h = 8
         elif words[0] == "sprite":
             h = int(words[3])
         else:
-            raise SystemExit(f"{path}:{i}: expected 'tile' or 'sprite', got {raw!r}")
+            raise SystemExit(f"{path}:{i}: expected 'tile', 'variant', 'alt' or 'sprite', got {raw!r}")
         art = [lines[i + k].rstrip() for k in range(h)]
         yield words, art, i
         i += h
@@ -55,12 +55,46 @@ def _pixels(art, w, where):
 class Tile:
     def __init__(self, key, name, flags, pixels):
         self.key, self.name, self.flags, self.pixels = key, name, flags, pixels
+        self.variants = []      # (when, pixels), in file order: the first that holds is used
+        self.alts = {}          # when -> [pixels]: looks used now and then instead
+
+
+# What a variant's <when> may say (see gfx/tiles.txt). Sides join with '+'.
+SIDES = ("up", "down", "left", "right")
+# The air's looks on its two by two grid: the game draws them from where a
+# cell is (screen.6502's back_look), so the rooms keep plain air there.
+BACK_WHENS = ("tl", "tr", "bl", "br")
+WHENS = ("deep", "ceiling", "tl", "tr", "bl", "br", "exit_left", "exit_right", "exit_up", "exit_down")
+
+
+def _when(word, where, alt):
+    if word == "base" and alt:
+        return word
+    if word in WHENS or all(s in SIDES for s in word.split("+")):
+        return word
+    raise SystemExit(f"{where}: unknown <when> {word!r}")
 
 
 def read_tiles(path=ROOT / "gfx/tiles.txt"):
-    """Tiles in file order; the first must be the empty one (key ' ')."""
+    """Tiles in file order; the first must be the empty one (key ' '). Each
+    keeps its variants and alts (the blocks after it that name its key)."""
     tiles = []
     for words, art, line in _blocks(path):
+        if words[0] in ("variant", "alt"):
+            where = f"{path}:{line}"
+            if len(words) != 3:
+                raise SystemExit(f"{where}: {words[0]} <key> <when>")
+            key = " " if words[1] == "space" else words[1]
+            base = next((t for t in tiles if t.key == key), None)
+            if base is None:
+                raise SystemExit(f"{where}: no tile {words[1]!r} before this")
+            when = _when(words[2], where, words[0] == "alt")
+            px = _pixels(art, 8, where)
+            if words[0] == "variant":
+                base.variants.append((when, px))
+            else:
+                base.alts.setdefault(when, []).append(px)
+            continue
         if words[0] != "tile":
             continue
         # "tile <key> <name> flags...": the key is one character; a space is
@@ -89,7 +123,8 @@ class Sprite:
 
 def read_sprites(path=ROOT / "gfx/sprites.txt", ghosts=True):
     """The sprites in file order. With ghosts, each one flagged "phase" is
-    followed by its dotted outline, <name>_ghost, shown out of phase."""
+    followed by its dotted outlines on the two squares of a checkerboard,
+    <name>_ghost and <name>_ghost2, shown in turn out of phase."""
     out = []
     for words, art, line in _blocks(path):
         if words[0] != "sprite":
@@ -101,16 +136,18 @@ def read_sprites(path=ROOT / "gfx/sprites.txt", ghosts=True):
         s = Sprite(name, w, h, _pixels(art, w, f"{path}:{line}"), flags)
         out.append(s)
         if ghosts and "phase" in s.flags:
-            out.append(Sprite(name + "_ghost", w, h, hollow(s.pixels), s.flags - {"phase"}))
+            out.append(Sprite(name + "_ghost", w, h, hollow(s.pixels, 0), s.flags - {"phase"}))
+            out.append(Sprite(name + "_ghost2", w, h, hollow(s.pixels, 1), s.flags - {"phase"}))
     return out
 
 
-def hollow(pixels):
+def hollow(pixels, parity=None):
     """The out-of-phase look of a phase tile or sprite: a dotted outline.
     The outline is the lit pixels on the edge (a neighbour or the border is
-    dark). The dots are the squares of a checkerboard that keep more of it
-    (the even ones, on a tie); a tiny thing keeps its whole outline, so it
-    never vanishes."""
+    dark). The dots are the squares of a checkerboard: those of the parity
+    given (0 even, 1 odd), or else those that keep more of it (the even
+    ones, on a tie). A tiny thing keeps its whole outline, so it never
+    vanishes."""
     h, w = len(pixels), len(pixels[0])
     edge = []
     for y in range(h):
@@ -120,12 +157,27 @@ def hollow(pixels):
                 edge.append((x, y))
     even = [(x, y) for x, y in edge if not (x + y) & 1]
     odd = [(x, y) for x, y in edge if (x + y) & 1]
-    keep = even if len(even) >= len(odd) else odd
+    if parity is None:
+        keep = even if len(even) >= len(odd) else odd
+    else:
+        keep = odd if parity else even
     if len(keep) < 8:
         keep = edge
     out = [[0] * w for _ in range(h)]
     for x, y in keep:
         out[y][x] = pixels[y][x]
+    return out
+
+
+def ghost_tile(pixels):
+    """A phase tile out of phase: its dotted outline (hollow), and inside
+    it a sparse diagonal hatch of its own colours, the same in every room,
+    so it reads as a block that isn't there."""
+    out = hollow(pixels)
+    for y, row in enumerate(pixels):
+        for x, c in enumerate(row):
+            if c and not out[y][x] and (x - y) % 4 == 0 and 0 < x < 7 and 0 < y < 7:
+                out[y][x] = c
     return out
 
 
@@ -140,6 +192,92 @@ def mode1_bytes(row4):
 def tile_bytes(pixels):
     """A tile's 16 bytes in screen order: the left cell's 8 lines, then the right's."""
     return [mode1_bytes(r[0:4]) for r in pixels] + [mode1_bytes(r[4:8]) for r in pixels]
+
+
+# --- Looks: each tile's variants and alts, numbered for the game ------------
+
+class Look:
+    """One 8x8 picture the game can draw: a tile as written, or one of its
+    variants or alts. It has its tile's flags."""
+    def __init__(self, index, tile, when, alt, pixels):
+        self.index, self.tile, self.when, self.alt, self.pixels = index, tile, when, alt, pixels
+        self.key, self.flags = tile.key, tile.flags
+        self.name = tile.name
+        if when != "base":
+            self.name += "_" + when.replace("+", "_")
+        if alt is not None:
+            self.name += f"_alt{alt}"
+
+
+def looks(tiles):
+    """Every look, numbered: the tiles as written first (so a tile's number
+    is its place in the file), then each tile's variants and alts in order."""
+    out = [Look(i, t, "base", None, t.pixels) for i, t in enumerate(tiles)]
+    for t in tiles:
+        for when, px in t.variants:
+            out.append(Look(len(out), t, when, None, px))
+        for when, pxs in t.alts.items():
+            for k, px in enumerate(pxs):
+                out.append(Look(len(out), t, when, k, px))
+    return out
+
+
+def look_hash(c, r, salt):
+    """Where alts go: 0-7, from the cell and the room. (The editor has the
+    same sum.)"""
+    return ((((c + 1) * 40503) ^ ((r + 1 + salt) * 32587)) >> 5) & 7
+
+
+def resolve(room, tiles, all_looks=None):
+    """The room's map as looks: each cell's tile, as its surroundings choose.
+
+    A side of a solid tile is open when the tile there isn't solid in both
+    phases; a side of any other tile is open when the tile there is another
+    one. Past the map's edge, a side is closed. A tile takes its first
+    variant whose <when> holds, or else its own look; then, where the cell's
+    look_hash falls below the number of alts for that <when>, that alt."""
+    all_looks = all_looks or looks(tiles)
+    keys = {t.key: t for t in tiles}
+    by = {(lk.key, lk.when, lk.alt): lk for lk in all_looks}
+    salt = sum(map(ord, room.ident)) & 0xFF
+
+    def solid_both(k):
+        f = keys[k].flags
+        return "solid" in f and not f & {"red", "blue"}
+
+    grid = []
+    for r in range(MAP_H):
+        row = []
+        for c in range(MAP_W):
+            k = room.map[r][c]
+            t = keys[k]
+            opened = set()
+            for side, (dc, dr) in zip(SIDES, ((0, -1), (0, 1), (-1, 0), (1, 0))):
+                nc, nr = c + dc, r + dr
+                if 0 <= nc < MAP_W and 0 <= nr < MAP_H:
+                    n = room.map[nr][nc]
+                    if (not solid_both(n)) if "solid" in t.flags else n != k:
+                        opened.add(side)
+
+            def holds(when):
+                if when == "deep":
+                    return not opened
+                if when == "ceiling":
+                    return r > 0 and solid_both(room.map[r - 1][c])
+                if when in ("tl", "tr", "bl", "br"):
+                    return when == "tb"[r & 1] + "lr"[c & 1]
+                if when.startswith("exit_"):
+                    d = when[5:]
+                    edge = {"left": c == 0, "right": c == MAP_W - 1, "up": r == 0, "down": r == MAP_H - 1}[d]
+                    return edge and room.exits[d] != "-"
+                return all(s in opened for s in when.split("+"))
+
+            when = next((w for w, _ in t.variants if holds(w)), "base")
+            alts = t.alts.get(when, [])
+            h = look_hash(c, r, salt)
+            row.append(by[(k, when, h if h < len(alts) else None)])
+        grid.append(row)
+    return grid
 
 
 # --- Rooms -------------------------------------------------------------------

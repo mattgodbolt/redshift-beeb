@@ -331,6 +331,9 @@ const RGB = [[0, 0, 0], [255, 0, 0], [0, 255, 0], [255, 255, 0], [0, 0, 255], [2
 const SWAP = [0, 4, 5, 6, 1, 2, 3, 7];
 const MAP_W = 32, MAP_H = 22, WIDTH = MAP_W * 8, LINES = MAP_H * 8;
 const TILE_FLAGS = ['solid', 'hazard', 'breakable', 'red', 'blue'];
+// gfxlib's SIDES and WHENS: what a variant's <when> may say (sides join with '+').
+const SIDES = ['up', 'down', 'left', 'right'];
+const WHENS = ['deep', 'ceiling', 'tl', 'tr', 'bl', 'br', 'exit_left', 'exit_right', 'exit_up', 'exit_down'];
 const SPRITE_FLAGS = ['phase', 'mirror'];
 // tools/mkrooms.py's list. The page reads the live one from there when it can, and check.mjs fails
 // if this copy falls behind.
@@ -338,8 +341,8 @@ const THING_TYPES = ['sentry', 'drone', 'crawler', 'shard', 'cell', 'grenades', 
 // mkrooms.py's THING_BOX, kept the same way: each type's width, and the lines it reaches above and
 // below its tile row's top (the drone bobs, the crawler sits 4 lines down).
 const THING_BOX = {
-  sentry: [16, 0, 16], drone: [16, -4, 14], crawler: [16, 4, 16], shard: [8, 0, 8], cell: [8, 0, 8],
-  grenades: [8, 0, 8], life: [8, 0, 8], exit: [16, 0, 24],
+  sentry: [16, 0, 16], drone: [16, -4, 14], crawler: [16, 4, 16], shard: [8, 0, 8], cell: [8, -2, 8],
+  grenades: [8, -2, 8], life: [8, -2, 8], exit: [16, 0, 24],
 };
 const MAX_THINGS = 6;
 const DIRS = ['left', 'right', 'up', 'down'];
@@ -402,6 +405,15 @@ function hollow(px) {
   return out;
 }
 
+// gfxlib's ghost_tile: a phase tile out of phase is its dotted outline, and a sparse diagonal hatch.
+function ghostTile(px) {
+  const out = hollow(px);
+  px.forEach((row, y) => row.forEach((c, x) => {
+    if (c && !out[y][x] && (((x - y) % 4) + 4) % 4 === 0 && x > 0 && x < 7 && y > 0 && y < 7) out[y][x] = c;
+  }));
+  return out;
+}
+
 function parseGfx(text, fname) {
   const {lines} = splitLines(text);
   const tiles = [], sprites = [];
@@ -412,8 +424,8 @@ function parseGfx(text, fname) {
     const where = `${fname}:${i}`;
     const words = raw.split(/\s+/);
     let w, h;
-    if (words[0] === 'tile') {
-      if (words.length < 3) fail(where, 'tile <key> <name> [flags]');
+    if (words[0] === 'tile' || words[0] === 'variant' || words[0] === 'alt') {
+      if (words.length < 3) fail(where, words[0] === 'tile' ? 'tile <key> <name> [flags]' : `${words[0]} <key> <when>`);
       w = h = 8;
     } else if (words[0] === 'sprite') {
       if (words.length < 4) fail(where, 'sprite <name> <width> <height> [flags]');
@@ -421,7 +433,7 @@ function parseGfx(text, fname) {
       h = wholeNumber(words[3], where);
       if (w < 1 || h < 1) fail(where, 'a sprite is at least 1x1');
     } else {
-      fail(where, `expected 'tile' or 'sprite', got '${raw}'`);
+      fail(where, `expected 'tile', 'variant', 'alt' or 'sprite', got '${raw}'`);
     }
     if (i + h > lines.length) fail(where, `the art wants ${h} lines`);
     const pixels = lines.slice(i, i + h).map((line, k) => {
@@ -430,12 +442,23 @@ function parseGfx(text, fname) {
       return Array.from(line, c => (c === '.' ? 0 : +c));
     });
     i += h;
-    if (words[0] === 'tile') {
+    if (words[0] === 'variant' || words[0] === 'alt') {
+      if (words.length !== 3) fail(where, `${words[0]} <key> <when>`);
+      const key = words[1] === 'space' ? ' ' : words[1];
+      const base = tiles.find(t => t.key === key);
+      if (!base) fail(where, `no tile '${words[1]}' before this`);
+      const when = words[2];
+      if (!(when === 'base' && words[0] === 'alt') && !WHENS.includes(when) &&
+          !when.split('+').every(x => SIDES.includes(x))) fail(where, `unknown <when> '${when}'`);
+      const look = {key, flags: base.flags, pixels, hollow: ghostTile(pixels)};
+      if (words[0] === 'variant') base.variants.push({when, look});
+      else (base.alts[when] = base.alts[when] || []).push(look);
+    } else if (words[0] === 'tile') {
       const key = words[1] === 'space' ? ' ' : words[1];
       if (key.length !== 1) fail(where, "a tile's key is one character");
       const flags = words.slice(3), bad = flags.filter(f => !TILE_FLAGS.includes(f));
       if (bad.length) fail(where, `unknown flags ${bad.join(' ')}`);
-      tiles.push({key, name: words[2], flags, pixels, hollow: hollow(pixels)});
+      tiles.push({key, name: words[2], flags, pixels, hollow: ghostTile(pixels), variants: [], alts: {}});
     } else {
       const flags = words.slice(4), bad = flags.filter(f => !SPRITE_FLAGS.includes(f));
       if (bad.length) fail(where, `unknown sprite flags ${bad.join(' ')}`);
@@ -452,6 +475,51 @@ function parseTiles(text, fname = 'gfx/tiles.txt') {
   return tiles;
 }
 const parseSprites = (text, fname = 'gfx/sprites.txt') => parseGfx(text, fname).sprites;
+
+// --- Looks (gfxlib's resolve): each cell's tile, as its surroundings choose ------------------------
+
+const lookHash = (c, r, salt) => ((((c + 1) * 40503) ^ ((r + 1 + salt) * 32587)) >> 5) & 7;
+
+// A grid of looks ({pixels, hollow, flags}) for the room's map. A side of a solid tile is open when
+// the tile there isn't solid in both phases; a side of any other tile is open when the tile there is
+// another one; past the map's edge it's closed. A key that isn't a tile gives null.
+function resolveRoom(room, tileMap) {
+  const at = (c, r) => tileMap.get(room.map[r][c]);
+  const solidBoth = t => !!t && t.flags.includes('solid') && !t.flags.includes('red') && !t.flags.includes('blue');
+  const salt = [...room.id].reduce((n, ch) => n + ch.charCodeAt(0), 0) & 0xFF;
+  const grid = [];
+  for (let r = 0; r < MAP_H; r++) {
+    const row = [];
+    for (let c = 0; c < MAP_W; c++) {
+      const t = at(c, r);
+      if (!t) { row.push(null); continue; }
+      const opened = new Set();
+      [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(([dc, dr], k) => {
+        const nc = c + dc, nr = r + dr;
+        if (nc < 0 || nc >= MAP_W || nr < 0 || nr >= MAP_H) return;
+        const n = at(nc, nr), nk = room.map[nr][nc];
+        if (t.flags.includes('solid') ? !solidBoth(n) : nk !== t.key) opened.add(SIDES[k]);
+      });
+      const holds = when => {
+        if (when === 'deep') return opened.size === 0;
+        if (when === 'ceiling') return r > 0 && solidBoth(at(c, r - 1));
+        if (['tl', 'tr', 'bl', 'br'].includes(when)) return when === 'tb'[r & 1] + 'lr'[c & 1];
+        if (when.startsWith('exit_')) {
+          const d = when.slice(5);
+          const edge = {left: c === 0, right: c === MAP_W - 1, up: r === 0, down: r === MAP_H - 1}[d];
+          return edge && room.exits[d] !== '-';
+        }
+        return when.split('+').every(x => opened.has(x));
+      };
+      const v = t.variants.find(x => holds(x.when));
+      const when = v ? v.when : 'base';
+      const alts = t.alts[when] || [], h = lookHash(c, r, salt);
+      row.push(h < alts.length ? alts[h] : v ? v.look : t);
+    }
+    grid.push(row);
+  }
+  return grid;
+}
 
 // --- Rooms (gfxlib's read_rooms) ------------------------------------------------------------------
 //
@@ -649,10 +717,10 @@ function paletteRows(room, phase) {
 function renderRoom(room, tileMap, phase, buf) {
   const pal = paletteRows(room, phase);
   const other = phase ? 'red' : 'blue';
+  const grid = resolveRoom(room, tileMap);
   for (let ty = 0; ty < MAP_H; ty++) {
-    const row = room.map[ty];
     for (let tx = 0; tx < MAP_W; tx++) {
-      const t = tileMap.get(row[tx]);
+      const t = grid[ty][tx];
       const pix = t ? (t.flags.includes(other) ? t.hollow : t.pixels) : null;
       for (let y = 0; y < 8; y++) {
         const p = pal[ty * 8 + y];
@@ -781,7 +849,8 @@ G.RS = {
   PHYS_NAMES, RGB, SWAP, MAP_W, MAP_H, WIDTH, LINES, TILE_FLAGS, THING_TYPES, THING_BOX, MAX_THINGS, DIRS,
   OPPOSITE, ParseError, fits,
   parseTiles, parseSprites, parseRooms, serializeRooms, roomLines, newRoom, hollow, blueOf, phaseColour,
-  colourText, sortedBands, paletteRows, renderRoom, drawSprite, sectors, validate, idProblem,
+  colourText, sortedBands, paletteRows, renderRoom, resolveRoom, lookHash, drawSprite, sectors, validate,
+  idProblem,
 };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
@@ -799,7 +868,7 @@ let THING_TYPES = RS.THING_TYPES.slice(), THING_BOX = {...RS.THING_BOX};
 // type_phase, and the crawler's tracks on the floor). Out of its phase it's a ghost.
 const THING_LOOK = {
   sentry: ['sentry', 1, 0], drone: ['drone0', 1, 0], crawler: ['crawler0', 1, 4], shard: ['shard0', 2, 0],
-  cell: ['cell', 0, 0], grenades: ['grenades', 0, 0], life: ['life', 0, 0], exit: [null, 0, 0],
+  cell: ['cell0', 0, 0], grenades: ['grenades0', 0, 0], life: ['life0', 0, 0], exit: [null, 0, 0],
 };
 const THING_COLOURS = {
   sentry: '#ff8a65', drone: '#ffd54f', crawler: '#aed581', shard: '#4fc3f7', cell: '#81c784',

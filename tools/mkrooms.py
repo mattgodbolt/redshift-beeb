@@ -10,7 +10,8 @@ Each room's record (rooms.6502 reads it):
     colours     logical 1-3 at the top, Red Phase then Blue Phase
     bands       a count, then each band's line, logical colour, Red, Blue
     things      a count, then each thing's type, x, y and argument
-    map         packed: a byte under &80 is a tile; &80+n repeats the last
+    map         packed: a byte under &80 is a look (gfxlib.looks: a tile, as
+                its surroundings choose); &80+n repeats the last
                 tile n+1 more times; &C0+n copies n+1 tiles from the row
                 above. MAP_W * MAP_H tiles in all.
 """
@@ -23,10 +24,11 @@ import gfxlib as g  # noqa: E402
 
 THING_TYPES = ["sentry", "drone", "crawler", "shard", "cell", "grenades", "life", "exit"]
 # Each type's size in pixels, with what it reaches beyond its sprite: the
-# drone bobs 4 lines up and down, the crawler sits 4 lines down (things.6502).
+# drone bobs 4 lines up and down, a pickup 2 lines up, the crawler sits 4
+# lines down (things.6502).
 THING_BOX = {"sentry": (16, 0, 16), "drone": (16, -4, 14), "crawler": (16, 4, 16),
-             "shard": (8, 0, 8), "cell": (8, 0, 8), "grenades": (8, 0, 8),
-             "life": (8, 0, 8), "exit": (16, 0, 24)}
+             "shard": (8, 0, 8), "cell": (8, -2, 8), "grenades": (8, -2, 8),
+             "life": (8, -2, 8), "exit": (16, 0, 24)}
 
 
 def pack(cells):
@@ -71,14 +73,13 @@ def render(room, tiles, phase, scale=2):
     """The room as the BBC shows it, in one phase."""
     from PIL import Image
     pal_rows = g.room_palette_rows(room, phase)
-    keys = {t.key: t for t in tiles}
+    grid = g.resolve(room, tiles)
     im = Image.new("RGB", (256, 176))
     px = im.load()
-    for ty, line in enumerate(room.map):
-        for tx, k in enumerate(line):
-            t = keys[k]
+    for ty, line in enumerate(grid):
+        for tx, lk in enumerate(line):
             other = "blue" if phase == 0 else "red"
-            pix = g.hollow(t.pixels) if other in t.flags else t.pixels
+            pix = g.ghost_tile(lk.pixels) if other in lk.flags else lk.pixels
             for y in range(8):
                 pal = pal_rows[ty * 8 + y]
                 for x in range(8):
@@ -93,6 +94,7 @@ def main():
     a = ap.parse_args()
     tiles = g.read_tiles()
     keys = {t.key: i for i, t in enumerate(tiles)}
+    all_looks = g.looks(tiles)
     rooms = g.read_rooms()
     ids = {r.ident: i for i, r in enumerate(rooms)}
     if len(ids) != len(rooms):
@@ -148,12 +150,15 @@ def main():
                 raise SystemExit(f"{where}: {typ} at {x},{y} doesn't fit on the screen")
             arg = int(args[0]) if args else 0
             rec += [THING_TYPES.index(typ), x, y, arg]
-        cells = []
         for k, line in enumerate(r.map):
             for c in line:
                 if c not in keys:
                     raise SystemExit(f"{where}: map line {k}: no tile {c!r}")
-                cells.append(keys[c])
+        # The back wall's grid isn't kept: those cells stay plain air, and the
+        # game draws air as the back wall for where it is (screen.6502's
+        # back_look), so long runs of air still pack.
+        cells = [0 if lk.key == " " and lk.when in g.BACK_WHENS else lk.index
+                 for line in g.resolve(r, tiles, all_looks) for lk in line]
         packed = pack(cells)
         assert unpack(packed) == cells
         rec += packed
