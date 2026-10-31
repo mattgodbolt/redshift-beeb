@@ -198,4 +198,17 @@ Matt was away is marked *provisional* until reviewed.
     into it, and burst. The rumble is periodic noise, not the white noise
     of a blast, with a falling whine over it, so a death doesn't sound like
     a kill.
+35. **2026-10-31: the first enemies shootable from where you stand.** The
+    second newcomer's playtest found the first enemy of the game in a pit
+    no shot could reach, and Gadflies hovering just over Ash's head, so
+    only a jump and fire would hit them. A level-design agent moved them:
+    the Landing Zone's Trundler shuttles on a raised pad, in a standing
+    bolt's line; the Pump House's Gadfly patrols beyond the barricade,
+    which stops two rows short of the floor so a bolt passes under it and
+    Ash still has to shift; the Settling Tanks has a Trundler behind its
+    cracked wall instead of a Gadfly over its entry, and a narrower second
+    tank. Pickups moved clear of pipes, Slurry Run's Slivers off the place
+    where a player shifts, and the landmarks grew: the Pump House's
+    flywheel, the Settling Tanks' gauge, a hoist in the Catwalks, an
+    outflow in Slurry Run, in place of the ceiling rail and lamps.
 

@@ -46,19 +46,21 @@ The music follows the phase: listen to it change when you shift.
 
 THE LEACH WORKS, where Ash starts, teaches one thing a room:
 
-1. **LANDING ZONE.** Hop the acid, climb the girders over the pool, and
-   get past the first of the machines on the way out.
-2. **PUMP HOUSE.** A welded barricade fills the corridor in the Red Phase.
-   SHIFT, and in the Blue it's a dotted ghost you walk through, while
-   crystal ledges you couldn't stand on appear (above, the same moment in
-   each phase).
+1. **LANDING ZONE.** Shoot the Trundler on the pad, hop the acid, and
+   climb the girders over the pool to the way out.
+2. **PUMP HOUSE.** A welded barricade blocks the corridor in the Red
+   Phase, with a Gadfly beyond it to shoot under it. SHIFT, and in the
+   Blue the barricade is a dotted ghost you walk through, while crystal
+   ledges you couldn't stand on appear (above, the same moment in each
+   phase).
 3. **VAT ROW.** Blue crystal spans over the acid vats. The machines here
    belong to the Red, so in the Blue they're ghosts that can't touch you.
 4. **THE PICKLE JAR.** A drop into a jar of acid, with Red plates across
    it: shift back, and the Gadfly over them is real again. Below, a
    Trundler in the drain has to be shot crouching.
 5. **SETTLING TANKS.** A pack of fracture charges, and a cracked wall
-   across the way on. One charge brings the whole wall down.
+   across the way on, with a Trundler behind it. One charge brings the
+   whole wall down.
 6. **FOREMAN'S HUT.** A Drill Sergeant holds the yard, and bolts spark off
    its armour. Lob a charge from a crate, or crouch under its fire and roll
    one. There's a trauma kit in the hut.

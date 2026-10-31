@@ -225,3 +225,20 @@ What was done, in order, with what worked and what didn't.
 - P silences everything now. Before, a pause in the middle of an effect
   left its note sounding.
 
+## 2026-10-31: a second playtest, a death, and the README's pictures
+
+- A second newcomer finished every room, and found new trouble: armour
+  that gave no sign of a hit (sparks now), bolts that started past a thin
+  wall, Slivers that kept their places after a death (a death now brings
+  the room back), girders whose lattice read as an out-of-phase hatch, a
+  cracked wall whose cracks read as exit chevrons, weeds like spikes, a
+  sergeant with a target painted on it, and first enemies no standing shot
+  could reach (decision 35).
+- Matt pointed out that a death had no effect: Ash just vanished. Ash's
+  harness now fails visibly (decision 34).
+- `tools/playthrough.mjs` plays the whole sector without losing a life
+  (`make playthrough`), and takes the README's screenshots
+  (`make readme-shots`).
+- The bank is getting full: the next sector's rooms will need the room
+  records compressed first.
+

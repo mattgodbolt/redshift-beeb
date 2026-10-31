@@ -82,10 +82,22 @@ const thing = async (i) => {
     const x = (await beeb.read("obj_x", 12))[i], f = (await beeb.read("obj_face", 12))[i];
     return { x, f, alive: (await beeb.read("obj_spr", 12))[i] !== 255 };
 };
+let lives0 = null;
 const expectRoom = async (n, name) => {
     const s = await g.st();
     console.log(`${name.padEnd(16)} room ${s.room}  lives ${s.lives}  cells ${s.cells}`);
     if (s.room !== n) throw new Error(`expected room ${n} (${name}), in room ${s.room}`);
+    if (lives0 !== null && s.lives < lives0) throw new Error(`a life was lost before ${name}`);
+    lives0 = s.lives;
+};
+// Fire (crouched, or not) until thing i is gone; false if it isn't.
+const fireUntilDead = async (i, limit = 150, crouch = false) => {
+    if (crouch) await g.down("D");
+    await g.down("F");
+    for (let k = 0; k < limit; k++) { await g.gf(1); if (!(await thing(i)).alive) break; }
+    await g.up("F");
+    if (crouch) await g.up("D");
+    return !(await thing(i)).alive;
 };
 const cross = async (dir, room) => { await g.walkUntilRoom(dir, room); await g.gf(3); };
 const until = async (test, limit = 400) => { for (let i = 0; i < limit; i++) { if (await test()) return; await g.gf(1); } };
@@ -106,25 +118,23 @@ try {
     // 1 LANDING ZONE
     await expectRoom(0, "LANDING ZONE");
     await g.gf(10); await mark("landing");
+    if (!(await fireUntilDead(5))) throw new Error("the pad's Trundler lived");
     await g.walkTo(30); await g.jump("R", 20);
     await g.walkTo(58); await g.jump("R", 14);
     await g.walkTo(76); await g.jump("R", 14);
     await g.down("R"); await until(async () => { const s = await g.st(); return s.air === 0 && s.y === 104; }, 40); await g.up("R"); await g.land();
-    await g.down("R"); await g.tap("J", 2); await g.walkUntilRoom("R", 1, 60); await g.land();
+    await g.walkUntilRoom("R", 1, 80); await g.land();
     await g.gf(3);
     // 2 PUMP HOUSE: the shift
     await expectRoom(1, "PUMP HOUSE");
-    await until(async () => { const d = await thing(4); return d.f === 0 && d.x > 30; }, 200);
     await g.jump("R", 12);
-    await g.down("F"); await until(async () => !(await thing(4)).alive, 150); await g.up("F");
     await g.walkTo(28); await g.jump("R", 16);
-    await g.walkTo(64);
-    await mark("shift_from"); await mark("pump_red");
-    await g.gf(6);
+    await g.walkTo(64, 60);
+    await mark("pump_red");
+    if (!(await fireUntilDead(4, 200))) throw new Error("the Pump House's Gadfly lived");
     await g.tap("S", 2); await g.gf(2);
     await g.gf(20); await mark("pump_blue");
     await g.walkTo(92); await g.jump("R", 10);
-    await mark("shift_to");
     await g.walkTo(106); await g.jump("R", 16);
     await cross("R", 2);
     // 3 VAT ROW (in the Blue)
@@ -137,7 +147,7 @@ try {
     await expectRoom(3, "THE PICKLE JAR");
     await g.tap("S", 2); await g.gf(2);
     await g.walkTo(90); await g.jump("L", 14);
-    await g.down("F"); await until(async () => !(await thing(4)).alive, 200); await g.up("F");
+    await fireUntilDead(4, 200);
     await mark("jar");
     await g.walkTo(67); await g.jump("L", 20);
     await g.walkTo(42); await g.jump("L", 14);
@@ -145,20 +155,18 @@ try {
     await until(async () => { const c = await thing(5); return !c.alive || c.x > 70; }, 400);
     await g.walkTo(10);
     await g.down("R"); await g.gf(1); await g.up("R");
-    await g.down("D"); await g.down("F");
-    await until(async () => !(await thing(5)).alive, 150);
-    await g.up("F"); await g.up("D");
+    await fireUntilDead(5, 150, true);
     await cross("R", 4);
     // 5 SETTLING TANKS
     await expectRoom(4, "SETTLING TANKS");
     await g.walkTo(6); await g.jump("R", 8);
-    await until(async () => { const d = await thing(5); return d.f === 0 && d.x > 40; }, 200);
     await g.jump("R", 10);
-    await g.down("F"); await until(async () => !(await thing(5)).alive, 150); await g.up("F");
-    await g.walkTo(44); await g.walkTo(56); await g.jump("R", 16);
-    await g.walkTo(100);
+    await g.walkTo(60, 60);
+    await g.jump("R", 24);
+    await g.walkTo(100, 60);
     await mark("tanks");
     await g.tap("G", 2); await g.gf(20);
+    await fireUntilDead(5, 200);
     await g.jump("R", 10);
     await cross("R", 5);
     // 6 FOREMAN'S HUT
@@ -187,13 +195,13 @@ try {
     await g.walkTo(90);
     await g.tap("S", 2); await g.gf(2);
     await g.down("L"); await g.gf(1); await g.up("L");
-    await g.down("F"); await g.walkTo(52); await g.up("F");
+    await g.down("F");
+    await until(async () => !(await thing(6)).alive && !(await thing(7)).alive, 40);
+    await g.walkTo(52); await g.up("F");
     await mark("slurry");
     await until(async () => { const t = await thing(4); return t.f === 2 && t.x < 22; }, 200);
     await g.tap("S", 2); await g.gf(2);
-    await g.down("D"); await g.down("F");
-    await until(async () => !(await thing(4)).alive, 200);
-    await g.up("F"); await g.up("D");
+    await fireUntilDead(4, 200, true);
     await cross("L", 8);
     await g.gf(30);
     // 9 SKIP SHAFT, and the cage
