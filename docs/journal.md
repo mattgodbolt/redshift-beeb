@@ -43,3 +43,19 @@ What was done, in order, with what worked and what didn't.
   routine set the flags its caller tested: `LDX sh_x` after `test_area`
   made every bolt hit at once. Branches out of range were fixed with `JNE`
   and an inverted branch.
+
+## 2026-10-31: things
+
+- `things.6502`: sentries (armoured, fire along their row), drones (bob
+  and turn at walls), crawlers (turn at walls and at the floor's end),
+  shards (home in), pickups, the grenade's arc and blast (which also
+  clears breakable tiles), and enemy bolts. `tools/mkgfx.py` makes each
+  phase enemy's ghost, and mirrored copies only of sprites flagged
+  `mirror`.
+- A trap avoided: after tiles are drawn over things (a blast, a phase
+  shift), forgetting what's on screen would leave a trail where a moving
+  thing was. They're marked changed instead (`objs_touch`), so both
+  rectangles are redrawn.
+- The low pages filled up. The interrupt's page-aligned tables now come
+  first, and the compose buffer is 768 bytes.
+- Memory is getting short below the screen: about 4K is left.

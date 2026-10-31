@@ -30,3 +30,12 @@ Matt was away is marked *provisional* until reviewed.
    about five seconds. That's deliberate and weighty, but easy to change.
 8. **2026-10-31: the keys** (*provisional*): Z X : / RETURN SPACE, SHIFT
    for the phase, and the cursor keys too.
+9. **2026-10-31: the blaster never runs out** (*provisional*). The
+   things that run out are phase cells (a shift costs one) and grenades.
+   The planned ammo pickup is an extra life instead.
+10. **2026-10-31: the dead stay dead** (*provisional*). A thing killed or
+    taken is gone from its room for the rest of the game (`room_gone`, a
+    bit per thing), so pickups can't be farmed. At most six things a room.
+11. **2026-10-31: the enemies' phases.** Sentries, drones and crawlers are
+    the Red Phase's machines; shards are the Blue Phase's crystals.
+    Out of phase, each is drawn as its dotted ghost and goes on moving.

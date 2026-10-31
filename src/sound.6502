@@ -1,5 +1,6 @@
 \ ***************************************************************************
 \ Sound: the effects, played a step each VSync (from the interrupt).
+\ Every effect keeps X and Y: callers are in the middle of loops.
 \ ***************************************************************************
 
 .sound_tick
@@ -8,4 +9,8 @@
 .sound_fire
 .sound_die
 .sound_buzz
+.sound_ping
+.sound_boom
+.sound_take
+.sound_zap
     RTS

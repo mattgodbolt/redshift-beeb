@@ -1,0 +1,661 @@
+\ ***************************************************************************
+\ The things in a room: enemies, pickups, the grenade, and enemy bolts.
+\
+\ Thing numbers (render.6502's slots, drawn in this order):
+\   PL          the player (player.6502)
+\   1-NSHOTS    the player's bolts
+\   GR          the grenade, and its blast
+\   TH0...      the room's things, from its list (rooms/rooms.txt)
+\   EB0...      the enemies' bolts
+\
+\ Each enemy belongs to a phase (type_phase): out of it, it's drawn as its
+\ ghost (the sprite after its own), it can't hurt and can't be hurt, and
+\ it moves on as if nothing had happened. A thing killed or taken stays
+\ gone (room_gone), for the rest of the game.
+\ ***************************************************************************
+
+GR = NSHOTS + 1
+TH0 = GR + 1
+NTH = 6
+EB0 = TH0 + NTH
+NEB = 2
+ASSERT EB0 + NEB = NOBJ
+
+\ By type (TH_*): sprite, phase, bolts it takes (0: only a grenade kills
+\ it), and score in hundreds (BCD).
+.type_spr   EQUB SPR_SENTRY, SPR_DRONE0, SPR_CRAWLER0, SPR_SHARD0
+            EQUB SPR_CELL, SPR_GRENADES, SPR_LIFE, SPR_CELL
+.type_phase EQUB 1, 1, 1, 2, 0, 0, 0, 0
+.type_hp    EQUB 0, 1, 2, 1, 0, 0, 0, 0
+.type_score EQUB &05, &01, &02, &01, &01, &01, &01, &00
+ASSERT TH_SENTRY = 0 AND TH_DRONE = 1 AND TH_CRAWLER = 2 AND TH_SHARD = 3
+ASSERT TH_CELL = 4 AND TH_GRENADES = 5 AND TH_LIFE = 6
+TH_ENEMIES = TH_CELL            ; types below are enemies
+
+\ The drone's bob, in lines from where it started.
+.bob_tab    EQUB 0, 1, 2, 3, 3, 4, 4, 4, 4, 4, 3, 3, 2, 1, 0, 0
+            EQUB 0, -1, -2, -3, -3, -4, -4, -4, -4, -4, -3, -3, -2, -1, 0, 0
+\ The grenade's arc: lines a frame, up negative.
+.arc_tab    EQUB -5, -4, -4, -3, -3, -2, -2, -1, -1, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5
+ARC_LEN = P% - arc_tab
+GR_FRAMES = 40                  ; it goes off after this long anyway
+BOOM_FRAMES = 8
+SENTRY_GAP = 48                 ; frames between a sentry's shots
+
+\ Into a new room: the shots and blasts gone, the room's things out.
+.spawn_things
+{
+    ZA_AUTO1 st_n, st_k, st_x, st_y, st_arg
+    LDX #NOBJ - 1
+.clear
+    CPX #PL : BEQ next_clear
+    LDA #&FF : STA obj_spr,X
+    LDA #0 : STA th_boom,X
+.next_clear
+    DEX : BNE clear
+    LDA things_ptr : STA rd_ptr
+    LDA things_ptr+1 : STA rd_ptr+1
+    JSR rd_byte : STA st_n
+    LDA #0 : STA st_k
+.thing
+    LDA st_k : CMP st_n : BCS done
+    CMP #NTH : BCS done
+    JSR rd_byte : PHA
+    JSR rd_byte : STA st_x
+    JSR rd_byte : STA st_y
+    JSR rd_byte : STA st_arg
+    PLA
+    \ Still there?
+    LDX room : LDY st_k
+    PHA : LDA room_gone,X : AND bit_masks,Y : TAY : PLA
+    CPY #0 : BNE skip
+    PHA : LDA st_k : CLC : ADC #TH0 : TAX : PLA
+    STA th_type,X
+    TAY
+    LDA type_spr,Y : STA obj_spr,X
+    LDA type_phase,Y : STA th_phase,X
+    LDA type_hp,Y : STA th_hp,X
+    LDA st_x : ASL A : ASL A : STA obj_x,X
+    LDA st_y : ASL A : ASL A : ASL A : STA obj_y,X : STA th_y0,X
+    LDA st_arg : AND #1 : ASL A : STA obj_face,X    ; 1: facing left
+    LDA st_k : STA th_idx,X
+    ASL A : ASL A : ASL A : STA th_t,X  ; (staggered, so they don't fire together)
+    LDA #0 : STA th_boom,X
+    LDA #OS_CHANGED : STA obj_st,X
+    JSR th_look
+.skip
+    INC st_k
+    JMP thing
+.done
+    RTS
+}
+.bit_masks EQUB 1, 2, 4, 8, 16, 32, 64, 128
+
+\ Is thing X in this phase? Z set (BEQ) if so.
+.th_in_phase
+{
+    LDA th_phase,X : BEQ yes
+    SEC : SBC #1 : CMP phase
+.yes
+    RTS
+}
+
+\ Thing X's sprite: its type's, the second frame on alternate beats for
+\ those that have one, and its ghost out of phase.
+.th_look
+{
+    LDA th_boom,X : BEQ alive
+    CMP #BOOM_FRAMES / 2 + 1 : LDA #SPR_BOOM0 : BCS set
+    LDA #SPR_BOOM1 : BNE set
+.alive
+    LDY th_type,X
+    LDA type_spr,Y
+    CPY #TH_SENTRY : BEQ one_frame
+    CPY #TH_ENEMIES : BCS one_frame
+    PHA
+    LDA th_t,X : AND #4 : ASL A     ; 0 or 8: drone1 is drone0 + 8
+    STA tl_f : PLA : CLC : ADC tl_f
+.one_frame
+    PHA
+    JSR th_in_phase : BEQ in
+    PLA : CLC : ADC #4 : BNE set    ; (the ghost)
+.in
+    PLA
+.set
+    CMP obj_spr,X : BEQ same
+    STA obj_spr,X
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+.same
+    RTS
+.tl_f EQUB 0
+}
+ASSERT SPR_DRONE1 = SPR_DRONE0 + 8 AND SPR_CRAWLER1 = SPR_CRAWLER0 + 8 AND SPR_SHARD1 = SPR_SHARD0 + 8
+ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_DRONE0_GHOST = SPR_DRONE0 + 4
+
+\ Thing X's box (ox0-ox1, oy0-oy1), from its sprite.
+.th_box
+{
+    LDY obj_spr,X
+    LDA obj_x,X : STA ox0
+    LDA spr_w,Y : ASL A : CLC : ADC ox0 : STA ox1
+    LDA obj_y,X : STA oy0
+    CLC : ADC spr_h,Y : STA oy1
+    RTS
+}
+
+\ The player's box (bx0-bx1, by0-by1).
+.pl_box
+{
+    LDA obj_x + PL : CLC : ADC #PL_BOX_L : STA bx0
+    ADC #PL_BOX_R - PL_BOX_L + 1 : STA bx1
+    LDA obj_y + PL : LDY pl_crouch : BEQ standing
+    CLC : ADC #8
+.standing
+    STA by0
+    LDA obj_y + PL : CLC : ADC #PL_H : STA by1
+    RTS
+}
+
+\ Do the boxes o and b overlap? Carry set if so.
+.boxes_overlap
+{
+    LDA ox0 : CMP bx1 : BCS no
+    LDA bx0 : CMP ox1 : BCS no
+    LDA oy0 : CMP by1 : BCS no
+    LDA by0 : CMP oy1 : BCS no
+    SEC
+    RTS
+.no
+    CLC
+    RTS
+}
+
+\ Each thing, each frame.
+.things_update
+{
+    LDX #TH0
+.thing
+    LDA obj_spr,X : CMP #&FF : JEQ next
+    INC th_t,X
+    LDA th_boom,X : BEQ alive
+    DEC th_boom,X : BNE look
+    \ Done exploding: gone.
+    LDA #&FF : STA obj_spr,X
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+    JMP next
+.alive
+    \ Its own phase's tiles, whatever ours is.
+    LDY th_phase,X : CPY #2 : BNE red_tiles
+    LDA #LO(attr_blue) : STA attr_ptr
+    LDA #HI(attr_blue) : STA attr_ptr+1
+    BNE moved                       ; (always)
+.red_tiles
+    LDA #LO(attr_red) : STA attr_ptr
+    LDA #HI(attr_red) : STA attr_ptr+1
+.moved
+    LDA th_type,X
+    CMP #TH_DRONE : BNE not_drone
+    JSR drone_move : JMP look
+.not_drone
+    CMP #TH_CRAWLER : BNE not_crawler
+    JSR crawler_move : JMP look
+.not_crawler
+    CMP #TH_SHARD : BNE not_shard
+    JSR shard_move : JMP look
+.not_shard
+    CMP #TH_SENTRY : BNE look
+    JSR sentry_fire
+.look
+    JSR th_look
+    LDA th_boom,X : BNE next
+    \ It meets the player, or the player's bolts. Only in phase.
+    JSR th_in_phase : BNE next
+    LDA pl_dead : BNE next
+    JSR th_box
+    JSR pl_box
+    JSR boxes_overlap : BCC no_touch
+    LDA th_type,X : CMP #TH_ENEMIES : BCS pickup
+    JSR player_die
+    JMP next
+.pickup
+    JSR take
+    JMP next
+.no_touch
+    LDA th_type,X : CMP #TH_ENEMIES : BCS next
+    STX tu_x
+    LDY #NSHOTS
+.bolt
+    LDA obj_spr,Y : CMP #&FF : BEQ no_bolt
+    LDA obj_x,Y : STA bx0 : CLC : ADC #4 : STA bx1
+    LDA obj_y,Y : STA by0 : CLC : ADC #3 : STA by1
+    JSR boxes_overlap : BCC no_bolt
+    \ Hit: the bolt's gone, and the thing takes it (or not).
+    LDA #&FF : STA obj_spr,Y
+    LDA obj_st,Y : ORA #OS_CHANGED : STA obj_st,Y
+    LDA th_hp,X : BEQ armoured
+    DEC th_hp,X : BNE no_bolt
+    JSR th_kill
+    JMP bolts_done
+.armoured
+    JSR sound_ping
+.no_bolt
+    DEY : BNE bolt
+.bolts_done
+    LDX tu_x
+.next
+    INX : CPX #TH0 + NTH : JNE thing
+    JMP set_tile_ptrs               ; (attr_ptr back to this phase's)
+.tu_x EQUB 0
+}
+
+\ Thing X dies: it explodes, it scores, and it stays dead.
+.th_kill
+{
+    LDA #BOOM_FRAMES : STA th_boom,X
+    JSR th_gone
+    LDY th_type,X
+    STX tk_x
+    LDA type_score,Y : JSR add_score
+    LDX tk_x
+    JSR th_look
+    JMP sound_boom
+.tk_x EQUB 0
+}
+
+\ Thing X stays gone from this room.
+.th_gone
+{
+    LDY th_idx,X
+    STX tg_x
+    LDX room
+    LDA room_gone,X : ORA bit_masks,Y : STA room_gone,X
+    LDX tg_x
+    RTS
+.tg_x EQUB 0
+}
+
+\ The player takes pickup X.
+.take
+{
+    JSR th_gone
+    LDA #&FF : STA obj_spr,X
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+    STX tk_x
+    LDY th_type,X
+    LDA type_score,Y : JSR add_score
+    LDX tk_x
+    LDA th_type,X
+    CMP #TH_CELL : BNE not_cell
+    LDA cells : CLC : ADC #3 : CMP #10 : BCC c_ok
+    LDA #9
+.c_ok
+    STA cells
+    JMP counted
+.not_cell
+    CMP #TH_GRENADES : BNE not_gren
+    LDA grenades : CLC : ADC #3 : CMP #10 : BCC g_ok
+    LDA #9
+.g_ok
+    STA grenades
+    JMP counted
+.not_gren
+    CMP #TH_LIFE : BNE counted
+    LDA lives : CMP #9 : BCS counted
+    INC lives
+.counted
+    JSR show_counts
+    LDX tk_x
+    JMP sound_take
+.tk_x EQUB 0
+}
+
+\ --- How each enemy moves ----------------------------------------------------
+
+\ A drone: across, turning at walls and the screen's edges, bobbing.
+.drone_move
+{
+    JSR walk : BEQ ok
+    JSR turn
+.ok
+    LDA th_t,X : LSR A : AND #31 : TAY
+    LDA th_y0,X : CLC : ADC bob_tab,Y : STA obj_y,X
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+    RTS
+}
+
+\ A crawler: along the floor every other frame, turning at walls and at
+\ the floor's end.
+.crawler_move
+{
+    LDA th_t,X : AND #1 : BNE done
+    JSR walk : BNE turn_round
+    \ Ground ahead? Under the leading edge.
+    JSR lead_col : STA ta_c0 : STA ta_c1
+    LDY obj_spr,X
+    LDA obj_y,X : CLC : ADC spr_h,Y : LSR A : LSR A : LSR A
+    STA ta_r0 : STA ta_r1
+    STX cm_x
+    LDA #TF_SOLID : JSR test_area
+    PHP : LDX cm_x : PLP
+    BNE moved
+    \ No: back, and round.
+    LDA obj_face,X : BEQ was_right
+    INC obj_x,X : INC obj_x,X
+.was_right
+    DEC obj_x,X
+.turn_round
+    JSR turn
+.moved
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+.done
+    RTS
+.cm_x EQUB 0
+}
+
+\ A shard: towards the player, a step at a time, every other frame.
+.shard_move
+{
+    LDA th_t,X : AND #1 : BNE done
+    LDA obj_x + PL : CLC : ADC #2 : CMP obj_x,X
+    BEQ y_axis : BCC left
+    INC obj_x,X : BNE y_axis        ; (always)
+.left
+    DEC obj_x,X
+.y_axis
+    LDA obj_y + PL : CLC : ADC #8 : CMP obj_y,X
+    BEQ moved : BCC up
+    INC obj_y,X : INC obj_y,X : BNE moved       ; (always)
+.up
+    DEC obj_y,X : DEC obj_y,X
+.moved
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+.done
+    RTS
+}
+
+\ Thing X steps the way it faces, unless the screen's edge or something
+\ solid is in the way. Z clear (BNE) if it was stopped.
+.walk
+{
+    LDA obj_face,X : BNE leftward
+    JSR th_box
+    LDA ox1 : CMP #128 : BCS blocked
+    INC obj_x,X
+    JSR lead_tiles : BNE undo_r
+    LDA #0
+    RTS
+.undo_r
+    DEC obj_x,X
+    BNE blocked                     ; (always: something was there)
+.leftward
+    LDA obj_x,X : BEQ blocked
+    DEC obj_x,X
+    JSR lead_tiles : BEQ ok
+    INC obj_x,X
+.blocked
+    LDA #1
+.ok
+    RTS
+}
+
+\ The column of tiles at thing X's leading edge.
+.lead_col
+{
+    LDA obj_face,X : BNE leftward
+    JSR th_box
+    LDA ox1 : SEC : SBC #1 : LSR A : LSR A
+    RTS
+.leftward
+    LDA obj_x,X : LSR A : LSR A
+    RTS
+}
+
+\ Anything solid in the leading edge's column, over thing X's height?
+\ Z clear (BNE) if so. X is kept.
+.lead_tiles
+{
+    JSR lead_col : STA ta_c0 : STA ta_c1
+    LDY obj_spr,X
+    LDA obj_y,X : LSR A : LSR A : LSR A : STA ta_r0
+    LDA obj_y,X : CLC : ADC spr_h,Y : SEC : SBC #1
+    LSR A : LSR A : LSR A : STA ta_r1
+    STX lt_x
+    LDA #TF_SOLID : JSR test_area
+    PHP : LDX lt_x : PLP
+    RTS
+.lt_x EQUB 0
+}
+
+\ Thing X turns round.
+.turn
+    LDA obj_face,X : EOR #2 : STA obj_face,X
+    RTS
+
+\ A sentry fires every so often, along its row, if the player's in reach
+\ of it and it's in phase.
+.sentry_fire
+{
+    LDA th_t,X : CMP #SENTRY_GAP : BCC done
+    LDA #0 : STA th_t,X
+    JSR th_in_phase : BNE done
+    LDA pl_dead : BNE done
+    \ Only at a player about level with it.
+    LDA obj_y + PL : CLC : ADC #8 : SEC : SBC obj_y,X
+    BCS below : EOR #&FF : ADC #1
+.below
+    CMP #24 : BCS done
+    LDY #EB0 + NEB - 1
+.find
+    LDA obj_spr,Y : CMP #&FF : BEQ free
+    DEY : CPY #EB0 : BCS find
+.done
+    RTS
+.free
+    LDA #SPR_EBOLT : STA obj_spr,Y
+    LDA #OS_CHANGED : STA obj_st,Y
+    LDA obj_y,X : CLC : ADC #4 : STA obj_y,Y
+    LDA obj_face,X : BNE leftward
+    LDA #3 : STA shot_dx,Y
+    LDA obj_x,X : CLC : ADC #8 : STA obj_x,Y
+    JMP sound_zap
+.leftward
+    LDA #256 - 3 : STA shot_dx,Y
+    LDA obj_x,X : SEC : SBC #4 : BCS on
+    LDA #0
+.on
+    STA obj_x,Y
+    JMP sound_zap
+}
+
+\ The enemies' bolts: across until they hit something or the player.
+.ebolts_update
+{
+    LDX #EB0
+.bolt
+    LDA obj_spr,X : CMP #&FF : BEQ next
+    LDA obj_x,X : CLC : ADC shot_dx,X
+    CMP #128 - 4 + 1 : BCS gone
+    STA obj_x,X
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+    STX eb_x
+    LDA obj_x,X : CLC : ADC #2 : LSR A : LSR A : STA ta_c0 : STA ta_c1
+    LDA obj_y,X : CLC : ADC #1 : LSR A : LSR A : LSR A : STA ta_r0 : STA ta_r1
+    LDA #TF_SOLID : JSR test_area
+    PHP : LDX eb_x : PLP
+    BNE gone
+    LDA pl_dead : BNE next
+    LDA obj_x,X : STA ox0 : CLC : ADC #4 : STA ox1
+    LDA obj_y,X : STA oy0 : CLC : ADC #3 : STA oy1
+    JSR pl_box
+    JSR boxes_overlap : BCC next
+    JSR player_die
+    LDX eb_x
+.gone
+    LDA #&FF : STA obj_spr,X
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+.next
+    INX : CPX #EB0 + NEB : BNE bolt
+    RTS
+.eb_x EQUB 0
+}
+
+\ --- The grenade -------------------------------------------------------------
+
+\ SPACE: a grenade lobbed the way the player faces, if there's one to
+\ throw and none in the air.
+.grenade_throw
+{
+    LDA keys_new : AND #KB_GRENADE : BEQ done
+    LDA grenades : BEQ done
+    LDA obj_spr + GR : CMP #&FF : BNE done
+    LDA pl_dead : BNE done
+    DEC grenades
+    JSR show_counts
+    LDA #SPR_GRENADE : STA obj_spr + GR
+    LDA #OS_CHANGED : STA obj_st + GR
+    LDA #0 : STA gr_i : STA th_boom + GR : STA th_t + GR
+    LDA obj_y + PL : CLC : ADC #4 : STA obj_y + GR
+    LDA obj_x + PL : CLC : ADC #3 : STA obj_x + GR
+    LDA obj_face + PL : BNE left
+    LDA #2 : BNE set                ; (always)
+.left
+    LDA #256 - 2
+.set
+    STA shot_dx + GR
+    JMP sound_fire
+.done
+    RTS
+}
+
+\ The grenade in the air, and its blast.
+.grenade_update
+{
+    LDA obj_spr + GR : CMP #&FF : BEQ done
+    LDA th_boom + GR : BEQ flying
+    DEC th_boom + GR : BNE blasting
+    LDA #&FF : STA obj_spr + GR
+    LDA obj_st + GR : ORA #OS_CHANGED : STA obj_st + GR
+.done
+    RTS
+.blasting
+    LDA #SPR_BOOM0 : LDY th_boom + GR : CPY #BOOM_FRAMES / 2 + 1 : BCS set_boom
+    LDA #SPR_BOOM1
+.set_boom
+    STA obj_spr + GR
+    LDA obj_st + GR : ORA #OS_CHANGED : STA obj_st + GR
+    RTS
+.flying
+    INC th_t + GR
+    LDA th_t + GR : CMP #GR_FRAMES : BCC in_time
+    JMP grenade_bang
+.in_time
+    LDA obj_st + GR : ORA #OS_CHANGED : STA obj_st + GR
+    LDA obj_x + GR : CLC : ADC shot_dx + GR
+    CMP #128 - 2 + 1 : BCS bang     ; (the screen's edge)
+    STA obj_x + GR
+    LDX gr_i : CPX #ARC_LEN - 1 : BCS fast
+    INC gr_i
+.fast
+    LDA obj_y + GR : CLC : ADC arc_tab,X
+    CMP #PLAY_LINES - 4 : BCS bang
+    STA obj_y + GR
+    \ Into anything solid, or any enemy in phase: bang.
+    LDA obj_x + GR : CLC : ADC #1 : LSR A : LSR A : STA ta_c0 : STA ta_c1
+    LDA obj_y + GR : CLC : ADC #2 : LSR A : LSR A : LSR A : STA ta_r0 : STA ta_r1
+    LDA #TF_SOLID : JSR test_area : BNE bang
+    LDA obj_x + GR : STA bx0 : CLC : ADC #2 : STA bx1
+    LDA obj_y + GR : STA by0 : CLC : ADC #4 : STA by1
+    LDX #TH0
+.hit
+    LDA obj_spr,X : CMP #&FF : BEQ no_hit
+    LDA th_boom,X : BNE no_hit
+    LDA th_type,X : CMP #TH_ENEMIES : BCS no_hit
+    JSR th_in_phase : BNE no_hit
+    JSR th_box
+    JSR boxes_overlap : BCS bang
+.no_hit
+    INX : CPX #TH0 + NTH : BNE hit
+    RTS
+.bang
+    JMP grenade_bang
+}
+
+\ The grenade goes off: a blast a little bigger than its sprite, which
+\ kills any enemy in phase it touches, armoured or not, and clears any
+\ breakable tile in the three by three tiles about it.
+.grenade_bang
+{
+    ZA_AUTO1 gb_c, gb_r, gb_cx, gb_ry
+    LDA #BOOM_FRAMES : STA th_boom + GR
+    LDA #SPR_BOOM0 : STA obj_spr + GR
+    LDA obj_st + GR : ORA #OS_CHANGED : STA obj_st + GR
+    \ The boom's 16x16 centred on the grenade (4x4): 6 pixels left and up.
+    LDA obj_x + GR : SEC : SBC #3 : BCS x_ok
+    LDA #0
+.x_ok
+    CMP #128 - 8 : BCC x_in
+    LDA #128 - 8
+.x_in
+    STA obj_x + GR
+    LDA obj_y + GR : SEC : SBC #6 : BCS y_ok
+    LDA #0
+.y_ok
+    CMP #PLAY_LINES - 16 : BCC y_in
+    LDA #PLAY_LINES - 16
+.y_in
+    STA obj_y + GR
+    JSR sound_boom
+    \ The enemies it catches.
+    LDA obj_x + GR : SEC : SBC #2 : BCS bx_ok
+    LDA #0
+.bx_ok
+    STA bx0
+    LDA obj_x + GR : CLC : ADC #10 : STA bx1
+    LDA obj_y + GR : SEC : SBC #4 : BCS by_ok
+    LDA #0
+.by_ok
+    STA by0
+    LDA obj_y + GR : CLC : ADC #20 : STA by1
+    LDX #TH0
+.enemy
+    LDA obj_spr,X : CMP #&FF : BEQ no_enemy
+    LDA th_boom,X : BNE no_enemy
+    LDA th_type,X : CMP #TH_ENEMIES : BCS no_enemy
+    JSR th_in_phase : BNE no_enemy
+    JSR th_box
+    JSR boxes_overlap : BCC no_enemy
+    JSR th_kill
+.no_enemy
+    INX : CPX #TH0 + NTH : BNE enemy
+    \ The tiles: centred on the boom's middle.
+    LDA obj_x + GR : CLC : ADC #4 : LSR A : LSR A : STA gb_cx
+    LDA obj_y + GR : CLC : ADC #8 : LSR A : LSR A : LSR A : STA gb_ry
+    LDA #0 : STA gb_broke
+    LDA gb_ry : SEC : SBC #1 : STA gb_r
+.row
+    LDA gb_cx : SEC : SBC #1 : STA gb_c
+.col
+    LDA gb_c : CMP #MAP_W : BCS no_tile
+    LDA gb_r : CMP #MAP_H : BCS no_tile
+    TAX
+    LDA maprow_lo,X : STA gb_ptr
+    LDA maprow_hi,X : STA gb_ptr+1
+    LDY gb_c
+    LDA (gb_ptr),Y : TAX
+    LDA tile_attr,X : AND #TF_BREAKABLE : BEQ no_tile
+    LDA #T_EMPTY : STA (gb_ptr),Y
+    LDX gb_c : LDY gb_r : JSR draw_tile_xy
+    INC gb_broke
+.no_tile
+    INC gb_c
+    LDA gb_c : SEC : SBC gb_cx : CMP #2 : BNE col
+    INC gb_r
+    LDA gb_r : SEC : SBC gb_ry : CMP #2 : BNE row
+    \ Tiles redrawn under things: draw them all again.
+    LDA gb_broke : BEQ done
+    JMP objs_touch
+.done
+    RTS
+.gb_broke EQUB 0
+}
+gb_ptr = text_ptr                   ; (fixed zero page: nothing prints here)

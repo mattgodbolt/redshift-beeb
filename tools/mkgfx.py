@@ -10,7 +10,8 @@ drawing a tile in either phase is one lookup.
 
 Sprites: four versions each, column by column (each column's bytes top
 to bottom, then the next): facing right at an even byte, facing right two
-pixels on (one byte wider), then both mirrored. spr_lo, spr_hi, spr_w (in
+pixels on (one byte wider), then both mirrored (for a sprite flagged
+"mirror"; the others' are their right-facing ones). spr_lo, spr_hi, spr_w (in
 bytes) and spr_h index them by SPR_<NAME> + version.
 """
 import argparse
@@ -104,10 +105,14 @@ def main():
             raise SystemExit(f"sprite {s.name}: width must be a multiple of 4")
         out.append(f"SPR_{s.name.upper()} = {len(descs)}")
         out.append(f".spr_{s.name}")
-        for v, px in enumerate(variants(s.pixels)):
-            out.append(f".spr_{s.name}_{v}")
-            out.append(eqb(sprite_columns(px)))
-            descs.append((f"spr_{s.name}_{v}", len(px[0]) // 4, s.h))
+        # Facing left is a version of its own only for a sprite that faces
+        # a way; the others' left versions are their right ones.
+        vs = variants(s.pixels)
+        for v, px in enumerate(vs):
+            if v < 2 or "mirror" in s.flags:
+                out.append(f".spr_{s.name}_{v}")
+                out.append(eqb(sprite_columns(px)))
+            descs.append((f"spr_{s.name}_{v if 'mirror' in s.flags else v & 1}", len(px[0]) // 4, s.h))
     out.append(".spr_lo")
     out.append("    EQUB " + ", ".join(f"LO({d[0]})" for d in descs))
     out.append(".spr_hi")

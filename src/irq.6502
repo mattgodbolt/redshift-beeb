@@ -83,6 +83,7 @@ ENDIF
     LDA status_ula,X : STA ula_pal  ; room_ula's ten, then the status bar's
     DEX : BPL entries
     INX : STX irq_split             ; 0
+    CLD                             ; (the game adds in decimal: add_score)
     JSR sound_tick
 .done
     PLA : TAX
@@ -96,6 +97,7 @@ ENDIF
 .black
     STA ula_pal
     CLC : ADC #16 : BCC black
+    CLD
     JSR sound_tick
     JMP done
 }

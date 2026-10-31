@@ -82,17 +82,26 @@ def read_tiles(path=ROOT / "gfx/tiles.txt"):
 
 
 class Sprite:
-    def __init__(self, name, w, h, pixels):
+    def __init__(self, name, w, h, pixels, flags=()):
         self.name, self.w, self.h, self.pixels = name, w, h, pixels
+        self.flags = set(flags)
 
 
-def read_sprites(path=ROOT / "gfx/sprites.txt"):
+def read_sprites(path=ROOT / "gfx/sprites.txt", ghosts=True):
+    """The sprites in file order. With ghosts, each one flagged "phase" is
+    followed by its dotted outline, <name>_ghost, shown out of phase."""
     out = []
     for words, art, line in _blocks(path):
         if words[0] != "sprite":
             continue
         name, w, h = words[1], int(words[2]), int(words[3])
-        out.append(Sprite(name, w, h, _pixels(art, w, f"{path}:{line}")))
+        flags = words[4:]
+        if set(flags) - {"phase", "mirror"}:
+            raise SystemExit(f"{path}:{line}: unknown sprite flags {flags}")
+        s = Sprite(name, w, h, _pixels(art, w, f"{path}:{line}"), flags)
+        out.append(s)
+        if ghosts and "phase" in s.flags:
+            out.append(Sprite(name + "_ghost", w, h, hollow(s.pixels), s.flags - {"phase"}))
     return out
 
 

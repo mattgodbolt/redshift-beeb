@@ -338,8 +338,17 @@ JUMP_LEN = P% - jump_tab
 DIE_FRAMES = 25
 .player_die
 {
+    LDA pl_dead : BNE done
     LDA #DIE_FRAMES : STA pl_dead
-    JMP sound_die
+    DEC lives
+    STX pd_x : STY pd_y
+    JSR show_counts
+    JSR sound_die
+    LDX pd_x : LDY pd_y
+.done
+    RTS
+.pd_x EQUB 0
+.pd_y EQUB 0
 }
 .player_dying
 {
@@ -354,6 +363,9 @@ DIE_FRAMES = 25
     LDA obj_st + PL : ORA #OS_CHANGED : STA obj_st + PL
     RTS
 .again
+    LDA lives : BNE more
+    JMP game_over
+.more
     LDA entry_x : STA obj_x + PL
     LDA entry_y : STA obj_y + PL
     LDA entry_face : STA obj_face + PL

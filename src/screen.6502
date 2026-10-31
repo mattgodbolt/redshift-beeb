@@ -85,6 +85,26 @@
     RTS
 }
 
+\ Draw the map's tile at column X, row Y of the playfield.
+.draw_tile_xy
+{
+    ZA_AUTO2 dt_src, dt_dst
+    TXA : ASL A : ASL A : ASL A : ASL A : STA dt_dst   ; 16 a tile
+    TXA : LSR A : LSR A : LSR A : LSR A : STA dt_dst+1
+    TYA : ASL A : ADC dt_dst+1 : ADC #HI(play_screen) : STA dt_dst+1
+    LDA maprow_lo,Y : STA dt_src
+    LDA maprow_hi,Y : STA dt_src+1
+    TXA : TAY
+    LDA (dt_src),Y : TAY
+    LDA (tp_lo),Y : STA dt_src
+    LDA (tp_hi),Y : STA dt_src+1
+    LDY #15
+.copy
+    LDA (dt_src),Y : STA (dt_dst),Y
+    DEY : BPL copy
+    RTS
+}
+
 \ Text in the status bar, in logical colour 1 on 0. The font is the OS's,
 \ read at start-up (startup.6502's grab_font), characters 32-95.
 \ print_at: X = column (0-31), Y = row (0-1), then the text's address in
@@ -92,9 +112,7 @@
 .print_at
 {
     ZA_AUTO2 pr_dst, pr_glyph
-    TXA : ASL A : ASL A : ASL A : ASL A : STA pr_dst    ; 16 a column
-    TXA : LSR A : LSR A : LSR A : LSR A : STA pr_dst+1
-    TYA : ASL A : ADC pr_dst+1 : ADC #HI(screen) : STA pr_dst+1
+    JSR locate
 .char
     LDY #0 : LDA (pr_text),Y : BEQ done   ; (print_char_a leaves Y at &FF)
     INC pr_text : BNE got
@@ -104,6 +122,15 @@
     JMP char
 .done
     RTS
+\ pr_dst = column X, row Y of the status bar.
+.locate
+    TXA : ASL A : ASL A : ASL A : ASL A : STA pr_dst    ; 16 a column
+    TXA : LSR A : LSR A : LSR A : LSR A : STA pr_dst+1
+    TYA : ASL A : ADC pr_dst+1 : ADC #HI(screen) : STA pr_dst+1
+    RTS
+\ Character A at column X, row Y.
+.print_char_at
+    PHA : JSR locate : PLA
 \ A character at pr_dst, which moves on a column.
 .print_char_a
     AND #&7F : CMP #96 : BCC upper

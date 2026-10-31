@@ -1,0 +1,57 @@
+\ ***************************************************************************
+\ The status bar: score, phase cells, grenades, lives, and the room's name.
+\
+\   SCORE 000000      CELLS 5 GREN 5
+\   LANDING ZONE             LIVES 5
+\ ***************************************************************************
+
+.draw_status
+{
+    PRINT_AT 0, 0, top_text
+    PRINT_AT 0, 1, blank_text
+    PRINT_AT 25, 1, lives_text
+    LDA room_name : STA text_ptr
+    LDA room_name+1 : STA text_ptr+1
+    LDX #0 : LDY #1 : JSR print_at
+    JSR show_score
+    JMP show_counts
+.top_text   EQUS "SCORE 000000      CELLS 5 GREN 5", 0
+.blank_text EQUS "                         ", 0
+.lives_text EQUS "LIVES 5", 0
+}
+
+\ The score's six digits.
+.show_score
+{
+    LDX #6 : LDY #0 : JSR print_at.locate
+    LDX #2
+.byte
+    LDA score,X : LSR A : LSR A : LSR A : LSR A : JSR digit
+    LDA score,X : AND #15 : JSR digit
+    DEX : BPL byte
+    RTS
+.digit
+    STX sd_x
+    ORA #'0' : JSR print_at.print_char_a
+    LDX sd_x
+    RTS
+.sd_x EQUB 0
+}
+
+\ Cells, grenades and lives: a digit each.
+.show_counts
+{
+    LDA cells : ORA #'0' : LDX #24 : LDY #0 : JSR print_at.print_char_at
+    LDA grenades : ORA #'0' : LDX #31 : LDY #0 : JSR print_at.print_char_at
+    LDA lives : ORA #'0' : LDX #31 : LDY #1 : JMP print_at.print_char_at
+}
+
+\ Score A hundred points (A in BCD).
+.add_score
+{
+    SED
+    CLC : ADC score+1 : STA score+1
+    LDA score+2 : ADC #0 : STA score+2
+    CLD
+    JMP show_score
+}

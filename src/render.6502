@@ -30,6 +30,17 @@ ZA_AUTO1 rc0, rc1, rr0, rr1     ; columns and rows, ends exclusive
     RTS
 }
 
+\ Everything to be drawn again where it was and where it is: after tiles
+\ have been drawn over them (a phase shift, a blast).
+.objs_touch
+{
+    LDX #NOBJ - 1
+.loop
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+    DEX : BPL loop
+    RTS
+}
+
 \ Draw everything that's changed since the last render.
 .render
 {

@@ -19,7 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gfxlib as g  # noqa: E402
 
-THING_TYPES = ["sentry", "drone", "crawler", "shard", "cell", "ammo", "grenades", "exit"]
+THING_TYPES = ["sentry", "drone", "crawler", "shard", "cell", "grenades", "life", "exit"]
 
 
 def pack(cells):

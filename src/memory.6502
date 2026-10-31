@@ -40,16 +40,24 @@ SECTION ZeroPage, org = ZP_FIXED, guard = &90, virtual = TRUE
 .ta_dy      SKIP 1          ; box_at's lines below the sprite's top
 .ta_h       SKIP 1          ; ... and the box's height less one
 .last_vs    SKIP 1          ; vsyncs at the last game frame
+.score      SKIP 3          ; BCD, least significant first (status.6502)
+.lives      SKIP 1
+.cells      SKIP 1          ; phase cells: a shift costs one
+.grenades   SKIP 1
+.ox0        SKIP 1          ; boxes_overlap's two boxes, in steps and lines,
+.ox1        SKIP 1          ; ends exclusive (things.6502)
+.oy0        SKIP 1
+.oy1        SKIP 1
+.bx0        SKIP 1
+.bx1        SKIP 1
+.by0        SKIP 1
+.by1        SKIP 1
 .rd_ptr     SKIP 2          ; the room reader's place (rooms.6502)
 ENDSECTION
 
 SECTION LowPages, org = &0400, guard = &0D00, virtual = TRUE
-\ The room's map: a tile number per cell, MAP_W to a row.
-.map        SKIP MAP_W * MAP_H
-
 \ The palette program the interrupt plays (irq.6502, bands.6502). In one
 \ page, so no indexed read takes the extra cycle that would move a split.
-    ALIGN 256
 .irq_tables
 .status_ula SKIP 6          ; the status bar's six entries (logical 0 and 1)
 .room_ula   SKIP 16         ; the playfield's top: ten entries, then the six
@@ -63,6 +71,9 @@ MAXEV = 8                   ; palette changes in a room, below its top
 .lat_hi     SKIP MAXEV + 1  ; the period from fire j + 1 to fire j + 2
 .irq_tables_end
     ASSERT HI(irq_tables) = HI(irq_tables_end - 1)
+
+\ The room's map: a tile number per cell, MAP_W to a row.
+.map        SKIP MAP_W * MAP_H
 
 \ The room's bands as the room gives them (bands.6502): the line, the
 \ logical colour, the Red Phase's colour and the Blue's.
@@ -114,14 +125,24 @@ OS_SHOWN = &80              ; on the screen, at o_*
 .entry_y    SKIP 1
 .entry_face SKIP 1
 .entry_phase SKIP 1
+\ The things (things.6502), by thing number.
+.th_type    SKIP NOBJ       ; TH_* (rooms.6502)
+.th_phase   SKIP NOBJ       ; 0 both, 1 the Red Phase's, 2 the Blue's
+.th_hp      SKIP NOBJ       ; bolts it takes (0: bolts don't hurt it)
+.th_t       SKIP NOBJ       ; its clock
+.th_idx     SKIP NOBJ       ; its place in the room's list (room_gone)
+.th_y0      SKIP NOBJ       ; where it started, down
+.th_boom    SKIP NOBJ       ; frames left of exploding, or 0
+MAX_ROOMS = 64
+.room_gone  SKIP MAX_ROOMS  ; a bit for each thing in each room: killed or taken
+.gr_i       SKIP 1          ; how far through the grenade's arc
 \ Each row of the rectangle being drawn: where it starts in the target.
 .trow_lo    SKIP MAP_H
 .trow_hi    SKIP MAP_H
 
 \ The compose buffer (render.6502): a rectangle of the screen is put
 \ together here, then copied out, so each screen byte is written once.
-    ALIGN 256
-.cbuf       SKIP 1024
-CBUF_SIZE = 1024
+CBUF_SIZE = 768
+.cbuf       SKIP CBUF_SIZE
 .low_end
 ENDSECTION

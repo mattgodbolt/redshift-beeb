@@ -13,6 +13,15 @@
     LDA #0 : STA obj_st,X
     DEX : BPL clear
     LDA #0 : STA phase : STA pl_dead : STA pl_air : STA fire_cool
+    STA score : STA score+1 : STA score+2
+    LDX #MAX_ROOMS - 1
+.gone
+    STA room_gone,X
+    DEX : BPL gone
+    ASSERT NROOMS <= MAX_ROOMS
+    LDA #START_LIVES : STA lives
+    LDA #START_CELLS : STA cells
+    LDA #START_GRENADES : STA grenades
     LDA #START_X * 4 : STA obj_x + PL
     LDA #(START_Y + 1) * 8 - PL_H : STA obj_y + PL
     LDA #0 : STA obj_face + PL
@@ -31,6 +40,10 @@
 .no_shift
     JSR player_update
     JSR shots_update
+    JSR grenade_throw
+    JSR grenade_update
+    JSR things_update
+    JSR ebolts_update
     JSR render
     JMP loop
 }
@@ -46,6 +59,7 @@
     DEX : BNE shots
     PLA
     JSR enter_room
+    JSR spawn_things
     JSR objs_forget
     LDA obj_x + PL : STA entry_x
     LDA obj_y + PL : STA entry_y
@@ -70,16 +84,22 @@
     RTS
 }
 
-\ SHIFT: into the other phase, unless the player would be inside
-\ something solid there.
+\ SHIFT: into the other phase, at the cost of a cell, unless the player
+\ would be inside something solid there.
 .try_shift
 {
+    LDA cells : BEQ refused
     JSR flip
     LDA #0 : STA ta_dy : LDA #PL_H - 1 : STA ta_h
     LDA obj_x + PL : JSR box_at
-    LDA #TF_SOLID : JSR test_area : BEQ shift_show
+    LDA #TF_SOLID : JSR test_area : BEQ shifted
     JSR flip
+.refused
     JMP sound_buzz
+.shifted
+    DEC cells
+    JSR show_counts
+    JMP shift_show
 .flip
     LDA phase : EOR #1 : STA phase
     JMP set_tile_ptrs
@@ -95,14 +115,31 @@
     JSR wait_vsync
     JSR set_colours
     JSR draw_room_phase
-    JMP objs_forget
+    \ The enemies' bolts belong to the phase they were fired in.
+    LDX #EB0
+.bolts
+    LDA #&FF : STA obj_spr,X
+    INX : CPX #EB0 + NEB : BNE bolts
+    JMP objs_touch
 }
 
-.draw_status
+START_LIVES = 5
+START_CELLS = 5
+START_GRENADES = 5
+
+\ The last life gone: GAME OVER in the status bar, then a new game when a
+\ key is pressed (after a moment, so a held key doesn't skip it).
+.game_over
 {
-    PRINT_AT 0, 0, score_text
-    LDA room_name : STA text_ptr
-    LDA room_name+1 : STA text_ptr+1
-    LDX #0 : LDY #1 : JMP print_at
-.score_text EQUS "SCORE 000000      REDSHIFT", 0
+    PRINT_AT 0, 1, over_text
+    LDY #100
+.wait
+    JSR wait_vsync
+    DEY : BNE wait
+.key
+    JSR read_keys
+    LDA keys : BEQ key
+    JMP game_start
+.over_text EQUS "      GAME OVER - PRESS A KEY   ", 0
 }
+

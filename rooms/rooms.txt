@@ -9,7 +9,9 @@
 # band <line> <logical> <c>   from playfield line 0-175 down, logical 1-3
 #                             shows colour c (at most 8; 2 lines apart)
 # map                         then 22 lines of up to 32 tiles (gfx/tiles.txt)
-# thing <type> <x> <y> ...    an enemy or object, in tiles
+# thing <type> <x> <y> [arg]  an enemy or pickup: its top-left, in tiles;
+#                             arg 1 faces it left. Types: sentry drone
+#                             crawler shard cell grenades life exit
 #
 # A colour is black red green yellow blue magenta cyan white: the Red Phase's.
 # The Blue Phase's is its opposite (red-blue, yellow-cyan, magenta-green)
@@ -47,3 +49,9 @@ ____________BBBBBBBB____________
 HHHHHHHHHHHH~~~~~~~~HHHHHHHHHHHH
 HHHHHHHHHHHHwwwwwwwwHHHHHHHHHHHH
 HHHHHHHHHHHHwwwwwwwwHHHHHHHHHHHH
+thing drone 14 8
+thing sentry 8 10
+thing crawler 27 16
+thing shard 2 4
+thing cell 29 17
+thing grenades 1 17

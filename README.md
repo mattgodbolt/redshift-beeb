@@ -11,8 +11,10 @@ Micro (Model B and Master 128), in 6502 assembly.
 
 ### ▶ [Play it in your browser](https://bbc.xania.org/?disc=github:mattgodbolt/redshift-beeb/redshift.ssd&autoboot)
 
-So far: the first room, with Ash walking, jumping and firing. Try to
-get across the acid. Then press **SHIFT**.
+So far: one room with enemies and pickups. Get across the acid, mind the
+drone, and note that the sentry only dies to a grenade. Each **SHIFT**
+costs a phase cell. Enemies of the other phase are dotted ghosts, and
+can't touch you.
 
 | Key | Does |
 |---|---|
@@ -20,6 +22,7 @@ get across the acid. Then press **SHIFT**.
 | : (or ↑) | jump |
 | / (or ↓) | crouch |
 | RETURN | fire |
+| SPACE | throw a grenade |
 | SHIFT | flip the phase |
 
 ## The idea

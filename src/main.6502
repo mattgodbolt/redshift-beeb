@@ -35,6 +35,8 @@ SECTION Loader, org = &1900, load = &FFFF1900, exec = &FFFF0000 + loader, filena
     INCLUDE "rooms.6502"
     INCLUDE "render.6502"
     INCLUDE "player.6502"
+    INCLUDE "things.6502"
+    INCLUDE "status.6502"
     INCLUDE "game.6502"
     INCLUDE "../build/data/gfx.6502"
     INCLUDE "../build/data/rooms.6502"
