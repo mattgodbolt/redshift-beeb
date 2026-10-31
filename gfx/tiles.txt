@@ -317,36 +317,37 @@ alt H base
 1.1.1.1.
 ........
 
-# A girder: a lattice to stand on. Where it ends in the open, an end
+# A girder: a solid beam to stand on. (No lattice: hatching means a block
+# that's out of phase.) Where it ends in the open, an end
 # plate and a knee bracket under it.
 tile = girder solid
 22222222
-1.1..1.1
-.1.11.1.
-1.1..1.1
 11111111
+11211121
+11111111
+........
 ........
 ........
 ........
 
 variant = left
 22222222
-2.1..1.1
-21.11.1.
-2.1..1.1
+21111111
+21211121
 21111111
 2111....
 21......
 ........
+........
 
 variant = right
 22222222
-1.1..1.2
-.1.11.12
-1.1..1.2
+11111112
+11211212
 11111112
 ....1112
 ......12
+........
 ........
 
 # The floor's walking surface, over plating.
@@ -360,16 +361,16 @@ tile _ floor solid
 ........
 ........
 
-# Cracked: one grenade brings down the whole wall of it. Its cracks are
-# lit (colour 2), as no other tile's are.
+# Cracked: one grenade brings down the whole wall of it. A solid block
+# split by black cracks, with no mortar and no lit edge.
 tile % cracked solid breakable
+11111.1.
 1111.11.
-11.2..1.
-1.2.11..
-..2.2.1.
-1.2..2..
-11.2.12.
-1.2.1.1.
+111.111.
+1111.11.
+111.1.1.
+11.111..
+111.11..
 ........
 
 # Blocks that are there in one phase only.
@@ -534,14 +535,14 @@ tile : dots
 ........
 
 tile v weed
-.2...2..
-.2..22..
-..2.2...
-..222.2.
-2..2.22.
-22.222..
-.2222...
-...2....
+........
+........
+.1...1..
+..1.1...
+..1.1.1.
+1..1.1..
+.1.11...
+..1.1...
 
 # Swarm crystal, the Blue Phase's: a span to walk on, and spikes.
 tile b span solid blue
