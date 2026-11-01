@@ -63,7 +63,9 @@ ENDIF
     \ (The beat after the things, which throw switches: one that stops it
     \ leaves it nothing to do, so a frame lists each part once at most.)
     JSR mach_update
+    JSR mach_show                   ; (its warning, for render's eyes only)
     JSR render
+    JSR mach_hide
     JSR sound_update
     LDA shift_flash : BEQ no_flash
     DEC shift_flash : BNE no_flash

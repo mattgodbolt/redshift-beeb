@@ -207,9 +207,10 @@ else {
 
 // Every tile, split between alpha (Sector 2) and gamma (Sector 3): each is drawn, and each is one
 // sector's own, so the two sectors' looks stay within what the game can number (decision 43). The
-// split is where the looks they'd own (a tile's own, its variants and alts) come out about even.
+// split is where the looks they'd own (a tile's own, its variants and alts) come out about even. (A
+// tile drawn as another owns none.)
 const keys = tiles.map(t => t.key).join('');
-const owned = tiles.map((t, i) => (i === 0 || t.shared ? 0
+const owned = tiles.map((t, i) => (i === 0 || t.shared || t.like != null ? 0
   : 1 + t.variants.length + Object.values(t.alts).reduce((n, list) => n + list.length, 0)));
 let half = 0;
 for (let sum = 0; half < tiles.length && 2 * (sum + owned[half]) <= owned.reduce((a, b) => a + b, 0); half++) sum += owned[half];
@@ -359,6 +360,13 @@ for (const [what, text] of Object.entries(broken)) compareVerdict(text, what);
   compareVerdict(plain, 'a tile on the beat twice over', `${realTiles}\ntile é odd beat=space beat=,\n${art}\n`);
   compareVerdict(one({map: at({17: '`é', 18: floor}), tail: ['thing lever 10 16']}),
     "a breakable tile's look changed by a gate", `${realTiles}\ntile é crumbly solid breakable\n${art}\nvariant é left\n${art.replace(/1/g, '2')}\n`);
+  // A tile drawn as another (as=, decision 49): a truck that goes on the beat and where it comes, and what
+  // the art can't say of one.
+  compareVerdict(one({head: ['beat 20 30'], map: at({16: '  ÇÇÇççç', 17: '  ĈĈĈĉĉĉ', 18: floor})}), 'a truck that drives itself');
+  compareVerdict(plain, 'a tile drawn as one with other flags', `${realTiles}\ntile é odd as=C\n`);
+  compareVerdict(plain, "a tile drawn as one that isn't there", `${realTiles}\ntile é odd solid as=ñ\n`);
+  compareVerdict(plain, 'a tile drawn as one drawn as another', `${realTiles}\ntile é odd solid as=Ç\n`);
+  compareVerdict(plain, 'a variant of a tile drawn as another', `${realTiles}\ntile é odd solid as=C\nvariant é left\n${art}\n`);
 }
 function compareVerdictOk(text) {
   return RS.validate(RS.parseRooms(text), tiles).filter(p => p.level === 'error').length === 0;

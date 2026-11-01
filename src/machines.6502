@@ -25,6 +25,18 @@ PART_BEAT = 0 : PART_SWITCH = 1     ; what moves a part (its record's first byte
 SW_STOPS = 2                        ; in a switch's arg: it stops the beat
 \ (mkrooms.py cuts the parts to fit the compose buffer, 16 bytes a cell.)
 ASSERT PART_CELLS * 16 <= CBUF_SIZE AND PART_W * 16 < 256
+\ (mach_apply reads a part's cells with one index: two looks a cell.)
+ASSERT 5 + 2 * PART_CELLS < 256
+
+\ The warning (decision 48): for the last BEAT_WARN frames before the beat
+\ turns, the parts that will change flicker between how they are and how
+\ they'll be, WARN_FLICK frames each way, as a sergeant lights up before
+\ it fires. Only the drawing sees it: the other looks are in the map just
+\ while render draws (mach_show, then mach_hide), so what Ash stands on, or
+\ is crushed by, is the machinery as it is.
+BEAT_WARN = 16
+WARN_FLICK = 2                      ; (a bit of beat_t: a power of two)
+ASSERT (WARN_FLICK - 1 AND WARN_FLICK) = 0 AND WARN_FLICK < BEAT_WARN
 
 \ The room's record read to the end of its map: the machinery's there, and
 \ it's as drawn.
@@ -34,22 +46,54 @@ ASSERT PART_CELLS * 16 <= CBUF_SIZE AND PART_W * 16 < 256
     LDA rd_ptr+1 : STA mach_ptr+1
     JSR rd_byte : STA beat_len : STA beat_t
     JSR rd_byte : STA beat_len+1
-    LDA #0 : STA beat_on : STA beat_stop : STA sw_thrown : STA sw_stops : STA parts_n
+    LDA #0 : STA beat_on : STA beat_stop : STA sw_thrown : STA sw_stops : STA parts_n : STA warn_vis
     RTS
 }
 
 \ Each frame, after the things (which throw switches): the beat, while the
-\ room has one and no switch has stopped it.
+\ room has one and no switch has stopped it, and its warning.
 .mach_update
 {
     LDA beat_len : BEQ done         ; (no beat)
     LDA beat_stop : BNE done
-    DEC beat_t : BNE done
+    DEC beat_t : BEQ turn
+    \ The warning shown this frame or not: its parts drawn again when that
+    \ changes.
+    LDA beat_t : CMP #BEAT_WARN + 1 : LDA #0 : BCS shown    ; (not yet)
+    LDA beat_t : AND #WARN_FLICK : BEQ shown
+    LDA #1
+.shown
+    CMP warn_vis : BEQ done
+    STA warn_vis
+    LDA #PART_BEAT : SEC : JMP mach_apply   ; (as they are, and listed)
+.turn
+    LDA #0 : STA warn_vis
     LDA beat_on : EOR #1 : STA beat_on
     TAX : LDA beat_len,X : STA beat_t
-    LDA #PART_BEAT : JSR mach_apply
+    LDA #PART_BEAT : SEC : JSR mach_apply
     JSR sound_clank
     JMP crushed
+.done
+    RTS
+}
+
+\ Around render, while the warning shows: the beat's parts the other way in
+\ the map (mach_show), and back as they are (mach_hide), unlisted. So all
+\ that render draws there that frame is in the other looks, a thing moving
+\ over them too, and the parts are drawn whole only as it comes and goes.
+.mach_show
+{
+    LDA warn_vis : BEQ done
+    LDA beat_on : EOR #1 : STA beat_on
+    LDA #PART_BEAT : CLC : JSR mach_apply
+    LDA beat_on : EOR #1 : STA beat_on
+.done
+    RTS
+}
+.mach_hide
+{
+    LDA warn_vis : BEQ done
+    LDA #PART_BEAT : CLC : JMP mach_apply
 .done
     RTS
 }
@@ -61,13 +105,13 @@ ASSERT PART_CELLS * 16 <= CBUF_SIZE AND PART_W * 16 < 256
     LDA sw_thrown : BNE done
     INC sw_thrown
     STX sw_x
-    LDA #PART_SWITCH : JSR mach_apply
+    LDA #PART_SWITCH : SEC : JSR mach_apply
     LDA sw_stops : BEQ going
     STA beat_stop
-    LDA beat_on : BEQ going
-    LDA #0 : STA beat_on
-    ASSERT PART_BEAT = 0
-    JSR mach_apply
+    \ As drawn, and drawn so: a warning that shows goes too.
+    LDA beat_on : ORA warn_vis : BEQ going
+    LDA #0 : STA beat_on : STA warn_vis
+    LDA #PART_BEAT : SEC : JSR mach_apply
 .going
     JSR sound_clank
     JSR crushed
@@ -94,23 +138,41 @@ ASSERT PART_CELLS * 16 <= CBUF_SIZE AND PART_W * 16 < 256
 }
 
 \ The parts A moves (PART_*) put in the map, the beat's as beat_on has it
-\ and the switch's thrown, and each one's rectangle listed for render.
+\ and the switch's thrown; with carry set, each one's rectangle listed for
+\ render too. (The warning has it walk the beat's parts twice a frame, so
+\ the record's read in place, a part at a time.)
 .mach_apply
 {
-    ZA_AUTO2 ma_map
+    ZA_AUTO2 ma_map, ma_rec
     STA ma_what
-    LDA mach_ptr : STA rd_ptr
-    LDA mach_ptr+1 : STA rd_ptr+1
-    JSR rd_byte : JSR rd_byte       ; (past the beat)
-    JSR rd_byte : JEQ done
+    LDA #0 : ROR A : STA ma_list    ; (the carry, in bit 7)
+    LDA mach_ptr : CLC : ADC #2 : STA ma_rec    ; (past the beat)
+    LDA mach_ptr+1 : ADC #0 : STA ma_rec+1
+    LDY #0 : LDA (ma_rec),Y : JEQ done
     STA ma_n
+    INC ma_rec : BNE part
+    INC ma_rec+1
 .part
-    JSR rd_byte : STA ma_this
-    JSR rd_byte : STA ma_x
-    JSR rd_byte : STA ma_y
-    JSR rd_byte : STA ma_w
-    JSR rd_byte : STA ma_rows
-    LDA ma_this : CMP ma_what : BNE listed
+    LDY #0
+    LDA (ma_rec),Y : STA ma_this : INY
+    LDA (ma_rec),Y : STA ma_x : INY
+    LDA (ma_rec),Y : STA ma_y : INY
+    LDA (ma_rec),Y : STA ma_w : INY
+    LDA (ma_rec),Y : STA ma_rows
+    \ Its cells follow: the beat's two looks a cell, on the beat then as
+    \ drawn; the switch's one, thrown. Y steps through the looks wanted,
+    \ from ma_y0, by ma_step.
+    LDA ma_this : BNE switch
+    ASSERT PART_BEAT = 0
+    LDA beat_on : EOR #1 : CLC : ADC #5 : STA ma_y0
+    LDA #2 : BNE step               ; (always)
+.switch
+    LDA #5 : STA ma_y0
+    LDA #1
+.step
+    STA ma_step
+    LDA ma_this : CMP ma_what : BNE skip
+    BIT ma_list : BPL listed
     \ Its rectangle, in byte columns and character rows, ends exclusive.
     LDX parts_n : CPX #MAX_PARTS : BCS listed
     INC parts_n
@@ -120,32 +182,42 @@ ASSERT PART_CELLS * 16 <= CBUF_SIZE AND PART_W * 16 < 256
     CLC : ADC ma_rows : STA parts_r1,X
 .listed
     LDX ma_y
+    LDY ma_y0
 .row
     LDA maprow_lo,X : CLC : ADC ma_x : STA ma_map
     LDA maprow_hi,X : ADC #0 : STA ma_map+1
+    LDA ma_w : STA ma_left
     LDA #0 : STA ma_col
 .cell
-    \ A switch's part has a look a cell; the beat's, two: on the beat, then
-    \ as drawn.
-    JSR rd_byte : STA ma_look
-    LDA ma_this : BNE got
-    ASSERT PART_BEAT = 0
-    JSR rd_byte
-    LDY beat_on : BNE got
-    STA ma_look
-.got
-    LDA ma_this : CMP ma_what : BNE next
-    LDA ma_look : CMP #&FF : BEQ next   ; (a cell that doesn't change)
-    LDY ma_col : STA (ma_map),Y
+    LDA (ma_rec),Y : CMP #&FF : BEQ next    ; (a cell that doesn't change)
+    STY ma_ry : LDY ma_col : STA (ma_map),Y : LDY ma_ry
 .next
     INC ma_col
-    LDA ma_col : CMP ma_w : BNE cell
+    TYA : CLC : ADC ma_step : TAY
+    DEC ma_left : BNE cell
     INX
     DEC ma_rows : BNE row
+    \ Past it: Y is where a next cell's look would be, from ma_y0.
+    TYA : SEC : SBC ma_y0
+    JMP past
+.skip
+    \ Not one of these: past its w * h cells.
+    LDA #0 : LDX ma_rows
+.size
+    CLC : ADC ma_w
+    DEX : BNE size
+    LDX ma_step : DEX : BEQ past
+    ASL A                           ; (two looks a cell)
+.past
+    CLC : ADC #5 : ADC ma_rec : STA ma_rec
+    BCC next_part
+    INC ma_rec+1
+.next_part
     DEC ma_n : JNE part
 .done
     RTS
 .ma_what EQUB 0
+.ma_list EQUB 0
 .ma_this EQUB 0
 .ma_n    EQUB 0
 .ma_x    EQUB 0
@@ -153,5 +225,8 @@ ASSERT PART_CELLS * 16 <= CBUF_SIZE AND PART_W * 16 < 256
 .ma_w    EQUB 0
 .ma_rows EQUB 0
 .ma_col  EQUB 0
-.ma_look EQUB 0
+.ma_left EQUB 0
+.ma_step EQUB 0
+.ma_y0   EQUB 0
+.ma_ry   EQUB 0
 }

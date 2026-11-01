@@ -100,8 +100,8 @@ The rules, as Morrell's harness manual gives them:
   CRANE GANTRY, BUFFER STOPS, DEAD MAN'S HANDLE, CRUSHER'S MOUTH.
 - **Hazards and enemies:** Red barricades everywhere, so going round costs
   cells; torn rail ends as spikes; walls of jammed ore carts for grenades;
-  machinery that still runs: a turntable, a weighbridge, presses and the
-  crusher's jaw. Trundlers in numbers, Drill Sergeants in the signal boxes,
+  machinery that still runs: a turntable, a weighbridge, trucks that drive
+  themselves, a crane's load, presses and the crusher's jaw. Trundlers in numbers, Drill Sergeants in the signal boxes,
   Gadflies overhead, and Slivers where the crystal has spread.
 
 ### Sector 3: THE SUMP

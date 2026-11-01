@@ -420,3 +420,48 @@ What was done, in order, with what worked and what didn't.
   rides the turntable, steps on the plate, shoots the handle, crosses
   under the jaw and through the press, checks the frame rate as both move,
   and fails if a switch isn't thrown.
+
+## 2026-11-01: machines that warn, and a yard that moves
+
+- A second newcomer's playtest of Sector 2 found the card's promises
+  broken (no truck or crane moved), every turn of a beat a switch with no
+  tell, the CRUSHER'S MOUTH a spike, lobs bursting on low ceilings, rooms
+  one shift made easy, scenery that looked like levers, and bolts through
+  the engine's cab.
+- The warning (decision 48): the parts that will change flicker between
+  their two looks for a moment before the beat turns. The other looks go
+  into the map only while `render` draws, so nothing Ash stands on or is
+  crushed by changes early. The Crusher's turn had taken more than a frame
+  already; drawing a rectangle with no thing in it straight to the screen,
+  without the compose buffer's copy, brought the turn and the warning's
+  dearest frame well inside one.
+- The rooms (decision 49): a truck that drives itself over SIDING FOUR's
+  spike gap, ridden where it overlaps itself; a load that drops in the
+  CRANE GANTRY and a sergeant on the crane; a truck that runs into the
+  BUFFER STOPS and is the step over them. A turntable a newcomer can cross
+  straight from the way in, a safe end to the Crusher's beam with a post
+  that stops the natural jump short of the jaw, headroom for lobs in the
+  signal box and at the jammed carts, something of the Blue's in the
+  first two rooms, a stack and levers that sit back, and solid glass in
+  the engine's cab.
+- The trucks are drawn as tiles that are already there (`as=`), so the
+  machinery costs no looks; every printable key was taken, so their keys
+  are other characters, and the files are read as UTF-8. The editor and
+  its check follow.
+- Things met on the way:
+  - A gap one cell wider than a jump's reach from a ledge's middle was still
+    jumped from the very lip, where Ash's box hangs over: the shunting
+    truck's wrong-side gaps had to grow.
+  - The weighbridge's taller corridor let the jump onto its ledge go
+    further, into the crystal: the crystal moved.
+  - BUFFER STOPS' track ran under rock as low as Ash, so the truck couldn't
+    be climbed there and its return crushed whoever waited: the rock over
+    the truck's run is gone.
+  - A Gadfly flying across the CRANE GANTRY's way in killed every respawn
+    as it fell into the room. It's gone, and that's a trap now.
+  - Throwing in the signal box needed the sergeant against the lever frame:
+    a lob that flies over it bursts on the frame, close enough to catch it.
+- The playthrough rides the truck, lobs at the crane's sergeant, climbs the
+  runaway truck, crosses the turntable straight from the way in and lobs at
+  the carts; its frame check now spans the Crusher's warning as well as its
+  turn. It passes on the B and the Master.

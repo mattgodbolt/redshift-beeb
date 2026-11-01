@@ -80,28 +80,32 @@ THE LEACH WORKS, where Ash starts, teaches one thing a room:
 <td><img src="docs/media/signal.png" alt="The Signal Box"></td></tr>
 <tr><td><img src="docs/media/turntable.png" alt="The Turntable, in the Blue Phase"></td>
 <td><img src="docs/media/weighbridge.png" alt="The Weighbridge, its gate open"></td></tr>
+<tr><td><img src="docs/media/siding.png" alt="Siding Four: on the truck that drives itself"></td>
+<td><img src="docs/media/crane.png" alt="The Crane Gantry: a sergeant on the crane"></td></tr>
 <tr><td><img src="docs/media/handle.png" alt="Dead Man's Handle, the handle thrown"></td>
 <td><img src="docs/media/jaw.png" alt="Crusher's Mouth: under the jaw, in the Blue Phase"></td></tr>
 </table>
 
 The ore railway's hub, and the machines' home ground. Red barricades
 everywhere, so going round costs cells, and machinery that moves on the
-beat, or when Ash throws a switch:
+beat, flickering just before it does, or when Ash throws a switch:
 
 1. **ENGINE SHED.** Trundlers in numbers, around an engine on its running
-   gear.
-2. **SIGNAL BOX.** A Drill Sergeant up in its box, and an ore truck to
-   throw from.
+   gear, and crystal and a Sliver in the Blue.
+2. **SIGNAL BOX.** A Drill Sergeant up in its box, an ore truck to throw
+   from, and room to lob in the box too.
 3. **TURNTABLE.** Its deck turns end on to the line and back, over a pit of
    torn rails; Slivers beyond the barricade, and a welded hatch to drop
    through in the Blue.
 4. **WEIGHBRIDGE.** A weigh plate that opens the gate to the siding, and
    jammed ore carts that only a grenade moves.
-5. **SIDING FOUR.** Truck to truck over the spike gaps, crystal on the
-   middle one, and Slivers past the barricade.
-6. **CRANE GANTRY.** Gadflies under the hanging loads.
-7. **BUFFER STOPS.** Both phases in turn: the Blue for the spans, the Red
-   for the plates.
+5. **SIDING FOUR.** A truck that drives itself over the spike gap, from one
+   side to the other: ride it where it overlaps itself.
+6. **CRANE GANTRY.** A load that drops on the beat, and a Drill Sergeant on
+   the crane.
+7. **BUFFER STOPS.** Both phases in turn, the Blue for the spans and the Red
+   for the plates, then a truck that runs into the buffers: the step over
+   them.
 8. **DEAD MAN'S HANDLE.** A truck between two sergeants, and a press over
    the way down. Shoot the handle and it stops.
 9. **CRUSHER'S MOUTH.** A beam under the jaw, which needs both phases and
