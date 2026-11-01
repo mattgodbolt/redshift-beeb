@@ -73,14 +73,38 @@ ENDIF
 {
     LDA #0 : STA cage_go
     LDA room_exits + 3 : CMP #&FF : BEQ done
-    \ The cage's figure, the room held still while it goes down.
+    \ The ride: Ash steps in, and the cage judders as it takes the strain,
+    \ while its figure plays.
     JSR sound_quiet
     LDA #MUS_CAGE : JSR music_play
-    JSR music_wait
+    LDA #&FF : STA obj_spr + PL
+    LDA obj_st + PL : ORA #OS_CHANGED : STA obj_st + PL
+    LDX #TH0
+.find
+    LDA th_type,X : CMP #TH_EXIT : BNE not_cage
+    LDA obj_spr,X : CMP #&FF : BNE found
+.not_cage
+    INX : CPX #TH0 + NTH : BNE find
+    JSR music_wait                  ; (no cage to shake)
+    JMP ridden
+.found
+    STX tc_x
+.ride
+    JSR wait_vsync : JSR wait_vsync
+    LDX tc_x
+    LDA frame : AND #1 : ASL A : SEC : SBC #1    ; -1 or +1, by turns
+    CLC : ADC obj_x,X : STA obj_x,X
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+    INC frame
+    JSR render
+    LDA mus.mu_req : BPL ride       ; (not started yet)
+    LDA mus.mu_piece : BPL ride     ; (still playing)
+.ridden
     LDA #1 : STA at_start
     LDA room_exits + 3 : JMP change_room
 .done
     RTS
+.tc_x EQUB 0
 }
 
 \ Into room A, the player where they are (or, with at_start set, where the
