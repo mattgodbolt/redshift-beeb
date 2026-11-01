@@ -473,3 +473,67 @@ Matt was away is marked *provisional* until reviewed.
       someone who has just come level with it, landing or shifting, without
       warning them first: landing in the SIGNAL BOX's box put Ash in its
       fire at once. (Round, not held, since its ghost shimmers by it.)
+48. **2026-11-01: machinery warns before it moves** (*provisional*). The
+    second Sector 2 newcomer playtest found every turn of a beat a switch
+    from one frame to the next with no tell, and the TURNTABLE's deck went
+    from under a newcomer walking the natural route.
+    - For the last `BEAT_WARN` frames before the beat turns, what's about to
+      change flickers between how it is and how it will be, `WARN_FLICK`
+      frames each way, as a Drill Sergeant lights up before it fires. It's
+      the whole of each part that the turn redraws: the machine's own cells,
+      and the neighbours drawn against them.
+    - Only the drawing sees it. The other looks go into the map just while
+      `render` draws (`mach_show` before it, `mach_hide` after), so what Ash
+      stands on, and what crushes them, is the machinery as it is; and a
+      thing that moves over a part while it shows is drawn over the look the
+      warning shows, so nothing is patched with the other.
+    - The parts are drawn again only as the warning comes and goes, as at a
+      turn. A rectangle with no thing in it, as a part mostly is, is drawn
+      straight onto the screen, each byte once, without the compose buffer
+      and its copy: the CRUSHER'S MOUTH's turn, the jaw and the press at
+      once, had taken more than a frame, and now it and the warning's
+      dearest frame both fit.
+    - A switch that stops the beat ends its warning. The editor doesn't
+      show it.
+49. **2026-11-01: the Marshalling Yard's middle moves, and its spikes are
+    fair** (*provisional*). A level pass from the second Sector 2 newcomer
+    playtest:
+    - Machinery where the card promises it:
+      - SIDING FOUR's middle truck drives itself: on the beat it runs from
+        the near side of the spike gap to the far side and back, and it's
+        only ever near one side. A player rides it by standing where it is
+        both ways, the end that overlaps itself; the warning shows where.
+      - In the CRANE GANTRY one load drops to the floor on the beat and is
+        lifted again, and a Drill Sergeant stands on the other: a lob from
+        the truck below, or a roll along the load. Its Gadflies went: one
+        flew where Ash falls into the room, so every respawn fell onto it.
+      - In BUFFER STOPS a truck runs into the buffers on the beat and back,
+        and it's the step over them, out of a tunnel too low to jump in:
+        climb it while it's there.
+    - The moving trucks are drawn as the truck, the air and the torn rail
+      (`as=` in `gfx/tiles.txt`), so they cost no looks. Every printable
+      ASCII key was taken: newer tiles' keys are other characters, and the
+      art and the rooms are read as UTF-8.
+    - The TURNTABLE's deck holds in line long enough for a newcomer to walk
+      straight over it from the way in, in its first window, and for a
+      player who waits at the lip to cross with time in hand.
+    - CRUSHER'S MOUTH: the beam's left girder is longer, so there's a spot to
+      wait clear of the jaw, and the jaw's housing has a post down to the
+      height of Ash's head: the natural jump from the ledge struck the
+      housing, fell past it and went on into the jaw's footprint, and now it
+      lands short. The jaw stays open longer, and a cell lies on the ledge.
+      It still needs both phases, in time with the jaw.
+    - Lobs have headroom (decision 41). The SIGNAL BOX's roof is higher, and
+      its sergeant stands against the lever frame at the back, so a lob from
+      the box's doorway comes down on it, as well as a lob from the truck
+      and a roll. The WEIGHBRIDGE's corridor, and the jammed carts in it,
+      are taller, so a lob reaches the carts; its crystal moved to where the
+      higher jump onto the ledge doesn't land in it.
+    - The ENGINE SHED and the SIGNAL BOX have something of the Blue's: crystal
+      on the way (before the engine, on the box's truck) and a Sliver.
+    - Scenery that read as a lever sits back: the engine's stack is a squat
+      chimney, and the signal box's levers are thin rods in the body's
+      colour. The lever that works is a thing, marked white.
+    - The engine's cab glazing is solid: Ash can't get through the cab, so
+      now a bolt can't either. (Its panes were scenery, two rows high, too
+      low for Ash and nothing to a bolt.)

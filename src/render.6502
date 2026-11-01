@@ -15,7 +15,11 @@
 \
 \ Machinery that moved (machines.6502) is drawn the same way, first: each
 \ part's rectangle grows to take in what it touches, and is composed with
-\ it, so a ram that comes down by a thing doesn't wipe it for a moment.
+\ it, so a ram that comes down by a thing doesn't wipe it for a moment. A
+\ rectangle with nothing in it but tiles, as a part mostly is, goes straight
+\ onto the screen, each byte still written once, without the copy: a room
+\ whose machinery is large has it drawn all at once at a turn of its beat,
+\ and through its warning.
 \
 \ A thing's position: x in 2-pixel steps, so its sprite is one of two
 \ versions (0, or 2 pixels on: gfx.6502), y in lines.
@@ -197,6 +201,17 @@ ZA_AUTO1 rrow5                  ; the row being composed, << 5 (back_look's)
     ZA_AUTO2 dsrc, ddst
     LDA rr1 : SEC : SBC rr0 : STA rh
     LDA #0 : STA direct
+    \ With no thing in it (machinery's part, or a thing gone), it's tiles
+    \ alone, each byte written once: straight onto the screen, flicker-free,
+    \ without the copy.
+    LDX #NOBJ - 1
+.any
+    LDA obj_in,X : BEQ none
+    LDA obj_spr,X : CMP #&FF : BNE some
+.none
+    DEX : BPL any
+    BMI to_screen                   ; (always)
+.some
     \ The buffer's rows, if it fits: its rows must be under 256 bytes.
     LDA rc1 : SEC : SBC rc0
     CMP #32 : BCS to_screen

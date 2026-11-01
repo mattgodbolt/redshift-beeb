@@ -449,6 +449,8 @@ function parseGfx(text, fname) {
     if (words[0] === 'tile' || words[0] === 'variant' || words[0] === 'alt') {
       if (words.length < 3) fail(where, words[0] === 'tile' ? 'tile <key> <name> [flags]' : `${words[0]} <key> <when>`);
       w = h = 8;
+      // (A tile drawn as another, as=<key>, has no art of its own.)
+      if (words[0] === 'tile' && words.slice(3).some(x => x.startsWith('as='))) h = 0;
     } else if (words[0] === 'sprite') {
       if (words.length < 4) fail(where, 'sprite <name> <width> <height> [flags]');
       w = wholeNumber(words[2], where);
@@ -469,6 +471,7 @@ function parseGfx(text, fname) {
       const key = words[1] === 'space' ? ' ' : words[1];
       const base = tiles.find(t => t.key === key);
       if (!base) fail(where, `no tile '${words[1]}' before this`);
+      if (base.like != null) fail(where, `tile ${base.name} is drawn as another, with no looks of its own`);
       const when = words[2];
       if (!(when === 'base' && words[0] === 'alt') && !WHENS.includes(when) &&
           !when.split('+').every(x => SIDES.includes(x))) fail(where, `unknown <when> '${when}'`);
@@ -482,11 +485,21 @@ function parseGfx(text, fname) {
       const plain = words.slice(3).filter(w => !w.includes('='));
       const flags = plain.filter(f => f !== 'shared'), bad = flags.filter(f => !TILE_FLAGS.includes(f));
       if (bad.length) fail(where, `unknown flags ${bad.join(' ')}`);
-      // What it becomes as machinery: beat=<key> or switch=<key>, once.
-      const t = {key, name: words[2], flags, shared: plain.includes('shared'), pixels, hollow: ghostTile(pixels),
-        variants: [], alts: {}, beat: null, switch: null};
+      // What it becomes as machinery: beat=<key> or switch=<key>, once. And the earlier tile it's drawn
+      // as, as=<key>, with its flags: then it has that one's looks, and none of its own.
+      const t = {key, name: words[2], flags, shared: plain.includes('shared'), pixels, hollow: h ? ghostTile(pixels) : null,
+        variants: [], alts: {}, beat: null, switch: null, like: null};
       for (const w of words.slice(3).filter(x => x.includes('='))) {
         const eq = w.indexOf('='), what = w.slice(0, eq), other = w.slice(eq + 1) === 'space' ? ' ' : w.slice(eq + 1);
+        if (what === 'as') {
+          const base = tiles.find(x => x.key === other);
+          if (t.like != null || !base || base.like != null) {
+            fail(where, `as=<key> names an earlier tile, once, that isn't drawn as another: got '${w}'`);
+          }
+          if ([...flags].sort().join(' ') !== [...base.flags].sort().join(' ')) fail(where, `a tile drawn as ${base.name} has its flags`);
+          Object.assign(t, {like: base.key, pixels: base.pixels, hollow: base.hollow, variants: base.variants, alts: base.alts});
+          continue;
+        }
         if (!MACHINES.includes(what) || other.length !== 1 || t.beat != null || t.switch != null) {
           fail(where, `a tile may say beat=<key> or switch=<key>, once: got '${w}'`);
         }
@@ -550,9 +563,11 @@ function machineMap(room, tileMap, [beat, thrown] = [0, 0]) {
 // A grid of looks ({pixels, hollow, flags}) for the room's map, its machinery in the state given. A side
 // of a solid tile is open when the tile there isn't solid in both phases; a side of any other tile is
 // open when the tile there is another one; past the map's edge it's closed. A key that isn't a tile
-// gives null. Each look carries its id, [key, when, alt], for comparing (machinery).
+// gives null. Each look carries its id, [key, when, alt], for comparing (machinery). A tile drawn as
+// another (as=) is that one there.
 function resolveRoom(room, tileMap, state = [0, 0]) {
-  const rows = machineMap(room, tileMap, state);
+  const rows = machineMap(room, tileMap, state)
+    .map(line => Array.from(line, c => (tileMap.has(c) && tileMap.get(c).like != null ? tileMap.get(c).like : c)).join(''));
   const at = (c, r) => tileMap.get(rows[r][c]);
   const solidBoth = t => !!t && t.flags.includes('solid') && !t.flags.includes('red') && !t.flags.includes('blue');
   const salt = [...room.id].reduce((n, ch) => n + ch.charCodeAt(0), 0) & 0xFF;
@@ -927,6 +942,8 @@ function lookCounts(doc, tiles) {
   const use = (c, s) => {
     if (!used.has(c)) used.set(c, new Set());
     used.get(c).add(s);
+    // (A tile drawn as another uses that one's looks.)
+    if (by.has(c) && by.get(c).like != null) use(by.get(c).like, s);
   };
   doc.rooms.forEach((r, k) => {
     own.set(sector[k], 0);
@@ -941,6 +958,7 @@ function lookCounts(doc, tiles) {
   });
   let shared = 0;
   tiles.forEach((t, i) => {
+    if (t.like != null) return;     // (no looks of its own)
     const n = 1 + t.variants.length + Object.values(t.alts).reduce((sum, list) => sum + list.length, 0);
     const s = [...(used.get(t.key) || [])];
     // (gfxlib's Looks: a tile no room uses, and not flagged shared, is no sector's.)

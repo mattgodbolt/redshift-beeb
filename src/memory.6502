@@ -101,6 +101,7 @@ MAXEV = 8                   ; palette changes in a room, below its top
 .beat_len   SKIP 2          ; frames as drawn, and the other way (0: no beat)
 .beat_t     SKIP 1          ; frames left this way
 .beat_on    SKIP 1          ; 0 as drawn, 1 the other way
+.warn_vis   SKIP 1          ; non-zero: the warning shows it the other way (mach_show)
 .beat_stop  SKIP 1          ; non-zero: a switch stopped the beat
 .sw_thrown  SKIP 1          ; non-zero: the switch is thrown
 .sw_stops   SKIP 1          ; non-zero: throwing it stops the beat

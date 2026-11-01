@@ -1,11 +1,13 @@
 # REDSHIFT's tiles: 8x8 pixels each, in MODE 1's logical colours.
 #
-#   tile <key> <name> [flags...]      then 8 lines of 8 pixels
+#   tile <key> <name> [flags...]      then 8 lines of 8 pixels (none with as=)
 #   variant <key> <when>              then 8 lines: how tile <key> looks where <when> holds
 #   alt <key> <when>                  then 8 lines: another look for that <when>, used now and then
 #
 # The key is the character that stands for the tile in rooms/rooms.txt
-# ("space" for the empty tile, which must come first). Pixels are '.' (0,
+# ("space" for the empty tile, which must come first): any one character,
+# and the printable ASCII ones are all taken, so later tiles use others,
+# such as Ç (both files are UTF-8). Pixels are '.' (0,
 # black) and '1', '2', '3'. What physical colour each shows depends on the
 # room's palette bands, so draw with roles, not colours. Every tile keeps
 # to them, so that a colour means one thing everywhere:
@@ -31,7 +33,14 @@
 # switch=<key> makes it become that one once the room's switch is thrown,
 # for as long as Ash is in the room. What it becomes is drawn for where it
 # is, as everything is, and so are its neighbours. Machinery can't be
-# breakable, nor become it: a blast would come undone.
+# breakable, nor become it: a blast would come undone. A room's machinery
+# warns before its beat turns: what's about to change flickers between how
+# it is and how it will be (decision 48).
+#
+# as=<key> draws a tile as an earlier one, with that one's flags: it has no
+# art lines and no looks of its own, and a cell of it is drawn as that tile
+# would be there. Machinery that looks like something already drawn (a
+# truck that drives itself) costs no looks.
 #
 # A tile's variants are its looks for where it is, chosen when the rooms
 # are built (gfxlib.resolve), so a room is drawn with just the keys:
@@ -1432,6 +1441,18 @@ tile F window
 1.......
 1.......
 
+# The engine's cab glazing: those panes framed all round, and solid, since
+# the cab stops Ash: a bolt stops there too (decision 49).
+tile Ƒ cabglass solid
+11111111
+1......1
+1....2.1
+1...2..1
+1..2...1
+1......1
+1......1
+11111111
+
 # The engine: louvres along the top of its hood, plain plate below, lit
 # along its top and its front (where its lamp is), and its back in shadow.
 # Its cab is glazing under a roof of it, and it stands on its running gear.
@@ -1537,16 +1558,17 @@ variant ; br
 ........
 ........
 
-# The engine's exhaust stack.
+# The engine's exhaust stack: a squat chimney as wide as its cap, which
+# sits back. (A cap on a thin stem read as a lever to pull: decision 49.)
 tile ' stack
+.21212..
+.21111..
 ..2111..
+..21.1..
+..2111..
+..21.1..
 .211111.
-..2111..
-...21...
-...21...
-...211..
-..21111.
-.2111111
+21111111
 
 # Hazard-striped steel: the weighbridge's deck, a crusher's jaw. Its top,
 # where it's open, is a lip.
@@ -1696,37 +1718,39 @@ variant ? br
 1111111.
 111111..
 
-# A dead man's handle: its T-grip, its shaft (lit down its left), and the
-# notched quadrant it rides in.
-tile . handle
-...211..
-...211..
-...211..
-...211..
-...211..
-...211..
-...211..
-...211..
+# A signal box's levers, seen through its glazing: thin rods in the body's
+# colour alone, from their frame, so they sit back. (Drawn as a grip on a
+# lit shaft, they read as a lever to pull: the one that works is a thing,
+# marked white, as a dead man's handle is. Decision 49.)
+tile . levers
+...1....
+...1....
+...1....
+...1....
+...1....
+...1....
+...1....
+...1....
 
 variant . up
-.2222221
-21111111
-.111111.
-...211..
-...211..
-...211..
-...211..
-...211..
+........
+..1.1...
+...1....
+...1....
+...1....
+...1....
+...1....
+...1....
 
 variant . down
-...211..
-...211..
-..22111.
-.2111111
-21.1.1.1
-21111111
-2111111.
-.111111.
+...1....
+...1....
+...1....
+...1....
+1.1.1.1.
+.1.1.1.1
+11111111
+........
 
 # A crusher's teeth: up from its lower jaw, and down from its upper one.
 tile V teeth hazard
@@ -1883,3 +1907,14 @@ variant ` up
 21111111
 21111111
 2......1
+
+# Trucks that drive themselves, and a crane's load that drops (decision 49):
+# a truck that's there as drawn and gone on the beat, and where one comes on
+# the beat. Each is drawn as a tile above (as=), so they cost no looks: Ç as
+# a truck and gone into air, ç air that a truck comes into. A truck in a
+# siding's spike gap leaves torn rail under its wheels: Ĉ a truck's wheels
+# that go, leaving torn rail, ĉ torn rail that a truck's wheels come over.
+tile Ç truckgoes solid beat=space as=C
+tile ç truckcomes beat=C as=space
+tile Ĉ wheelsgo solid beat=r as=C
+tile ĉ wheelscome hazard beat=C as=r

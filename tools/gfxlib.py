@@ -23,7 +23,7 @@ TILE_FLAGS = ("solid", "hazard", "breakable", "red", "blue")
 
 def _blocks(path):
     """(header words, art lines, line number) for each block of a gfx file."""
-    lines = Path(path).read_text().splitlines()
+    lines = Path(path).read_text(encoding="utf-8").splitlines()
     i = 0
     while i < len(lines):
         # (A comment is a whole line starting with '#': '#' is a tile's key.)
@@ -32,7 +32,9 @@ def _blocks(path):
         if not raw or raw.startswith("#"):
             continue
         words = raw.split()
-        if words[0] in ("tile", "variant", "alt"):
+        if words[0] == "tile" and any(w.startswith("as=") for w in words[3:]):
+            h = 0               # (drawn as another tile: no art of its own)
+        elif words[0] in ("tile", "variant", "alt"):
             h = 8
         elif words[0] == "sprite":
             h = int(words[3])
@@ -53,7 +55,7 @@ def _pixels(art, w, where):
 
 
 class Tile:
-    def __init__(self, key, name, flags, pixels, shared=False, partners=None):
+    def __init__(self, key, name, flags, pixels, shared=False, partners=None, like=None):
         self.key, self.name, self.flags, self.pixels = key, name, flags, pixels
         self.shared = shared    # its looks are in every sector, whatever the rooms use (Looks)
         self.variants = []      # (when, pixels), in file order: the first that holds is used
@@ -62,6 +64,8 @@ class Tile:
         # thrown: a key, or None (MACHINES).
         partners = partners or {}
         self.beat, self.switch = partners.get("beat"), partners.get("switch")
+        # The tile it's drawn as (as=<key>), with no looks of its own: or None.
+        self.like = like
 
 
 # What makes a tile machinery (decision 46): beat=<key> becomes that tile on
@@ -87,7 +91,10 @@ def _when(word, where, alt):
 
 def read_tiles(path=ROOT / "gfx/tiles.txt"):
     """Tiles in file order; the first must be the empty one (key ' '). Each
-    keeps its variants and alts (the blocks after it that name its key)."""
+    keeps its variants and alts (the blocks after it that name its key). A
+    tile that says as=<key> is drawn as that one, an earlier tile, with the
+    same flags: it has no art, and no looks of its own (machinery that looks
+    like something already drawn costs no looks)."""
     tiles = []
     for words, art, line in _blocks(path):
         if words[0] in ("variant", "alt"):
@@ -98,6 +105,8 @@ def read_tiles(path=ROOT / "gfx/tiles.txt"):
             base = next((t for t in tiles if t.key == key), None)
             if base is None:
                 raise SystemExit(f"{where}: no tile {words[1]!r} before this")
+            if base.like is not None:
+                raise SystemExit(f"{where}: tile {base.name} is drawn as another, with no looks of its own")
             when = _when(words[2], where, words[0] == "alt")
             px = _pixels(art, 8, where)
             if words[0] == "variant":
@@ -118,16 +127,26 @@ def read_tiles(path=ROOT / "gfx/tiles.txt"):
         bad = flags - set(TILE_FLAGS)
         if bad:
             raise SystemExit(f"{path}:{line}: unknown flags {bad}")
-        partners = {}
+        partners, like = {}, None
         for w in words[3:]:
             what, eq, other = w.partition("=")
             if not eq:
                 continue
             other = " " if other == "space" else other
+            if what == "as":
+                base = next((t for t in tiles if t.key == other), None)
+                if like is not None or base is None or base.like is not None:
+                    raise SystemExit(f"{path}:{line}: as=<key> names an earlier tile, once, that isn't drawn as "
+                                     f"another: got {w!r}")
+                if base.flags != flags:
+                    raise SystemExit(f"{path}:{line}: a tile drawn as {base.name} has its flags")
+                like = base
+                continue
             if what not in MACHINES or len(other) != 1 or partners:
                 raise SystemExit(f"{path}:{line}: a tile may say beat=<key> or switch=<key>, once: got {w!r}")
             partners[what] = other
-        tiles.append(Tile(key, words[2], flags, _pixels(art, 8, f"{path}:{line}"), "shared" in plain, partners))
+        pixels = like.pixels if like else _pixels(art, 8, f"{path}:{line}")
+        tiles.append(Tile(key, words[2], flags, pixels, "shared" in plain, partners, like and like.key))
     if not tiles or tiles[0].key != " ":
         raise SystemExit(f"{path}: the first tile must be 'space'")
     keys = [t.key for t in tiles]
@@ -267,7 +286,9 @@ class Look:
 
 def looks(tiles, first=0, sector=None):
     """These tiles' looks, numbered from first: the tiles as written, then
-    each tile's variants and alts in order."""
+    each tile's variants and alts in order. (A tile drawn as another has
+    none.)"""
+    tiles = [t for t in tiles if t.like is None]
     out = [Look(first + i, t, "base", None, t.pixels, sector) for i, t in enumerate(tiles)]
     for t in tiles:
         for when, px in t.variants:
@@ -307,19 +328,27 @@ class Looks:
     def __init__(self, tiles, rooms):
         used = {}
         by = {t.key: t for t in tiles}
+
+        def use(c, sector):
+            used.setdefault(c, set()).add(sector)
+            # (A tile drawn as another uses that one's looks.)
+            if c in by and by[c].like is not None:
+                used.setdefault(by[c].like, set()).add(sector)
         for r in rooms:
             for line in r.map:
                 for c in line:
-                    used.setdefault(c, set()).add(r.sector)
+                    use(c, r.sector)
                     # (and what it becomes, as machinery: machine_map)
                     for other in (by[c].beat, by[c].switch) if c in by else ():
                         if other is not None:
-                            used.setdefault(other, set()).add(r.sector)
+                            use(other, r.sector)
 
         UNUSED = "unused"
 
         def owner(i, t):
             s = used.get(t.key, set())
+            if t.like is not None:
+                return UNUSED       # (no looks of its own)
             if i == 0 or t.shared or len(s) > 1:
                 return None
             return next(iter(s)) if s else UNUSED
@@ -376,12 +405,14 @@ def resolve(room, tiles, all_looks=None, state=(0, 0)):
     look_hash falls below the number of alts for that <when>, that alt.
     The looks are all_looks, for the game's numbers the room's sector's
     (Looks.of), or else every look numbered in file order. The map is the
-    room's machinery in the state given (machine_map)."""
+    room's machinery in the state given (machine_map), and a tile drawn as
+    another (as=) is that one there."""
     all_looks = all_looks or looks(tiles)
     keys = {t.key: t for t in tiles}
     by = {(lk.key, lk.when, lk.alt): lk for lk in all_looks}
     salt = sum(map(ord, room.ident)) & 0xFF
-    rows = machine_map(room, tiles, *state)
+    rows = ["".join(keys[k].like or k if k in keys else k for k in line)
+            for line in machine_map(room, tiles, *state)]
 
     def solid_both(k):
         f = keys[k].flags
@@ -557,7 +588,7 @@ def _words(words, n, where, usage):
 
 def read_rooms(path=ROOT / "rooms/rooms.txt"):
     rooms = []
-    lines = Path(path).read_text().splitlines()
+    lines = Path(path).read_text(encoding="utf-8").splitlines()
     i = 0
     room = None
     while i < len(lines):

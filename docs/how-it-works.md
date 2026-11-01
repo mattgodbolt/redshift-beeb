@@ -78,8 +78,9 @@ loop). Each frame:
    bolts, collects pickups, and throws a switch Ash touches or shoots.
    `ebolts_update` moves the enemies' bolts.
 6. `mach_update` steps the room's beat, and moves its machinery when it
-   turns (see "Machinery and switches").
-7. `render` draws whatever changed.
+   turns, or flickers it before (see "Machinery and switches").
+7. `render` draws whatever changed, between `mach_show` and `mach_hide`
+   (the warning's looks).
 8. `sound_update` steps the effects.
 
 ## The palette program
@@ -157,7 +158,9 @@ Each screen byte is written once, so nothing is ever seen half drawn.
 
 Machinery that moved is drawn the same way, before the things: each part's
 rectangle (below) grows to take in whatever it touches, and is composed
-with it.
+with it. A rectangle with no thing in it, as a part mostly is, is just
+tiles, so it's drawn straight onto the screen, each byte still once,
+without the buffer's copy.
 
 Sprites move in 2-pixel steps, so `tools/mkgfx.py` stores two versions of
 each: at a byte, and 2 pixels on. A sprite that faces a way is stored
@@ -191,6 +194,26 @@ When the beat turns, or the switch is thrown, `mach_apply` copies the
 parts' looks into the map and lists their rectangles for `render`, which
 draws them as it draws a moving thing's. If Ash is inside anything solid
 or deadly then, they die (`crushed`): nothing else can put them there.
+
+The beat warns before it turns (decision 48). For its last `BEAT_WARN`
+frames the parts flicker between how they are and how they'll be,
+`WARN_FLICK` frames each way (`warn_vis`), and only the drawing sees it:
+
+- `mach_update` lists the parts when the warning comes and when it goes,
+  so `render` draws them again then, and only then.
+- While it shows, `mach_show` puts the other looks in the map just before
+  `render`, and `mach_hide` puts them back just after (`mach_apply`
+  without listing). So what Ash stands on, and what crushes them, is the
+  machinery as it is, and a thing that moves over a part is drawn over the
+  look the warning shows.
+- A switch that stops the beat puts the machinery as drawn, and ends the
+  warning.
+
+A tile can be drawn as another (`as=<key>` in `gfx/tiles.txt`): it has no
+looks of its own, and `gfxlib.resolve` draws a cell of it as that tile
+would be there. So machinery that looks like something already drawn, a
+truck that drives itself and the air or torn rail it leaves, costs no
+looks; the game never knows the difference, since the map holds looks.
 
 The beat and the switch come back as drawn when the room is read again
 (`mach_load`, from `load_room`), so a death brings back the room as it was
