@@ -77,7 +77,7 @@ playthrough: $(TARGET)
 
 # The README's screenshots, from a playthrough.
 README_SHOTS = title landing pump_red pump_blue jar tanks hut skip engine signal turntable weighbridge siding crane handle jaw \
-               outfall_red outfall_blue cistern boiler steam office sluice plughole
+               outfall_red outfall_blue cistern boiler steam office sluice ubend overflow plughole
 readme-shots: $(TARGET)
 	node tools/playthrough.mjs --shots build/shots
 	for n in $(README_SHOTS); do cp build/shots/$$n.png docs/media/; done

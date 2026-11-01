@@ -631,3 +631,58 @@ Matt was away is marked *provisional* until reviewed.
     - **Card lines sit inside the frame's sides**, which are drawn in its
       first and last columns; `CARD_LINE` asserts it, and three lines are
       shorter.
+52. **2026-11-01: the Sump reworked: both phases in every room, a Blue with
+    costs of its own, and few cells** (*provisional*). A level pass from the
+    Sump's newcomer playtest, on decision 51's shift:
+    - **The Blue isn't a way round.** Every room takes both phases, and the
+      Blue has costs of its own where it used to be a free pass: its blocks
+      across the STEAM TRAP's corridor and hanging over the OVERFLOW's
+      walkway, crystal on BOILER WALK's boilers and the office's landing, a
+      span and steps that only the Blue has, and Slivers in packs that are a
+      fight. The Blue's blockers stay above the water, as decision 50's rule
+      has it: nothing that isn't solid stands in a hazard.
+    - **Cells are few.** Two cell pickups in the sector, where there were six,
+      and neither pays for a shift on the way: the Cistern's is behind its
+      Gadfly in the Red, and the U-Bend's is in the bend, with the swarm.
+    - **A room an idea.** OUTFALL the dry bed and where to shift back; THE
+      CISTERN a full tank in the Red and an empty one in the Blue, its floor
+      the Red's plates, with a swarm in it; BOILER WALK the sergeant over the
+      boiling gaps, and a welded door; STEAM TRAP the vents in the Red, or
+      the bed's swarm in the Blue, which meet before the last vent; DROWNED
+      OFFICE the shelves, the cabinet as cover, and the Blue's span where the
+      last shelf was; SLUICE GATE the handle, and the swarm the gate held
+      back; THE U-BEND the climb that changes phase on the way up; OVERFLOW
+      the flood and its depth posts in the Red, then the Blue's steps over
+      the basin; THE PLUGHOLE the plug, and the sergeant under it.
+    - **OUTFALL is the first lesson.** Down into the dry bed in the Blue, up
+      onto the far landing, and back to the Red there, where crystal holds
+      the way out. Its Gadfly is gone: a Trundler patrols a step a row above
+      the landing, so it can't come down to Ash, a standing bolt meets it, and
+      the landing reaches far enough from the step to shift clear of it. Its
+      two Slivers start across the sump at the bank's height, so a newcomer
+      sees them wake and come: the hint that a Sliver chases.
+    - **No precision spots, no ambushes.** STEAM TRAP's corridor runs into its
+      shaft, where the way out was a jump from a few spots. OVERFLOW's posts
+      are lower, and the last has a kerb that stops a jump held all the way
+      short of the basin behind it. BOILER WALK has room on each side of the
+      dome, and the office's shelves are wide. Each room's Slivers were
+      placed with a simulation of their homing, so they come level with a
+      standing bolt before they reach Ash wherever Ash is meant to shift, and
+      none is near a way in.
+    - **A way out that fixes the phase,** where coming in in the other one
+      would be unfair: the U-BEND's is the Red's, through the Blue's blocks,
+      so OVERFLOW, whose Slivers would come down on its last post, is always
+      entered in the Red.
+    - **The plug is striped,** as the yard's presses are: a newcomer took the
+      plain one for something to shoot.
+    - **One Gadfly,** in THE CISTERN's cellar, as low as Ash's head, so a
+      standing bolt meets it through most of its bob, and its walls hold it.
+
+    Calls made in building it (*provisional*):
+    - Ash comes into most rooms in one phase, the one the last room's way out
+      takes, but a shift in a doorway or a shaft can change that, so every
+      room was checked from both, with two cells.
+    - The playthrough takes the Red's road through the STEAM TRAP, and checks
+      that the Cistern's cell is taken, since the sector's cells only just
+      cover its shifts.
+

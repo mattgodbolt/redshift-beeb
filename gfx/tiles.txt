@@ -2308,70 +2308,73 @@ tile ğ gauge
 .211....
 .21.....
 
-# The plughole's plug, four wide and two high, on its chain: rubber, its
-# crown lit and rolled at its shoulders, its sides tapering into shadow.
-# Solid: it hangs over the plughole, and drops into it on the beat (it
-# kills what it closes on, as all machinery does), and the chain pays out
-# after it: ƿ becomes the chain's left half and Ƿ its right, þ is the plug
-# that becomes air, and Þ is the plughole that the plug comes into.
+# The plughole's plug, four wide and three high, on its chain: its crown
+# lit and rolled at its shoulders, its sides tapering into shadow, and its
+# body striped as the yard's presses are (the ram, above), so it reads as
+# machinery that crushes and not as something to shoot (a newcomer shot
+# at the plain one). Solid: it hangs over the plughole, and drops into it
+# on the beat (it kills what it closes on, as all machinery does), and the
+# chain pays out after it: ƿ becomes the chain's left half and Ƿ its
+# right, þ is the plug that becomes air, and Þ is the plughole that the
+# plug comes into.
 tile ƿ plug solid beat=ȼ
-11111111
-11111111
-11111111
-11111111
-11111111
-11111111
-11111111
-11111111
+22112211
+21122112
+11221122
+12211221
+22112211
+21122112
+11221122
+12211221
 
 variant ƿ up+left
 ...22222
-.2211111
-21111111
-21111111
-21111111
-.2111111
-.2111111
-..211111
+.2222112
+21221122
+22211221
+22112211
+.2122112
+.2221122
+..211221
 
 variant ƿ up+right
 22222...
-11111.1.
-1111111.
-111111.1
-1111111.
-111111.1
-11111.1.
-111111..
+21122.1.
+1122112.
+122112.1
+2211221.
+211221.1
+11221.1.
+122112..
 
 variant ƿ up
 22222222
 11.22.11
 1.2..2.1
-11111111
-11111111
-11111111
-11111111
-11111111
+12211221
+22112211
+21122112
+11221122
+12211221
 
 variant ƿ left
-..211111
-..211111
-...21111
-...21111
-...21111
-....2111
-....2111
+..212211
+..222112
+...21122
+...21221
+...22211
+....2112
+....2122
 .....211
 
 variant ƿ right
-111111..
-11111.1.
-11111...
-1111.1..
-11111...
-111.1...
-1111....
+221122..
+21122.1.
+11221...
+1221.1..
+22112...
+211.1...
+1122....
 11.1....
 
 # Its chain, from the roof: links on edge and face on, the left half and
