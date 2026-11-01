@@ -192,7 +192,7 @@ ASSERT LO(play_screen) = 0 AND ROW_BYTES = 512
 
 \ SHIFT: into the other phase, at the cost of a cell, unless the player
 \ would be inside something solid there.
-FLASH_FRAMES = 8                ; a refused shift's red, in frames
+FLASH_FRAMES = 16               ; a refused shift's red, in frames
 .try_shift
 {
     LDA cells : BEQ refused
