@@ -1,13 +1,13 @@
 \ ***************************************************************************
 \ RSLOAD: run by !BOOT with the OS still in charge. It finds a sideways RAM
-\ bank (decision 12), loads RSDATA (the art and the rooms) into main RAM
-\ at &3000, copies it into the bank, leaves the bank paged in, and runs
-\ the game, which reads the bank's number from RS_BANK. While the title
-\ page waits for SPACE, the title theme plays (decisions 32 and 33): a
-\ frame of the music player each VSync, from the loop that waits.
+\ bank (decision 12), loads RSDATA (the art and the text) into main RAM at
+\ &3000 and the first sector's rooms just after it (decision 42), copies
+\ both into the bank, leaves the bank paged in, and runs the game, which
+\ reads the bank's number from RS_BANK. While the title page waits for
+\ SPACE, the title theme plays (decisions 32 and 33): a frame of the music
+\ player each VSync, from the loop that waits.
 \ ***************************************************************************
 
-romshad  = &F4                  ; the OS's copy of romsel: always write both
 romtypes = &02A1                ; the OS's ROM type per bank; 0: no ROM there
 RS_TRY   = &70                  ; (the loader's own zero page)
 RS_RES   = &71
@@ -54,11 +54,15 @@ RS_MU    = &74                  ; (two bytes: the title theme's place)
     JMP stop
 .found
     STX RS_BANK
+    \ !BOOT, the *EXEC file, closed (*FX119), so the DFS has no file open
+    \ when the game hands it back its workspace for a load (sector.6502).
+    LDA #119 : JSR &FFF4
     LDX #LO(load_cmd) : LDY #HI(load_cmd) : JSR &FFF7
+    LDX #LO(rooms_cmd) : LDY #HI(rooms_cmd) : JSR &FFF7
     \ Into the bank, and leave it paged in.
     SEI
     LDA RS_BANK : STA romshad : STA romsel
-    LDX #HI(data_end - &8000 + &FF)
+    LDX #HI(rooms_end - &8000 + &FF)
     LDY #0
 .copy
     LDA &3000,Y : STA &8000,Y
@@ -100,6 +104,7 @@ RS_MU    = &74                  ; (two bytes: the title theme's place)
             EQUS "(a Model B with a RAM board, or a", 13, 10
             EQUS "Master 128).", 13, 10, 0
 .load_cmd   EQUS "LOAD RSDATA", 13
+.rooms_cmd  EQUS "LOAD S", '0' + START_SECTOR, 13     ; (at its own address, ROOMS_LOAD)
 .run_cmd    EQUS "RUN REDSHFT", 13
 .press_text EQUS 31, 8, 22, 136, 131, "PRESS SPACE TO PLAY", 0
 .m_down     EQUB 0                  ; M was down last VSync (&FF), or not

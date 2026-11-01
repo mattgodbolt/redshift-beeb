@@ -236,6 +236,15 @@ WHATEVER THIS IS, IT'S AWAKE.
 
 Game over: `OUT OF LIVES. OUT OF PHASE.`
 
+A disc error at a sector's load, around the DFS's own message:
+
+```
+THE DISC WON'T LOAD:
+(the DFS's message, as NOT FOUND)
+PUT THE REDSHIFT DISC BACK IN
+AND PRESS SPACE TO TRY AGAIN.
+```
+
 Victory:
 
 ```

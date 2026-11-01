@@ -15,10 +15,11 @@ are its own (`BRIEF.md`).
 
 ```sh
 make              # build/redshift.ssd, symbols build/redshift.json, previews in build/preview
-make ROOM=n       # a test build that starts in room n (0 first) at its `start`
+make ROOM=n       # a test build that starts in rooms.txt's room n (0 first) at its `start`
 make run          # boot it, shots/run.png
+make check        # the smoke test, a sector's load (tools/sectortest.mjs), the editor's checks; MODEL=Master too
 make ship         # the disc from HEAD (a scratch worktree), copied to redshift.ssd and committed
-make playthrough  # plays the whole of Sector 1 to the Engine Shed: the end-to-end test
+make playthrough  # plays the whole of Sector 1, through the cage's load, to the Engine Shed: the end-to-end test
 make readme-shots # retakes the README's screenshots (docs/media) from a playthrough
 make music-preview  # each piece of music as a WAV in build/preview/music, from the scores
 node tools/musiccap.mjs [dir] [--quick]  # what the game writes to the chip for each piece, checked against the scores, as WAVs
@@ -30,14 +31,15 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 
 ## How it fits together
 
-- `!BOOT` runs RSLOAD (`rsload.6502`, with the OS alive). It shows the teletext title page, finds a sideways RAM bank, loads RSDATA (the art, the rooms and the text) and copies it in, then runs REDSHFT. REDSHFT copies itself down to `&0E00` and owns the machine from then on: no OS calls.
+- `!BOOT` runs RSLOAD (`rsload.6502`, with the OS alive). It shows the teletext title page, finds a sideways RAM bank, loads RSDATA (the art and the text) and S1 (the first sector's rooms) and copies them in, then runs REDSHFT. REDSHFT copies itself down to `&0E00` and owns the machine from then on: no OS calls, but for a sector's load.
+- The bank keeps one sector's rooms at a time (decision 42). Rooms are numbered within their sector, and only the cage's down exit leaves it (`NEXT_SECTOR`). After the cage's ride, `sector.6502` gives the OS back its interrupts and the DFS its workspace, loads the next sector's file (`S<n>`) with OSFILE, and takes the machine back.
 - The screen is MODE 1 narrowed to 256x192 at `&5000`. The status bar is rows 0-1, in logical colours 0 and 1 only; the playfield is rows 2-23.
 - `irq.6502` plays the palette program: the status split, then up to 8 bands per room, each changing one logical colour on a scan line. Its timing is chuckie-egg-2-beeb's, measured there, and the instructions before each write must stay as they are.
 - `render.6502` draws moving things flicker-free. Each thing's old and new rectangles are composed in `cbuf` (tiles, then sprites masked), then copied out.
 - The art and the rooms are text. `tools/mkgfx.py` and `tools/mkrooms.py` turn them into `build/data/*.6502`, and `tools/gfxlib.py` is the shared reader. The level editor in `editor/` reads the same files.
 - The music is text too (`music/`; `music/instruments.txt` says how), made into data by `tools/mkmusic.py`. One player, `musicplay.6502`, is included twice, each in its own scope with its own data: in the game, where the VSync interrupt steps it (`music.6502`), and in RSLOAD for the title theme. The game's effects take a channel from it whenever they want one.
 - Each colour has a job (`gfx/tiles.txt`'s header, decision 20); keep new art to it. A tile's variants are picked from its surroundings when the rooms are built (`gfxlib.resolve`); the editor has a copy of that in its core script, which `editor/check.mjs` holds to the build pixel for pixel. Air is drawn by position at run time (`back_look`), not stored.
-- The sideways bank is the tight memory, and the sprites are most of it: each is kept at two shifts, and mirrored if it faces a way. The rooms are already packed well (runs and row copies): a byte-aligned LZ through baron's `transform` and `LZ_PARSE`, on the packed or the raw maps, came out bigger, so that's been tried.
+- The sideways bank is the tight memory, and the sprites are most of it: each is kept at two shifts, and mirrored if it faces a way. Its room region holds the largest sector's rooms, so a bigger sector grows it. The rooms are already packed well (runs and row copies): a byte-aligned LZ through baron's `transform` and `LZ_PARSE`, on the packed or the raw maps, came out bigger, so that's been tried.
 
 ## Traps met
 
@@ -51,6 +53,9 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 - **The game's frame is 312 lines, 39936 cycles, not 40000** (MODE 7's interlaced one is). A tool counting frames from cycles drifts a frame every 150 or so.
 - **Until the game runs, the low pages are the OS's.** A harness poke at a game variable there (`pl_safe`) on the title page writes into the OS's workspace.
 - **Two channels on one note can cancel.** Two square waves of the same period may be in opposite phase. Keep tunes off each other's notes (the bass low, arpeggios below a bell).
+- **DFS 1.2 trusts the catalogue it has while the drive still spins.** Give it back `&0E00-&10FF` (`DFS_KEEP`) as it left them, catalogue and state together: with its state alone, a second call soon after the first searched the game's code for the file, and hung.
+- **What runs while the OS has the machine lives above the DFS's workspace and out of page 8**, and reads nothing below it until the game's memory is back (`sector.6502`'s ASSERTs). The game's own routines (`sound_write`, `install_irq`, the printing) are under `&1900`: call them only before the save or after the restore.
+- **An OS error reaches BRKV with the language's ROM paged in.** The handler pages `RS_BANK` back (`romshad` and `romsel`) before anything reads the bank. **OSFILE writes the file's details over its block**: set it afresh for each call.
 
 ## House rules
 

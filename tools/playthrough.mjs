@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// A playthrough of the whole of Sector 1, from the first room to the cage
-// and the Engine Shed, on the default build: the end-to-end test that the
-// sector can be finished, and with --shots, the README's screenshots.
+// A playthrough of the whole of Sector 1, from the first room to the cage,
+// Sector 2's load from the disc, and the Engine Shed, on the default build:
+// the end-to-end test that the sector can be finished, and with --shots,
+// the README's screenshots.
 //
 //   node tools/playthrough.mjs               play it, and fail if a room isn't reached
 //   node tools/playthrough.mjs --shots DIR   also save a screenshot at each moment the
@@ -219,12 +220,18 @@ try {
     await g.walkTo(44);
     await g.down("D"); await g.gf(2); await g.tap("G", 2); await g.gf(30); await g.up("D");
     if ((await thing(4)).alive) throw new Error("the Skip Shaft's sergeant lived");
+    // (The ride, then Sector 2's rooms from the disc: src/sector.6502.)
     await g.down("R");
-    await until(async () => { const s = await g.st(); return s.room !== 8 || s.dead; }, 100);
+    const ride = await beeb.runUntil("sector_load", 15);
     await g.up("R");
+    if (ride.stopped_reason !== "breakpoint") throw new Error("the cage didn't load the next sector");
+    const load = await beeb.runUntil("sector_load.done", 30);
+    if (load.stopped_reason !== "breakpoint") throw new Error("Sector 2's load didn't finish");
+    console.log(`${"Sector 2 loaded".padEnd(16)} in ${(load.cycles_run / 2e6).toFixed(2)}s`);
     await g.gf(20); await mark("sector2");
-    await g.gf(160);
-    await expectRoom(9, "ENGINE SHED");
+    await until(async () => (await beeb.peek("room_sector")) === 2 && (await beeb.peek("blackout")) === 0, 200);
+    await expectRoom(0, "ENGINE SHED");
+    if ((await beeb.peek("room_sector")) !== 2) throw new Error("the Engine Shed isn't in Sector 2");
     await g.gf(25);
 } catch (e) {
     console.log(`FAIL: ${e.message}`);

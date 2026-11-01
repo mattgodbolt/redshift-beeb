@@ -5,6 +5,11 @@
 .game_start
 {
     LDX #&FF : TXS
+    \ The starting sector's rooms, back from the disc if a game that ended
+    \ in a later sector loaded that one's over them.
+    LDA #START_SECTOR : CMP loaded_sector : BEQ loaded
+    JSR sector_load
+.loaded
     JSR cls
     \ Nothing anywhere.
     LDX #NOBJ - 1
@@ -19,7 +24,6 @@
 .gone
     STA room_gone,X
     DEX : BPL gone
-    ASSERT NROOMS <= MAX_ROOMS
     LDA #START_LIVES : STA lives
     LDA #START_CELLS : STA cells
     LDA #START_GRENADES : STA grenades
@@ -29,9 +33,9 @@
     LDA #SPR_ASH_STAND : STA obj_spr + PL
     LDA #0 : STA cur_sector : STA cage_go
 IF DEFINED(START_ROOM)
-    \ (A test build, make ROOM=n: room n, at its start.)
+    \ (A test build, make ROOM=n: rooms.txt's room n, at its start.)
     LDA #1 : STA at_start
-    LDA #START_ROOM
+    LDA #ROOM_NUMBER[START_ROOM]
 ENDIF
     JSR change_room
     LDA vsyncs : STA last_vs
@@ -67,12 +71,13 @@ ENDIF
     JMP loop
 }
 
-\ Into the cage: down to the next sector (the room's down exit), in at the
-\ start the room there gives.
+\ Into the cage: down to the room its down exit names, in at the start that
+\ room gives. That's the next sector's (NEXT_SECTOR set), whose rooms come
+\ from the disc once the ride's done (sector.6502).
 .take_cage
 {
     LDA #0 : STA cage_go
-    LDA room_exits + 3 : CMP #&FF : BEQ done
+    LDA room_exits + 3 : CMP #&FF : JEQ done
     \ The ride: Ash steps in, and the cage judders as it takes the strain,
     \ while its figure plays.
     JSR sound_quiet
@@ -106,7 +111,11 @@ ENDIF
     LDA mus.mu_piece : BPL ride     ; (still playing)
 .ridden
     LDA #1 : STA at_start
-    LDA room_exits + 3 : JMP change_room
+    LDA room_exits + 3 : BPL in_sector
+    LDX room_sector : INX : TXA : JSR sector_load
+    LDA room_exits + 3 : AND #&FF - NEXT_SECTOR
+.in_sector
+    JMP change_room
 .done
     RTS
 .tc_x EQUB 0
@@ -216,39 +225,17 @@ FLASH_FRAMES = 8                ; a refused shift's red, in frames
     JSR sound_quiet
     PLA : PHA                       ; (the sector again: sound_quiet keeps only X and Y)
     CLC : ADC #MUS_CARD1 - 1 : JSR music_play
-    LDX #1 : STX blackout
-    JSR cls
-    \ No bands: logical 1 yellow, in either phase.
-    LDA #0 : STA band_n
-    LDX #3
-.colours
-    LDA card_colours,X : STA top_red,X : STA top_blue,X
-    DEX : BPL colours
-    JSR set_timing
-    JSR set_colours
+    JSR card_begin
     PLA : SEC : SBC #1 : TAX
     LDA card_lo,X : STA text_ptr
     LDA card_hi,X : STA text_ptr+1
     LDA #10 : STA sc_row
     LDA #3 : STA sc_n
 .line
-    \ Centred: (32 - its length) / 2.
-    LDY #0
-.len
-    LDA (text_ptr),Y : BEQ got_len
-    INY : BNE len
-.got_len
-    TYA : EOR #&FF : SEC : ADC #32 : LSR A : TAX
-    LDY sc_row : JSR print_at
-    INC text_ptr : BNE nc           ; (past the 0)
-    INC text_ptr+1
-.nc
+    LDY sc_row : JSR print_centred
     LDA sc_row : CLC : ADC #2 : STA sc_row
     DEC sc_n : BNE line
-    JSR wait_vsync
-    LDA #0 : STA blackout
-    LDA #8 : STA crtc_reg
-    LDA #CRTC_SHOW : STA crtc_data
+    JSR card_show
     \ Three seconds, or a key once all are up. (read_keys uses X and Y.)
     \ Keys already down (the title's SPACE) aren't new.
     JSR read_keys
@@ -260,7 +247,48 @@ FLASH_FRAMES = 8                ; a refused shift's red, in frames
     DEC sc_n : BNE wait
 .done
     RTS
+}
+
+\ A card's screen (a sector's, or a disc error's: sector.6502), cleared
+\ while it's black: no bands, logical 1 yellow, in either phase. Then
+\ card_show shows it.
+.card_begin
+{
+    LDX #1 : STX blackout
+    JSR cls
+    LDA #0 : STA band_n
+    LDX #3
+.colours
+    LDA card_colours,X : STA top_red,X : STA top_blue,X
+    DEX : BPL colours
+    JSR set_timing
+    JMP set_colours
 .card_colours EQUB BLACK, YELLOW, WHITE, CYAN
+}
+.card_show
+    JSR wait_vsync
+    LDA #0 : STA blackout
+    LDA #8 : STA crtc_reg
+    LDA #CRTC_SHOW : STA crtc_data
+    RTS
+
+\ The line at text_ptr centred on row Y ((32 - its length) / 2, so 32 at
+\ most), and text_ptr past its 0.
+.print_centred
+{
+    ZA_AUTO1 pc_row
+    STY pc_row
+    LDY #0
+.len
+    LDA (text_ptr),Y : BEQ got_len
+    INY : BNE len
+.got_len
+    TYA : EOR #&FF : SEC : ADC #32 : LSR A : TAX
+    LDY pc_row : JSR print_at
+    INC text_ptr : BNE done         ; (past the 0)
+    INC text_ptr+1
+.done
+    RTS
 }
 
 \ P: everything stops until P again, and is silent.

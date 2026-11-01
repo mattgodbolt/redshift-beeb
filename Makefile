@@ -4,9 +4,11 @@
 #                 build/listing.txt), and the art and room previews in
 #                 build/preview
 #   make run      boot it in jsbeeb, screenshot to shots/run.png
-#   make check    the smoke test (tools/smoke.mjs) on MODEL (B-DFS1.2), and
-#                 the level editor's checks (editor/check.mjs)
-#   make ROOM=n   a test build that starts in room n (0 first), at its start
+#   make check    the smoke test (tools/smoke.mjs) and a sector's load at the
+#                 cage (tools/sectortest.mjs) on MODEL (B-DFS1.2), and the
+#                 level editor's checks (editor/check.mjs)
+#   make ROOM=n   a test build that starts in rooms.txt's room n (0 first),
+#                 at its start: RSLOAD loads its sector
 #   make disc     rebuild from a clean tree and copy the disc to redshift.ssd,
 #                 which the README's play link boots
 #   make ship     make disc from HEAD in a scratch worktree (so work in
@@ -36,11 +38,12 @@ all: $(TARGET)
 
 $(TARGET): $(SOURCES) $(DATA) FORCE | build
 	$(ASM) -D 'BUILD="$(BUILD)"' $(ROOMDEF) -o $@ --title REDSHIFT --opt 3 --warn 2 --symbols $(@:.ssd=.json) -v -log0 build/listing.txt src/main.6502
-	@grep -E '^(code|data|rsload)' build/listing.txt || true
+	@grep -E '^(code|data|rsload|  S[0-9])' build/listing.txt || true
 
 build/data/gfx.6502: gfx/tiles.txt gfx/sprites.txt tools/mkgfx.py tools/gfxlib.py
 	python3 tools/mkgfx.py $@ --preview build/preview
 
+# (Beside it: sectors.6502, and sector<n>.6502 for each sector's file.)
 build/data/rooms.6502: rooms/rooms.txt gfx/tiles.txt tools/mkrooms.py tools/gfxlib.py
 	python3 tools/mkrooms.py $@ --preview build/preview
 
@@ -64,6 +67,7 @@ run: $(TARGET)
 
 check: $(TARGET)
 	node tools/smoke.mjs --model $(MODEL)
+	node tools/sectortest.mjs --model $(MODEL)
 	node editor/check.mjs > build/editor-check.txt || { cat build/editor-check.txt; exit 1; }
 
 # Always from a clean tree, so the stamp names the commit the disc holds.

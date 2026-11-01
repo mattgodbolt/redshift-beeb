@@ -406,9 +406,12 @@ SPARK_FRAMES = 4
 
 \ Off the room's edge X (0 left, 1 right, 2 up, 3 down): into the room
 \ there, at the other side. With no room there: a wall, or (down) a pit.
+\ The next sector's room (a cage's down exit, NEXT_SECTOR set) isn't there
+\ for falling into: only the cage loads it.
 .go_exit
 {
-    LDA room_exits,X : CMP #&FF : BEQ none
+    LDA room_exits,X : BMI none     ; (&FF, none, or NEXT_SECTOR set)
+    ASSERT NEXT_SECTOR = &80 AND SECTOR_ROOMS <= &80
     PHA
     CPX #1 : BCC left
     BEQ right

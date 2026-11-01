@@ -9,8 +9,10 @@
 \ Once the game has the interrupts and reads the keyboard itself, the OS's
 \ pages 4-12 are free (porting-to-the-beeb.md, "Memory"): the 100Hz
 \ interrupt that rewrites page 8 is stopped, and nothing else touches them.
-\ Page 13 (the NMI and a Master's extended vectors) is left alone. Nothing
-\ in these sections is in the file: start-up and the room set them up.
+\ (A sector's load gives the OS its interrupts back for a while, and saves
+\ page 8 around it: sector.6502.) Page 13 (the NMI and a Master's extended
+\ vectors) is left alone. Nothing in these sections is in the file:
+\ start-up and the room set them up.
 \ ***************************************************************************
 
 ZP_FIXED = &60
