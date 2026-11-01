@@ -749,3 +749,52 @@ in every sector: dithered whole, it read as a dart.
   as it cools, steps off the chandelier, leaves Echo Gallery in the Red and
   climbs to the paydirt's ledge, and checks the new cells are taken.
 
+## 2026-11-01: THE HINGE, and the endings
+
+The first step of Sector 5 is its last room. Bore Nine's cage now goes
+straight into THE HINGE, the game's boss, and beating it ends the game
+(decisions 58 and 59). The sector's other eight rooms come next.
+
+The story asks for one thing in both phases at once, a Drill Sergeant the
+size of a house in the Red and a crystal flower in the Blue. Nothing in the
+engine could be in both phases: a tile was in one, or in both and the same.
+So a tile can have a second picture now, its Blue Phase one, in the same
+cells with the same flags, and the Hinge is built of them. A shift turns
+the sergeant into the bloom where it stands. Its moving parts are tiles in
+chains that the code turns into the next (the plate dented, cracked, the
+crack closing; the gun and the bud lit; a lamp out), drawn as the
+machinery's parts are, so the boss needed no new drawing code, only a few
+hooks: a charge's blast, a bolt that strikes a wall, the things' spawning
+and the frame.
+
+The fight: lob two charges at the plate from the pillar, out of the gun's
+line, and it cracks, and the crystal with it. Shift, drop to the walkway,
+and shoot the core through the crack while the bloom sheds Slivers in
+front of it. Get back to the pillar, or to a seam between two blocks, and
+shift again. Three lamps in its visor, three rounds, each faster.
+
+- The first draft's bloom shed from its crown, and its Slivers tumbled down
+  its sides for so long that the fight was over before one arrived. The bud
+  is on its face now, so the swarm comes between Ash and the core and takes
+  the bolts meant for it; and it waits at its warning while Ash is in the
+  Red, so it sheds soon after every shift into the Blue.
+- The Prism's walls were Bore Nine's prism face at first; in a room that
+  makes the body colour bright, its half-coloured facets were the loudest
+  thing on screen. The Prism has its own face now, white with thin lines of
+  the band's colour, which is what the story describes.
+- The Red's crown had the drill's socket on it, and on a yellow pyramid it
+  read as an eye. A bolted plate covers it now. The bloom read as a crystal
+  house until its petals had edges.
+- Scripted deaths at each stage, to the gun in the Red, a Sliver in the
+  Blue, the pit with a lamp out and ESCAPE with two out, all brought Ash
+  back to the ledge in the phase they came in with, the plate whole, the
+  lamps lit and the swarm gone, with the fight's cells and charges.
+- The words of both endings are on cards now. The story's victory lines
+  were up to 32 characters, wider than a card's frame, so they're broken
+  again, the same words. Out of lives, the story's ending for it follows
+  the status bar's line.
+- A shift in the Hinge's room draws every one of its cells again, the
+  dearest shift in the game; play's own frames there stay well inside one.
+- The playthrough now plays on from Bore Nine's cage: three rounds, the
+  fold, the dark, the words and a new game, on the B and the Master.
+

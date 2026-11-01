@@ -76,7 +76,8 @@ loop). Each frame:
 4. `grenade_throw` and `grenade_update` handle the grenade.
 5. `things_update` moves each enemy, checks it against Ash and the
    bolts, collects pickups, and throws a switch Ash touches or shoots.
-   `ebolts_update` moves the enemies' bolts.
+   `ebolts_update` moves the enemies' bolts, and `hinge_update` runs THE
+   HINGE, in its room (see "THE HINGE").
 6. `mach_update` steps the room's beat, and moves its machinery when it
    turns, or flickers it before (see "Machinery and switches").
 7. `render` draws whatever changed, between `mach_show` and `mach_hide`
@@ -219,6 +220,54 @@ The beat and the switch come back as drawn when the room is read again
 (`mach_load`, from `load_room`), so a death brings back the room as it was
 entered (decision 30).
 
+## THE HINGE
+
+Decision 58. The game's boss (`src/hinge.6502`) is tiles, seven by ten
+on the map, each a picture in each phase: in the Red a Drill Sergeant the
+size of a house, in the Blue a crystal bloom. A tile in `gfx/tiles.txt`
+with a `blue` block has that block as its picture in the Blue Phase, in
+the same cells, with the same flags in both; `tools/mkgfx.py` points the
+look's Blue table entry at it, and gives it both phases' bits in
+`tile_attr`, so a shift draws it again as it does a phase's own.
+
+Its states are tiles too, in chains: `then=<key>` names the tile the code
+turns one into next (the plate whole, dented, cracked open on the core,
+closing; the gun's muzzle and the bud lit; a lamp out), and its looks go
+wherever that tile's do. `mkgfx.py` names those looks (`T_HINGE_...`), the
+sector's own, so they mean them only while Sector 5 is loaded; the code
+uses them only while the Hinge is in the room (`hinge_on`), and `ASSERT`s
+that each chain's looks follow each other in number.
+
+- The room's thing `hinge` marks its heart, and takes no slot:
+  `spawn_things` hands it to `hinge_spawn`, which finds the gun's muzzle,
+  the bud and the visor's lamps on the map by their looks, and starts the
+  fight (with at least `HG_CELLS` cells and `HG_GRENADES` charges).
+- Each frame, after the things, `hinge_update` runs the crack's time, the
+  gun (in the Red: it fires along its row while Ash is in it, its muzzle
+  lit first) or the bud (in the Blue: it sheds a Sliver in front of it,
+  lit first, into a free slot), and writes any look that changed into the
+  map, listing its cell for `render` as the machinery's parts are listed.
+- A charge's blast reaches it through `grenade_bang` (`hinge_blast`): on
+  the plate, in the Red, it dents it, and the last cracks it. A bolt that
+  strikes a tile reaches it through `shots_update` (`hinge_struck`): the
+  core, through the crack, in the Blue, puts out a lamp, and the last ends
+  it.
+- A death reads the room again, so the fight starts again with it.
+
+## The endings
+
+Decision 59 (`src/endings.6502`). When the core takes its last bolt,
+`hinge_win` takes the machine: everything but Ash goes, the Hinge's cells
+(those with both phases' bits) are cleared a column at a time and drawn
+as parts, each of the room's colours goes black in turn from the top
+(`set_colours` again each time), then every colour goes white. The words
+follow on cards (`cards`, in `src/game.6502`): each a count of lines, then
+the lines, centred in a frame sized to them (`card_lines`), the last one
+THE END, with a second Prism dotted under it (`dot`), which waits for a key
+before a new game. Out of lives, `game_over`
+shows its own cards after its phrase. The words are in RSDATA with the
+sector cards' (`src/text.6502`).
+
 ## Phases
 
 - Every tile has flags (`gfx/tiles.txt`). `red` or `blue` makes it exist in
@@ -232,6 +281,9 @@ entered (decision 30).
 - A shift redraws only the phase tiles (`draw_room_phase`).
 - Enemies belong to a phase too (`type_phase` in `src/things.6502`). Out of
   it they're drawn as their ghost sprite and can't touch or be touched.
+- A tile with a Blue Phase picture of its own (the Hinge's) is another
+  thing in each phase, solid in both: it points at that picture in the
+  Blue's table, and a shift draws it again too (see "THE HINGE").
 
 ## Looks
 

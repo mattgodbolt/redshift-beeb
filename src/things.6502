@@ -64,6 +64,8 @@ ASSERT PL_H - 16 + SENTRY_GUN + 3 <= PL_CROUCH_TOP   ; (a sergeant is 16 high)
     LDA #0 : STA th_boom,X
 .next_clear
     DEX : BNE clear
+    STX hinge_on                    ; (0: until the room's list has it)
+    ASSERT PL = 0
     LDA things_ptr : STA rd_ptr
     LDA things_ptr+1 : STA rd_ptr+1
     JSR rd_byte : STA st_n
@@ -83,6 +85,11 @@ ASSERT PL_H - 16 + SENTRY_GUN + 3 <= PL_CROUCH_TOP   ; (a sergeant is 16 high)
     LDX room : LDY st_k
     PHA : LDA room_gone,X : AND bit_masks,Y : TAY : PLA
     CPY #0 : BNE skip
+    \ The Hinge is tiles, not a thing: it takes no slot (hinge.6502).
+    CMP #TH_HINGE : BNE a_thing
+    LDA st_x : LDY st_y : JSR hinge_spawn
+    JMP skip
+.a_thing
     PHA : LDA st_k : CLC : ADC #TH0 : TAX : PLA
     STA th_type,X
     TAY
@@ -861,6 +868,7 @@ ASSERT P% - shard_aim_y = NTH AND shard_aim_y - shard_aim_x = NTH
     \ The tiles: centred on the boom's middle.
     LDA obj_x + GR : CLC : ADC #4 : LSR A : LSR A : STA gb_cx
     LDA obj_y + GR : CLC : ADC #8 : LSR A : LSR A : LSR A : STA gb_ry
+    TAY : LDA gb_cx : JSR hinge_blast   ; (the Hinge's plate)
     LDA #0 : STA gb_broke
     LDA gb_ry : SEC : SBC #1 : STA gb_r
 .row

@@ -176,6 +176,26 @@ MAX_ROOMS = 64
 \ Each row of the rectangle being drawn: where it starts in the target.
 .trow_lo    SKIP MAP_H
 .trow_hi    SKIP MAP_H
+\ THE HINGE (hinge.6502), while it's in the room.
+HG_ROUNDS = 3               ; bolts its core takes: a visor lamp each
+.hinge_on   SKIP 1          ; non-zero: it's here (spawn_things)
+.hg_won     SKIP 1          ; non-zero: its core has taken its last bolt
+.hg_round   SKIP 1          ; bolts its core has taken
+.hg_plate   SKIP 1          ; charges its plate has taken this round
+.hg_open    SKIP 1          ; frames left of the crack, 0 while it's shut
+.hg_gun_t   SKIP 1          ; the gun's clock
+.hg_shed_t  SKIP 1          ; the bud's clock
+.hg_shown   SKIP 1          ; the plate's look on the map (HP_*)
+.hg_warn    SKIP 1          ; what's lit: bit 0 the gun, bit 1 the bud
+.hg_hx      SKIP 1          ; the heart's top cell: the plate's in the Red,
+.hg_hy      SKIP 1          ; the core's in the Blue
+.hg_mx      SKIP 1          ; the gun's muzzle, &FF none
+.hg_my      SKIP 1
+.hg_bx      SKIP 1          ; the bud, &FF none
+.hg_by      SKIP 1
+.hg_lamps   SKIP 1          ; lamps in its visor, HG_ROUNDS at most
+.hg_lx      SKIP HG_ROUNDS  ; each lamp's cell
+.hg_ly      SKIP HG_ROUNDS
 
 \ The compose buffer (render.6502): a rectangle of the screen is put
 \ together here, then copied out, so each screen byte is written once.

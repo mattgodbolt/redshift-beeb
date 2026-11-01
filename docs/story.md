@@ -134,7 +134,8 @@ The rules, as Morrell's harness manual gives them:
 - **Mood:** past Bore Nine the rock stops. White walls, true angles, a hum you
   feel in your fillings, and floors that are there in only one phase.
 - **Look:** the Prism's walls are white in both phases, between thin bands of
-  every colour: red, magenta, yellow in the Red; blue, green, cyan in the Blue.
+  every colour: red, magenta, yellow in the Red; blue and cyan in the Blue
+  (green is acid's alone).
 - **Rooms:** FIRST FACET, THE REFRACTOR, CRITICAL ANGLE, DOUBLE IMAGE, SPECTRUM
   WALK, INTERFERENCE, FOCAL LENGTH, THE DARK FRINGE, THE HINGE.
 - **Hazards and enemies:** floors of alternating Red and Blue blocks, so Ash
@@ -236,7 +237,25 @@ THE ROCK STOPS HERE.
 WHATEVER IT IS, IT'S AWAKE.
 ```
 
-Game over: `OUT OF LIVES. OUT OF PHASE.`
+Game over: `OUT OF LIVES. OUT OF PHASE.` in the status bar, under its
+phrase, then the out-of-lives ending on two cards. A card's lines sit inside
+its frame, so they're at most 28 characters (`CARD_LINE`), and each card is
+blank-line separated here:
+
+```
+THE HARNESS CRACKS ITS LAST
+CELL AND STOPS CHOOSING.
+ASH GOES WHERE THE NIGHT
+SHIFT WENT: INTO NEITHER
+PHASE, A DOTTED OUTLINE ON
+NOBODY'S VISOR.
+
+THE SPLIT CLIMBS THE SHAFT.
+TALLIS DEEPWORKS RECORDS
+THE LOSS OF KHARON-4 IN ITS
+QUARTERLY REPORT,
+UNDER OTHER.
+```
 
 A disc error at a sector's load, around the DFS's own message:
 
@@ -247,17 +266,26 @@ PUT THE REDSHIFT DISC BACK IN
 AND PRESS SPACE TO TRY AGAIN.
 ```
 
-Victory:
+Victory, on four cards after the Hinge folds shut and the Prism goes dark
+(the same words, broken to fit inside a card's frame); the last, THE END,
+waits for a key:
 
 ```
-THE HINGE FOLDS SHUT. THE PRISM
-GOES DARK, FACET BY FACET, AND
-THE TWO MINES SLIDE BACK INTO
-ONE. THE LAMPS COME UP WHITE.
-AT BORE NINE, FORTY-ONE MINERS
-ASK WHY IT'S GONE SO QUIET.
-THEIR SHIFT ENDED SIX WEEKS AGO.
+THE HINGE FOLDS SHUT.
+THE PRISM GOES DARK,
+FACET BY FACET, AND THE TWO
+MINES SLIDE BACK INTO ONE.
+THE LAMPS COME UP WHITE.
+
+AT BORE NINE, FORTY-ONE
+MINERS ASK WHY IT'S GONE
+SO QUIET. THEIR SHIFT
+ENDED SIX WEEKS AGO.
+
 WELL DONE, TROOPER CALDER.
-BUT YOUR VISOR STILL SHOWS ONE
-THING BELOW, IN DOTTED LINES.
+BUT YOUR VISOR STILL SHOWS
+ONE THING BELOW,
+IN DOTTED LINES.
+
+THE END
 ```

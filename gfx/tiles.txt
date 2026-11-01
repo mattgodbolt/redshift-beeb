@@ -3,6 +3,7 @@
 #   tile <key> <name> [flags...]      then 8 lines of 8 pixels (none with as=)
 #   variant <key> <when>              then 8 lines: how tile <key> looks where <when> holds
 #   alt <key> <when>                  then 8 lines: another look for that <when>, used now and then
+#   blue <key>                        then 8 lines: tile <key>'s picture in the Blue Phase
 #
 # The key is the character that stands for the tile in rooms/rooms.txt
 # ("space" for the empty tile, which must come first): any one character,
@@ -43,6 +44,14 @@
 # art lines and no looks of its own, and a cell of it is drawn as that tile
 # would be there. Machinery that looks like something already drawn (a
 # truck that drives itself) costs no looks.
+#
+# A "blue" block makes a tile another thing in each phase (decision 58):
+# its lines as written in the Red, that block's in the Blue, in the same
+# cells with the same flags, so it's solid (or not) in both. It isn't a
+# phase's own (no red or blue flag), and has no variants or alts. The
+# Hinge is built of them. then=<key> names the tile the game's code turns
+# it into next (the Hinge's states): its looks go wherever this one's do,
+# and mkgfx.py names them for the code.
 #
 # A tile's variants are its looks for where it is, chosen when the rooms
 # are built (gfxlib.resolve), so a room is drawn with just the keys:
@@ -2806,3 +2815,543 @@ tile Λ hungrcomes beat=ψ as=space
 tile Γ bodylcomes beat=Θ as=space
 tile Π bodyrcomes beat=θ as=space
 tile Σ chaincomes beat=ϡ as=space
+
+# --- Inside the Prism (Sector 5). Past Bore Nine the rock stops: the Prism's
+# --- own white faces, true-angled, in both phases. A room makes 2 white and
+# --- bands 1 down the screen in the colours the Prism splits light into
+# --- (decision 58), so the faces are white between thin lines of colour.
+
+# The Prism's face: white, cut into diamonds by its facets (a 16-pixel
+# lattice, tl tr bl br as the back wall is), and white to its edge, so it
+# needs no lip: the line between it and the dark is enough. Solid, in both
+# phases.
+tile ϟ prism solid
+22222221
+22222212
+22222122
+22221222
+22212222
+22122222
+21222222
+12222222
+variant ϟ tr
+12222222
+21222222
+22122222
+22212222
+22221222
+22222122
+22222212
+22222221
+variant ϟ bl
+12222222
+21222222
+22122222
+22212222
+22221222
+22222122
+22222212
+22222221
+variant ϟ br
+22222221
+22222212
+22222122
+22221222
+22212222
+22122222
+21222222
+12222222
+# ---
+# --- THE HINGE (decision 58): the one thing in the mine that's in both
+# --- phases at once, so each of its tiles is another picture in each (a
+# --- "blue" block): in the Red a Drill Sergeant the size of a house, an
+# --- octagonal drill head with its visor, its gun and its plate; in the
+# --- Blue a crystal bloom, closed, with a bud on top that sheds Slivers.
+# --- Both share one heart: the plate in the Red is the crystal over the
+# --- core in the Blue. src/hinge.6502 turns its tiles into the next in
+# --- their chains (then=): the plate dented, cracked open on the core,
+# --- the crack closing; the gun lit before it fires and the bud before it
+# --- sheds; a visor lamp out for each bolt the core takes. Its tiles are
+# --- solid in both phases, its looks the sector's own, and the chains'
+# --- looks follow each other in number (the ASSERTs in hinge.6502).
+# --- Drawn in the body colour, which the room bands; its lit edges and
+# --- what matters, the lamps, the gun's flash, the core, white.
+# --- The plate's two cells (the thing "hinge" marks the top one), whole:
+# --- riveted, framed. In the Blue, the bloom's face, closed.
+tile Ղ hinge_heart_t solid then=Մ
+2222222.
+21111112
+21211212
+21111112
+21111112
+21111112
+21111112
+21111112
+blue Ղ
+2111111.
+221111.1
+21211.11
+2112.111
+211.2111
+21.11211
+2.111121
+21111112
+
+tile Ճ hinge_heart_b solid then=Յ
+21111112
+21111112
+21111112
+21111112
+21211212
+21111112
+22222222
+........
+blue Ճ
+2111111.
+221111.1
+21211.11
+2112.111
+211.2111
+21.11211
+2.111121
+21111112
+
+# A charge has dented it: a rivet gone, a blast mark. The Blue's face as it was.
+tile Մ hinge_dent_t solid then=Ն
+2222222.
+21111112
+21.11212
+211.1.12
+2111.112
+211.1.12
+21111112
+21111112
+blue Մ
+2111111.
+221111.1
+21211.11
+2112.111
+211.2111
+21.11211
+2.111121
+21111112
+
+tile Յ hinge_dent_b solid then=Շ
+21111112
+2111.112
+211.1112
+21111112
+21211212
+21111112
+22222222
+........
+blue Յ
+2111111.
+221111.1
+21211.11
+2112.111
+211.2111
+21.11211
+2.111121
+21111112
+
+# Cracked: split down the middle, the core's light in the split. In the
+# Blue the crystal's open on the core, white: shoot it now.
+tile Ն hinge_open_t solid then=Ո
+222.222.
+2111.112
+211.3112
+21.33.12
+21.333.2
+211.33.2
+2111.3.2
+211.33.2
+blue Ն
+2111111.
+2111.111
+211...11
+21..3..1
+21.333.1
+2..333..
+2.33333.
+2.33333.
+
+tile Շ hinge_open_b solid then=Չ
+21.333.2
+21.33.12
+211.3.12
+2111.312
+21211.12
+211.1112
+22.22222
+........
+blue Շ
+2.33333.
+2.33333.
+2..333..
+21.333.1
+21..3..1
+211...11
+2111.111
+21111112
+
+# The crack closing: a seam, and in the Blue a slit with the core's last
+# glint in it. Then it's whole again.
+tile Ո hinge_shut_t solid
+2222222.
+21111.12
+21211.12
+2111.112
+2111.112
+21111.12
+2111.112
+2111.112
+blue Ո
+2111111.
+21111111
+2111.111
+2111.111
+211.3.11
+211.3.11
+211.3.11
+211.3.11
+
+tile Չ hinge_shut_b solid
+21111.12
+21111.12
+2111.112
+2111.112
+21211.12
+21111.12
+22222222
+........
+blue Չ
+211.3.11
+211.3.11
+211.3.11
+211.3.11
+2111.111
+2111.111
+21111111
+21111112
+
+# The gun's muzzle on its face, at Ash's head; lit white before it fires.
+# In the Blue, the bloom's face.
+tile Հ hinge_muzzle solid then=Ձ
+21111111
+21.222.1
+2.2...21
+2.2...11
+2.2...11
+21.111.1
+2.1.1.1.
+2.......
+blue Հ
+2111111.
+221111.1
+21211.11
+2112.111
+211.2111
+21.11211
+2.111121
+21111112
+
+tile Ձ hinge_muzzle_lit solid
+21111111
+21.222.1
+2.233321
+2.233311
+2.233311
+21.111.1
+2.1.1.1.
+2.......
+blue Ձ
+2111111.
+221111.1
+21211.11
+2112.111
+211.2111
+21.11211
+2.111121
+21111112
+
+# On its face, in the Blue, the bloom's bud: lit white before it sheds a
+# Sliver, which comes out in front of it. In the Red, its face.
+tile Ռ hinge_bud solid then=Ս
+21111111
+22111211
+21111111
+21111111
+21111111
+2.1.1.1.
+21.1.1.1
+2.......
+blue Ռ
+2111111.
+.22111.1
+2.2111.1
+.2.11.11
+2.2111.1
+.22111.1
+2.111121
+21111112
+
+tile Ս hinge_bud_lit solid
+21111111
+22111211
+21111111
+21111111
+21111111
+2.1.1.1.
+21.1.1.1
+2.......
+blue Ս
+2111111.
+.33111.1
+333311.1
+3333311.
+333311.1
+.33111.1
+2.111121
+21111112
+
+# A lamp in its visor, a seed in the crystal: one for each bolt the core
+# can take. Each bolt puts one out.
+tile Լ hinge_lamp solid then=Խ
+11111111
+11111111
+..333...
+.33333..
+.33333..
+2.333.2.
+11111111
+........
+blue Լ
+2.11111.
+2.1111.1
+2.233.11
+2.333311
+2.333311
+2..33211
+2.111121
+2.111112
+
+tile Խ hinge_lamp_dark solid
+11111111
+11111111
+..111...
+.1...1..
+.1...1..
+2.111.2.
+11111111
+........
+blue Խ
+2.11111.
+2.1111.1
+2.2...11
+2.....11
+2.....11
+2....211
+2.111121
+2.111112
+
+# The top of its head, where the bit was, a plate bolted over the socket.
+# In the Blue, the bloom's tip.
+tile Բ hinge_crown solid
+21212121
+11111111
+12111121
+1.2222.1
+1.1111.1
+1.1.1.1.
+.1.1.1.1
+........
+blue Բ
+...22...
+..2112..
+.211112.
+21111112
+12111121
+112..211
+1112.111
+111.2111
+
+# Its body: bands of riveted plate, and in the Blue the bloom's facets.
+# Its sides are cut at 45 degrees, lit on the left, an octagon in both
+# phases.
+tile Ը hinge_body solid
+11111111
+12111211
+11111111
+11111111
+11111111
+1.1.1.1.
+.1.1.1.1
+........
+blue Ը
+2111111.
+121111.1
+11211.11
+1112.111
+111.2111
+11.11211
+1.111121
+.1111112
+
+# The same, where in the Blue one petal overlaps the next: its edge, lit,
+# and the dark under it. Every other column, so the bloom is in petals.
+tile Ւ hinge_petal solid
+11111111
+12111211
+11111111
+11111111
+11111111
+1.1.1.1.
+.1.1.1.1
+........
+blue Ւ
+2.11111.
+2.1111.1
+2.211.11
+2.12.111
+2.1.2111
+2..11211
+2.111121
+2.111112
+
+tile Ա hinge_corner_l solid
+.......2
+......21
+.....211
+....2111
+...21111
+..2.1.1.
+.21.1.1.
+2.......
+blue Ա
+.......2
+......21
+.....211
+....2111
+...22111
+..211211
+.2111121
+21111112
+
+tile Գ hinge_corner_r solid
+2.......
+11......
+121.....
+1111....
+11112...
+1.1.1...
+.1.1.11.
+.......1
+blue Գ
+2.......
+11......
+112.....
+1111....
+111.2...
+11.111..
+1.11112.
+.1111111
+
+# Its face, lit down the left.
+tile Ծ hinge_face solid
+21111111
+22111211
+21111111
+21111111
+21111111
+2.1.1.1.
+21.1.1.1
+2.......
+blue Ծ
+2111111.
+221111.1
+21211.11
+2112.111
+211.2111
+21.11211
+2.111121
+21111112
+
+# Its visor: a dark slit, its lower edge lit.
+tile Ժ hinge_visor solid
+11111111
+11111111
+........
+........
+........
+2.2.2.2.
+11111111
+........
+blue Ժ
+2111111.
+121111.1
+11211.11
+1112.111
+111.2111
+11.11211
+1.111121
+.1111112
+
+tile Թ hinge_visor_l solid
+21111111
+21111111
+21......
+21......
+21......
+212.2.2.
+21111111
+2.......
+blue Թ
+2111111.
+221111.1
+21211.11
+2112.111
+211.2111
+21.11211
+2.111121
+21111112
+
+# Where it stands in the Prism's floor: a bolted collar, and in the Blue the
+# bloom's roots.
+tile Ջ hinge_collar solid
+........
+22222222
+11111111
+1.1.1.1.
+11111111
+.1.1.1.1
+........
+........
+blue Ջ
+.1111112
+1.1.1.1.
+.1.1.1.1
+1.1.1.1.
+.1...1..
+1.....1.
+........
+........
+
+tile Պ hinge_collar_l solid
+2.......
+22222222
+21111111
+2.1.1.1.
+21111111
+2.1.1.1.
+2.......
+2.......
+blue Պ
+21111112
+2.1.1.1.
+21.1.1.1
+2.1.1.1.
+21...1..
+2.....1.
+2.......
+2.......

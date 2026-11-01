@@ -34,12 +34,12 @@ def _blocks(path):
         words = raw.split()
         if words[0] == "tile" and any(w.startswith("as=") for w in words[3:]):
             h = 0               # (drawn as another tile: no art of its own)
-        elif words[0] in ("tile", "variant", "alt"):
+        elif words[0] in ("tile", "variant", "alt", "blue"):
             h = 8
         elif words[0] == "sprite":
             h = int(words[3])
         else:
-            raise SystemExit(f"{path}:{i}: expected 'tile', 'variant', 'alt' or 'sprite', got {raw!r}")
+            raise SystemExit(f"{path}:{i}: expected 'tile', 'variant', 'alt', 'blue' or 'sprite', got {raw!r}")
         art = [lines[i + k].rstrip() for k in range(h)]
         yield words, art, i
         i += h
@@ -66,6 +66,12 @@ class Tile:
         self.beat, self.switch = partners.get("beat"), partners.get("switch")
         # The tile it's drawn as (as=<key>), with no looks of its own: or None.
         self.like = like
+        # Its picture in the Blue Phase, where it's another thing in each
+        # phase (a "blue" block: the Hinge's), or None: the same in both.
+        self.blue_pixels = None
+        # The tile the game's code turns it into next (then=<key>), whose
+        # looks travel with this one's: or None (Looks, mkgfx.py's names).
+        self.then = None
 
 
 # What makes a tile machinery (decision 46): beat=<key> becomes that tile on
@@ -94,9 +100,27 @@ def read_tiles(path=ROOT / "gfx/tiles.txt"):
     keeps its variants and alts (the blocks after it that name its key). A
     tile that says as=<key> is drawn as that one, an earlier tile, with the
     same flags: it has no art, and no looks of its own (machinery that looks
-    like something already drawn costs no looks)."""
+    like something already drawn costs no looks). A "blue <key>" block is
+    that tile's picture in the Blue Phase: one thing in the Red and another
+    in the Blue, in the same cells, with the same flags in both (the
+    Hinge's, decision 58). Such a tile has no variants or alts, and isn't a
+    phase's own. then=<key> names the tile the game's code turns it into
+    next (the Hinge's), whose looks go wherever this one's do."""
     tiles = []
     for words, art, line in _blocks(path):
+        if words[0] == "blue":
+            where = f"{path}:{line}"
+            if len(words) != 2:
+                raise SystemExit(f"{where}: blue <key>")
+            key = " " if words[1] == "space" else words[1]
+            base = next((t for t in tiles if t.key == key), None)
+            if base is None:
+                raise SystemExit(f"{where}: no tile {words[1]!r} before this")
+            if base.like is not None or base.blue_pixels is not None or base.flags & {"red", "blue"}:
+                raise SystemExit(f"{where}: tile {base.name} can't have a Blue Phase picture of its own: it's "
+                                 "drawn as another, has one already, or is only in one phase")
+            base.blue_pixels = _pixels(art, 8, where)
+            continue
         if words[0] in ("variant", "alt"):
             where = f"{path}:{line}"
             if len(words) != 3:
@@ -127,12 +151,17 @@ def read_tiles(path=ROOT / "gfx/tiles.txt"):
         bad = flags - set(TILE_FLAGS)
         if bad:
             raise SystemExit(f"{path}:{line}: unknown flags {bad}")
-        partners, like = {}, None
+        partners, like, then = {}, None, None
         for w in words[3:]:
             what, eq, other = w.partition("=")
             if not eq:
                 continue
             other = " " if other == "space" else other
+            if what == "then":
+                if then is not None or len(other) != 1:
+                    raise SystemExit(f"{path}:{line}: a tile may say then=<key>, once: got {w!r}")
+                then = other
+                continue
             if what == "as":
                 base = next((t for t in tiles if t.key == other), None)
                 if like is not None or base is None or base.like is not None:
@@ -147,6 +176,7 @@ def read_tiles(path=ROOT / "gfx/tiles.txt"):
             partners[what] = other
         pixels = like.pixels if like else _pixels(art, 8, f"{path}:{line}")
         tiles.append(Tile(key, words[2], flags, pixels, "shared" in plain, partners, like and like.key))
+        tiles[-1].then = then
     if not tiles or tiles[0].key != " ":
         raise SystemExit(f"{path}: the first tile must be 'space'")
     keys = [t.key for t in tiles]
@@ -154,6 +184,10 @@ def read_tiles(path=ROOT / "gfx/tiles.txt"):
         raise SystemExit(f"{path}: duplicate tile keys")
     by = {t.key: t for t in tiles}
     for t in tiles:
+        if t.blue_pixels is not None and (t.variants or t.alts):
+            raise SystemExit(f"{path}: tile {t.name} has a Blue Phase picture, so no variants or alts")
+        if t.then is not None and (t.then not in by or by[t.then].like is not None):
+            raise SystemExit(f"{path}: tile {t.name}: then={t.then!r} isn't a tile with looks of its own")
         for what in MACHINES:
             other = getattr(t, what)
             if other is None:
@@ -279,6 +313,8 @@ class Look:
     def __init__(self, index, tile, when, alt, pixels, sector=None):
         self.index, self.tile, self.when, self.alt, self.pixels = index, tile, when, alt, pixels
         self.key, self.flags, self.sector = tile.key, tile.flags, sector
+        # (Its Blue Phase picture, if it's another thing there: Tile's.)
+        self.blue_pixels = tile.blue_pixels if when == "base" and alt is None else None
         self.name = tile.name
         if when != "base":
             self.name += "_" + when.replace("+", "_")
@@ -332,10 +368,15 @@ class Looks:
         by = {t.key: t for t in tiles}
 
         def use(c, sector):
+            if sector in used.get(c, ()):
+                return
             used.setdefault(c, set()).add(sector)
-            # (A tile drawn as another uses that one's looks.)
+            # (A tile drawn as another uses that one's looks, and one the
+            # game's code turns it into, then=, that one's.)
             if c in by and by[c].like is not None:
-                used.setdefault(by[c].like, set()).add(sector)
+                use(by[c].like, sector)
+            if c in by and by[c].then is not None:
+                use(by[c].then, sector)
         for r in rooms:
             for line in r.map:
                 for c in line:
@@ -378,16 +419,30 @@ class Looks:
 
 def look_blocks(lks):
     """These looks' graphics, 16 bytes each (tile_bytes) in their order,
-    then the dotted outlines of the phase ones; and each look's block in
-    the Red Phase and in the Blue (out of its phase, its outline)."""
-    blocks = [tile_bytes(lk.pixels) for lk in lks]
+    then the dotted outlines of the phase ones, then the Blue Phase pictures
+    of those that are another thing there (each, unless it's a block
+    already); and each look's block in the Red Phase and in the Blue (out of
+    its phase, its outline). (A Red Phase picture of a look that's another
+    thing in the Blue is stored once too, if another look has it.)"""
+    blocks, pic = [], []
+    for lk in lks:
+        b = tile_bytes(lk.pixels)
+        if lk.blue_pixels is None or b not in blocks:
+            blocks.append(b)
+        pic.append(len(blocks) - 1 if lk.blue_pixels is None else blocks.index(b))
     hollow_of = {}
     for i, lk in enumerate(lks):
         if lk.flags & {"red", "blue"}:
             hollow_of[i] = len(blocks)
             blocks.append(tile_bytes(ghost_tile(lk.pixels)))
-    red = [hollow_of[i] if "blue" in lk.flags else i for i, lk in enumerate(lks)]
-    blue = [hollow_of[i] if "red" in lk.flags else i for i, lk in enumerate(lks)]
+    red = [hollow_of[i] if "blue" in lk.flags else pic[i] for i, lk in enumerate(lks)]
+    blue = [hollow_of[i] if "red" in lk.flags else pic[i] for i, lk in enumerate(lks)]
+    for i, lk in enumerate(lks):
+        if lk.blue_pixels is not None:
+            b = tile_bytes(lk.blue_pixels)
+            if b not in blocks:
+                blocks.append(b)
+            blue[i] = blocks.index(b)
     return blocks, red, blue
 
 

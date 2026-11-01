@@ -16,8 +16,8 @@ A teletext title page, then four sectors of nine rooms each: THE LEACH
 WORKS, from the LANDING ZONE down to the cage in the SKIP SHAFT; THE
 MARSHALLING YARD, from the ENGINE SHED to the CRUSHER'S MOUTH; THE SUMP,
 from the OUTFALL down THE PLUGHOLE; and THE SPAR SEAMS, from THE MOTHER
-LODE down to BORE NINE. The cage loads each sector from the disc as it
-takes Ash down. Each **SHIFT** costs a phase cell. Blocks and enemies of
+LODE down to BORE NINE. Then, inside the Prism, THE HINGE, and the end.
+The cage loads each sector from the disc as it takes Ash down. Each **SHIFT** costs a phase cell. Blocks and enemies of
 the other phase are dotted ghosts: you walk through them, and they can't
 touch you. Green is always acid, the Sump's red water boils only in the
 Red Phase, and in the Spar Seams the Blue's crystal grows and draws back.
@@ -231,8 +231,23 @@ outline and its eyes.
    crystal grown over the shaft down.
 9. **BORE NINE.** Two Drill Sergeants dug in round the drill, the Blue's
    crystal on the floor between them, a swarm in the drill shaft, and the
-   shaft itself is the cage, down to Sector 5, which is as far as the game
-   goes for now.
+   shaft itself is the cage, straight into the Prism.
+
+## Sector 5, inside the Prism
+
+<table>
+<tr><td><img src="docs/media/hinge_red.png" alt="The Hinge in the Red Phase, from the pillar"></td>
+<td><img src="docs/media/hinge_blue.png" alt="The Hinge in the Blue Phase"></td></tr>
+</table>
+
+Past Bore Nine the rock stops: white faces, true angles, and bands of every
+colour the Prism splits light into. For now the sector is its last room,
+**THE HINGE**, at the Prism's focus: the one thing in the mine that's in
+both phases at once, and what it is depends on which phase you're standing
+in. Its floor is a patchwork of the Red's blocks and the Blue's, so every
+shift is also a choice of where you'll be standing. It warns before it
+fires. How it dies is for you to find out; the end of the story is behind
+it. The sector's other eight rooms come next.
 
 ## The idea
 

@@ -13,9 +13,16 @@ look number, the shared and that sector's own, NTILES long, where main.6502
 says (tiles_red ... attr_blue):
     tiles_red, tiles_blue   each phase's pointer to a look's graphics (low
                             bytes, then high bytes), so drawing a look in
-                            either phase is one lookup
-    tile_attr               its flags (TF_*)
+                            either phase is one lookup; a look that's another
+                            thing in the Blue (a "blue" block, the Hinge's)
+                            points at that picture there
+    tile_attr               its flags (TF_*); a look that's another thing in
+                            each phase has both TF_RED and TF_BLUE, so a
+                            shift draws it again
     attr_red, attr_blue     its flags in each phase: out of its phase, none
+The look numbers are named for the code (T_<NAME>): the shared looks', and
+a sector's own in a then= chain (the Hinge's), which mean them only while
+that sector is loaded.
 
 Sprites: four versions each, column by column (each column's bytes top
 to bottom, then the next): facing right at an even byte, facing right two
@@ -31,6 +38,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gfxlib as g  # noqa: E402
 
 FLAG_BITS = {"solid": 1, "hazard": 2, "breakable": 4, "red": 8, "blue": 16}
+DUAL_BITS = FLAG_BITS["red"] | FLAG_BITS["blue"]
 
 
 def eqb(values, per=16):
@@ -107,6 +115,13 @@ def main():
         out.append(eqb(b))
     for lk in lks.shared:
         out.append(f"T_{lk.name.upper()} = {lk.index}")
+    # The looks the game's code turns tiles into (then=, the Hinge's), named
+    # too: a sector's own, so their numbers mean them only while it's loaded.
+    chained = {t.key for t in tiles if t.then is not None} | {t.then for t in tiles if t.then is not None}
+    for s, own in lks.own.items():
+        for lk in own:
+            if lk.key in chained:
+                out.append(f"T_{lk.name.upper()} = {lk.index}      \\ (Sector {s}'s)")
 
     # Each sector's looks file: the tables, then its own looks' graphics.
     out_dir = Path(a.out).parent
@@ -119,7 +134,10 @@ def main():
                 + ["tile_gfx"] * pad
                 for phase, shared, mine in (("red", red, ored), ("blue", blue, oblue))}
         every = lks.shared + own
-        attr = [sum(FLAG_BITS[f] for f in lk.flags) for lk in every] + [0] * pad
+        # (A look that's another thing in each phase has both phases' bits in
+        # tile_attr, so a shift draws it again, as it does a phase's own.)
+        attr = [sum(FLAG_BITS[f] for f in lk.flags) + (lk.blue_pixels is not None) * DUAL_BITS
+                for lk in every] + [0] * pad
         # What each look is in each phase: out of its phase, nothing at all.
         phased = {phase: [0 if other in lk.flags else a for lk, a in zip(every, attr)] + [0] * pad
                   for phase, other in (("red", "blue"), ("blue", "red"))}
@@ -176,6 +194,7 @@ def main():
         every = lks.shared + [lk for s in lks.own for lk in lks.own[s]]
         imgs = [(lk.name, lk.pixels) for lk in every]
         imgs += [(lk.name + "~", g.ghost_tile(lk.pixels)) for lk in every if lk.flags & {"red", "blue"}]
+        imgs += [(lk.name + "/b", lk.blue_pixels) for lk in every if lk.blue_pixels is not None]
         preview(p / "tiles.png", imgs, scale=6)
         preview(p / "sprites.png", [(s.name, s.pixels) for s in sprites], scale=5)
 

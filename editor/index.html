@@ -351,12 +351,15 @@ const WHENS = ['deep', 'ceiling', 'tl', 'tr', 'bl', 'br', 'exit_left', 'exit_rig
 const SPRITE_FLAGS = ['phase', 'mirror'];
 // tools/mkrooms.py's list. The page reads the live one from there when it can, and check.mjs fails
 // if this copy falls behind.
-const THING_TYPES = ['sentry', 'drone', 'crawler', 'shard', 'cell', 'grenades', 'life', 'exit', 'lever', 'plate'];
+const THING_TYPES = ['sentry', 'drone', 'crawler', 'shard', 'cell', 'grenades', 'life', 'exit', 'lever', 'plate',
+  'hinge'];
 // mkrooms.py's THING_BOX, kept the same way: each type's width, and the lines it reaches above and
-// below its tile row's top (the drone bobs, a pickup rises 2 lines).
+// below its tile row's top (the drone bobs, a pickup rises 2 lines). The Hinge is tiles: its thing
+// marks its heart, two cells tall.
 const THING_BOX = {
   sentry: [16, 0, 16], drone: [16, -4, 14], crawler: [16, 0, 16], shard: [8, 0, 8], cell: [8, -2, 8],
   grenades: [8, -2, 8], life: [8, -2, 8], exit: [16, 0, 24], lever: [8, 0, 16], plate: [16, 0, 8],
+  hinge: [8, 0, 16],
 };
 // mkrooms.py's SWITCH_THINGS: what throws a room's switch (decision 46).
 const SWITCH_THINGS = ['lever', 'plate'];
@@ -446,7 +449,10 @@ function parseGfx(text, fname) {
     const where = `${fname}:${i}`;
     const words = raw.split(/\s+/);
     let w, h;
-    if (words[0] === 'tile' || words[0] === 'variant' || words[0] === 'alt') {
+    if (words[0] === 'blue') {
+      if (words.length !== 2) fail(where, 'blue <key>');
+      w = h = 8;
+    } else if (words[0] === 'tile' || words[0] === 'variant' || words[0] === 'alt') {
       if (words.length < 3) fail(where, words[0] === 'tile' ? 'tile <key> <name> [flags]' : `${words[0]} <key> <when>`);
       w = h = 8;
       // (A tile drawn as another, as=<key>, has no art of its own.)
@@ -457,7 +463,7 @@ function parseGfx(text, fname) {
       h = wholeNumber(words[3], where);
       if (w < 1 || h < 1) fail(where, 'a sprite is at least 1x1');
     } else {
-      fail(where, `expected 'tile', 'variant', 'alt' or 'sprite', got '${raw}'`);
+      fail(where, `expected 'tile', 'variant', 'alt', 'blue' or 'sprite', got '${raw}'`);
     }
     if (i + h > lines.length) fail(where, `the art wants ${h} lines`);
     const pixels = lines.slice(i, i + h).map((line, k) => {
@@ -466,7 +472,17 @@ function parseGfx(text, fname) {
       return Array.from(line, c => (c === '.' ? 0 : +c));
     });
     i += h;
-    if (words[0] === 'variant' || words[0] === 'alt') {
+    if (words[0] === 'blue') {
+      // gfxlib's: the tile's picture in the Blue Phase, where it's another thing (the Hinge's).
+      const key = words[1] === 'space' ? ' ' : words[1];
+      const base = tiles.find(t => t.key === key);
+      if (!base) fail(where, `no tile '${words[1]}' before this`);
+      if (base.like != null || base.bluePixels || base.flags.includes('red') || base.flags.includes('blue')) {
+        fail(where, `tile ${base.name} can't have a Blue Phase picture of its own: it's drawn as another, has one already, ` +
+          'or is only in one phase');
+      }
+      base.bluePixels = pixels;
+    } else if (words[0] === 'variant' || words[0] === 'alt') {
       if (words.length !== 3) fail(where, `${words[0]} <key> <when>`);
       const key = words[1] === 'space' ? ' ' : words[1];
       const base = tiles.find(t => t.key === key);
@@ -488,9 +504,15 @@ function parseGfx(text, fname) {
       // What it becomes as machinery: beat=<key> or switch=<key>, once. And the earlier tile it's drawn
       // as, as=<key>, with its flags: then it has that one's looks, and none of its own.
       const t = {key, name: words[2], flags, shared: plain.includes('shared'), pixels, hollow: h ? ghostTile(pixels) : null,
-        variants: [], alts: {}, beat: null, switch: null, like: null};
+        variants: [], alts: {}, beat: null, switch: null, like: null, bluePixels: null, then: null};
       for (const w of words.slice(3).filter(x => x.includes('='))) {
         const eq = w.indexOf('='), what = w.slice(0, eq), other = w.slice(eq + 1) === 'space' ? ' ' : w.slice(eq + 1);
+        // (then=<key>: what the game's code turns it into next, whose looks go where this one's do.)
+        if (what === 'then') {
+          if (t.then != null || other.length !== 1) fail(where, `a tile may say then=<key>, once: got '${w}'`);
+          t.then = other;
+          continue;
+        }
         if (what === 'as') {
           const base = tiles.find(x => x.key === other);
           if (t.like != null || !base || base.like != null) {
@@ -531,6 +553,12 @@ function parseTiles(text, fname = 'gfx/tiles.txt') {
   // Machinery becomes a tile that's there, and can't be breakable, nor become it: a blast would come undone.
   const by = new Map(tiles.map(t => [t.key, t]));
   for (const t of tiles) {
+    if (t.bluePixels && (t.variants.length || Object.keys(t.alts).length)) {
+      fail(fname, `tile ${t.name} has a Blue Phase picture, so no variants or alts`);
+    }
+    if (t.then != null && (!by.has(t.then) || by.get(t.then).like != null)) {
+      fail(fname, `tile ${t.name}: then='${t.then}' isn't a tile with looks of its own`);
+    }
     for (const what of MACHINES) {
       if (t[what] == null) continue;
       const other = by.get(t[what]);
@@ -881,7 +909,8 @@ function renderRoom(room, tileMap, phase, buf, state = [0, 0]) {
   for (let ty = 0; ty < MAP_H; ty++) {
     for (let tx = 0; tx < MAP_W; tx++) {
       const t = grid[ty][tx];
-      const pix = t ? (t.flags.includes(other) ? t.hollow : t.pixels) : null;
+      // (A tile that's another thing in the Blue Phase, the Hinge's, has its picture there.)
+      const pix = t ? (t.flags.includes(other) ? t.hollow : phase && t.bluePixels ? t.bluePixels : t.pixels) : null;
       for (let y = 0; y < 8; y++) {
         const p = pal[ty * 8 + y];
         let o = ((ty * 8 + y) * WIDTH + tx * 8) * 4;
@@ -941,9 +970,12 @@ function lookCounts(doc, tiles) {
   const sector = sectors(doc), used = new Map(), own = new Map(), by = new Map(tiles.map(t => [t.key, t]));
   const use = (c, s) => {
     if (!used.has(c)) used.set(c, new Set());
+    if (used.get(c).has(s)) return;
     used.get(c).add(s);
-    // (A tile drawn as another uses that one's looks.)
+    // (A tile drawn as another uses that one's looks, and one the game's code turns it into, then=,
+    // that one's.)
     if (by.has(c) && by.get(c).like != null) use(by.get(c).like, s);
+    if (by.has(c) && by.get(c).then != null) use(by.get(c).then, s);
   };
   doc.rooms.forEach((r, k) => {
     own.set(sector[k], 0);
@@ -1022,6 +1054,7 @@ function validate(doc, tiles, thingTypes = THING_TYPES, thingBox = THING_BOX) {
       last = b.line;
     }
     if (r.things.length > MAX_THINGS) add('error', k, `It has ${r.things.length} things: at most ${MAX_THINGS} fit in a room.`);
+    if (r.things.filter(t => t.type === 'hinge').length > 1) add('error', k, 'It has more than one hinge: the game keeps one.');
     r.things.forEach((t, i) => {
       const what = `Thing ${i + 1} (${t.type})`;
       if (!thingTypes.includes(t.type)) {
@@ -1103,11 +1136,11 @@ let THING_TYPES = RS.THING_TYPES.slice(), THING_BOX = {...RS.THING_BOX};
 const THING_LOOK = {
   sentry: ['sentry', 1, 0], drone: ['drone0', 1, 0], crawler: ['crawler0', 1, 0], shard: ['shard0', 2, 0],
   cell: ['cell0', 0, 0], grenades: ['grenades0', 0, 0], life: ['life0', 0, 0], exit: [null, 0, 0],
-  lever: ['lever0', 0, 0], plate: ['plate0', 0, 0],
+  lever: ['lever0', 0, 0], plate: ['plate0', 0, 0], hinge: [null, 0, 0],
 };
 const THING_COLOURS = {
   sentry: '#ff8a65', drone: '#ffd54f', crawler: '#aed581', shard: '#4fc3f7', cell: '#81c784',
-  grenades: '#ce93d8', life: '#f48fb1', exit: '#ffffff', lever: '#ffb74d', plate: '#ffb74d',
+  grenades: '#ce93d8', life: '#f48fb1', exit: '#ffffff', lever: '#ffb74d', plate: '#ffb74d', hinge: '#ff5252',
 };
 // The machinery's parts, outlined: what moves on the beat, and what a switch throws.
 const PART_COLOURS = {beat: '#ffb74d', switch: '#4dd0e1'};
@@ -1571,9 +1604,11 @@ function buildThingTypes() {
 }
 function paintPalette() {
   const pal = topPalette();
+  // (A tile that's another thing in the Blue Phase shows its picture there while the view's in it.)
+  const shown = t => (ui.phase && t.bluePixels ? t.bluePixels : t.pixels);
   for (const b of $('palette').children) {
     const t = tileMap.get(b.dataset.key), c = b.querySelector('canvas');
-    paintPixels(c, t.pixels, pal, +c.dataset.k);
+    paintPixels(c, shown(t), pal, +c.dataset.k);
   }
   for (const b of $('thingTypes').children) {
     const c = b.querySelector('canvas');
@@ -1586,7 +1621,7 @@ function paintPalette() {
   box.textContent = '';
   if (!t) return;
   const c = h('canvas');
-  paintPixels(c, t.pixels, pal, sizeCrisp(c, 8, 8, 5));
+  paintPixels(c, shown(t), pal, sizeCrisp(c, 8, 8, 5));
   box.append(c, h('div', {class: 'what'}, h('b', {}, keyLabel(t.key)), ' ', t.name, h('br'),
     h('span', {class: 'muted'}, t.flags.length ? t.flags.join(', ') : 'scenery')));
 }

@@ -117,8 +117,9 @@ su_ptr = map_row                    ; (fixed zero page: not drawing now)
 \ The effects (sound_play's A).
 SFX_FIRE = 0 : SFX_DIE = 1 : SFX_BUZZ = 2 : SFX_PING = 3
 SFX_BOOM = 4 : SFX_TAKE = 5 : SFX_ZAP = 6 : SFX_SHIFT_RED = 7 : SFX_SHIFT_BLUE = 8
-SFX_FALL = 9 : SFX_LIFE = 10 : SFX_CLANK = 11
+SFX_FALL = 9 : SFX_LIFE = 10 : SFX_CLANK = 11 : SFX_CRACK = 12
 
+.sound_crack : PHA : LDA #SFX_CRACK : JMP play_it
 .sound_clank : PHA : LDA #SFX_CLANK : JMP play_it
 .sound_fire  : PHA : LDA #SFX_FIRE : JMP play_it
 .sound_die   : PHA : LDA #SFX_DIE : JMP play_it
@@ -207,9 +208,16 @@ ENDMACRO
     EQUB V_NOISE + &10
     NOISE 2, 1 : NOISE 5, 2 : NOISE 9, 2 : NOISE 13, 2
     END_SFX
+\ The Hinge's crystal (decision 58): its plate cracking, its core struck, a
+\ Sliver shed. Glass, ringing down from B6 to E6 and away: notes the shift
+\ leaves alone, as a pickup's are.
+.sfx_crack
+    EQUB V_TONE1 + &40
+    TONE 1, 63 : TONE 2, 63 : TONE 3, 95 : TONE 5, 95 : TONE 7, 95 : TONE 10, 95 : TONE 13, 95
+    END_SFX
 .sfx_lo EQUB LO(sfx_fire), LO(sfx_die), LO(sfx_buzz), LO(sfx_ping), LO(sfx_boom)
         EQUB LO(sfx_take), LO(sfx_zap), LO(sfx_shift_red), LO(sfx_shift_blue), LO(sfx_fall)
-        EQUB LO(sfx_life), LO(sfx_clank)
+        EQUB LO(sfx_life), LO(sfx_clank), LO(sfx_crack)
 .sfx_hi EQUB HI(sfx_fire), HI(sfx_die), HI(sfx_buzz), HI(sfx_ping), HI(sfx_boom)
         EQUB HI(sfx_take), HI(sfx_zap), HI(sfx_shift_red), HI(sfx_shift_blue), HI(sfx_fall)
-        EQUB HI(sfx_life), HI(sfx_clank)
+        EQUB HI(sfx_life), HI(sfx_clank), HI(sfx_crack)

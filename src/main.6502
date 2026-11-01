@@ -107,8 +107,10 @@ SECTION Loader, org = &1900, load = &FFFF1900, exec = &FFFF0000 + loader, filena
     INCLUDE "player.6502"
     INCLUDE "things.6502"
     INCLUDE "machines.6502"
+    INCLUDE "hinge.6502"
     INCLUDE "status.6502"
     INCLUDE "game.6502"
+    INCLUDE "endings.6502"
     INCLUDE "sector.6502"
 \ The OS's font, characters 32-95 (startup.6502's grab_font), with a byte
 \ before it for OSWORD 10's block.

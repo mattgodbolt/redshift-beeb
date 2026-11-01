@@ -207,22 +207,23 @@ else {
 
 // --- Made-up rooms, for what the real ones don't have yet -----------------------------------------
 
-// Every tile, split between alpha (Sector 2), gamma (Sector 3) and delta (Sector 4): each is drawn,
-// and each is one sector's own, so each sector's looks stay within what the game can number
-// (decision 43). The splits are where the looks they'd own (a tile's own, its variants and alts)
-// come out about even, in thirds, as there are three sectors' kits to share out. (A tile drawn as
-// another owns none.)
+// Every tile, split between alpha (Sector 2), gamma (Sector 3), delta (Sector 4) and epsilon (Sector
+// 5): each is drawn, and each is one sector's own, so each sector's looks stay within what the game
+// can number (decision 43). The splits are where the looks they'd own (a tile's own, its variants and
+// alts) come out about even, in quarters, as there are four sectors' kits to share out. (A tile drawn
+// as another owns none.)
 const keys = tiles.map(t => t.key).join('');
 const owned = tiles.map((t, i) => (i === 0 || t.shared || t.like != null ? 0
   : 1 + t.variants.length + Object.values(t.alts).reduce((n, list) => n + list.length, 0)));
 const allOwned = owned.reduce((a, b) => a + b, 0);
+const PARTS = 4;
 const cut = part => {
   let i = 0;
-  for (let sum = 0; i < tiles.length && 3 * (sum + owned[i]) <= part * allOwned; i++) sum += owned[i];
+  for (let sum = 0; i < tiles.length && PARTS * (sum + owned[i]) <= part * allOwned; i++) sum += owned[i];
   return i;
 };
-const third = cut(1), twoThirds = cut(2);
-const keysOf = n => (n === 3 ? keys.slice(0, third) : ' ' + (n === 5 ? keys.slice(third, twoThirds) : keys.slice(twoThirds)));
+const cuts = [0, cut(1), cut(2), cut(3), keys.length];
+const keysOf = n => (n === 3 ? '' : ' ') + keys.slice(cuts[(n - 3) / 2], cuts[(n - 3) / 2 + 1]);
 const row = (k, n) => {
   const ks = keysOf(n);
   return Array.from({length: RS.MAP_W}, (_, i) => ks[(i * n + k * 7) % ks.length]).join('');
@@ -238,7 +239,8 @@ const rich = [
   'map', ...blankMap.map((l, k) => (k === 21 ? '______' : l)), '',
   'room gamma', 'name GAMMA', 'sector 3 # deeper', 'exits up=gamma', 'start 20 18', 'colours blue green magenta', 'band 2 1 white', 'band 4 1 black',
   'band 175 3 red', 'map', ...map(5), 'thing shard 1 1', 'thing exit 29 19 0 extra', '',
-  'room delta', 'name DELTA', 'sector 4', 'start 2 18', 'map', ...map(7), '', '# the end', '',
+  'room delta', 'name DELTA', 'sector 4', 'start 2 18', 'map', ...map(7), '',
+  'room epsilon', 'name EPSILON', 'sector 5', 'start 2 18', 'map', ...map(9), 'thing hinge 4 4', '', '# the end', '',
 ].join('\n');
 const richDoc = roundTrip(rich, 'made-up rooms', false);
 roundTrip(rich.replace(/\n/g, '\r\n'), 'made-up rooms with CRLF', false);
@@ -306,6 +308,7 @@ const broken = {
   'sector 0, inherited': one({head: ['sector 0']}) + one({}).replace('solo', 'duo'),
   'a sector line with no number': one({head: ['sector']}),
   'seven things': one({tail: Array(7).fill('thing cell 1 1')}),
+  'two hinges': one({tail: ['thing hinge 4 4', 'thing hinge 8 4']}),
   'a drone on row 0, bobbing off the top': one({tail: ['thing drone 4 0']}),
   'a sentry at x 31, off the right': one({tail: ['thing sentry 31 4']}),
   'a cage on row 20, off the bottom': one({tail: ['thing exit 4 20']}),
@@ -376,6 +379,18 @@ for (const [what, text] of Object.entries(broken)) compareVerdict(text, what);
   compareVerdict(plain, "a tile drawn as one that isn't there", `${realTiles}\ntile é odd solid as=ñ\n`);
   compareVerdict(plain, 'a tile drawn as one drawn as another', `${realTiles}\ntile é odd solid as=Ç\n`);
   compareVerdict(plain, 'a variant of a tile drawn as another', `${realTiles}\ntile é odd solid as=C\nvariant é left\n${art}\n`);
+  // A tile that's another thing in each phase (a "blue" block, the Hinge's: decision 58), and one the
+  // game's code turns into another (then=), and what the art can't say of either.
+  const blueArt = art.replace(/1/g, '2');
+  compareVerdict(one({map: at({17: 'é', 18: floor})}), 'a tile with a Blue Phase picture',
+    `${realTiles}\ntile é odd solid then=ê\n${art}\nblue é\n${blueArt}\ntile ê odder solid\n${art}\nblue ê\n${art}\n`);
+  compareVerdict(plain, 'a Blue Phase picture for a tile only in the Red', `${realTiles}\ntile é odd solid red\n${art}\nblue é\n${blueArt}\n`);
+  compareVerdict(plain, 'two Blue Phase pictures for a tile', `${realTiles}\ntile é odd\n${art}\nblue é\n${art}\nblue é\n${art}\n`);
+  compareVerdict(plain, 'a Blue Phase picture and a variant', `${realTiles}\ntile é odd\n${art}\nblue é\n${art}\nvariant é left\n${art}\n`);
+  compareVerdict(plain, 'a Blue Phase picture for no tile', `${realTiles}\nblue é\n${art}\n`);
+  compareVerdict(plain, "then= a tile that isn't there", `${realTiles}\ntile é odd then=ê\n${art}\n`);
+  compareVerdict(plain, 'then= a tile drawn as another', `${realTiles}\ntile é odd solid then=Ç\n${art}\n`);
+  compareVerdict(plain, 'then= twice', `${realTiles}\ntile é odd then=ê then=ê\n${art}\ntile ê odder\n${art}\n`);
 }
 function compareVerdictOk(text) {
   return RS.validate(RS.parseRooms(text), tiles).filter(p => p.level === 'error').length === 0;
