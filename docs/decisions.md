@@ -278,4 +278,18 @@ Matt was away is marked *provisional* until reviewed.
       tuft like the weeds. The title page lists ESCAPE and says that a
       crouch ducks a sergeant's fire and rolls a grenade. The Engine Shed
       is named THE END, FOR NOW.
+41. **2026-10-31: light from the top left, and every sergeant fair.** A
+    level and art agent, from the third playtest and look review:
+    - Shading by one light, top left: lit sides in colour 2, shadow sides
+      stepping down by dither (full, half, quarter, black), and a lit top
+      that isn't a lip dithered, never a solid run of colour 2. Pipes are
+      cylinders, the flywheel and gauge have bevels, girders and spans dark
+      undersides. (`gfx/tiles.txt`'s header has the rules.)
+    - The Pump House's way out: the overhang raised, and a crate up to the
+      exit ledge, where before one hidden spot worked.
+    - Each Drill Sergeant can be killed two ways: a lob from a crate, or a
+      crouched roll along an unbroken floor that its fire passes over. The
+      hut's sergeant steps out from under the eave; the Skip Shaft's pit
+      moves behind the crate, and walking down its ledges lands on the
+      crate.
 

@@ -65,20 +65,20 @@ map
 ################################
 #            ###################
 #            ###################
-#            ##########12 8   ##
-#            ##########12 8   ##
-#   BBB      ##########34 8   ##
-             ##########12 8   ##
-      {NGN}    ########12 8
-     {\ l /}   ########12 8
-     W \l/ E  :########12 8
- BB  DhhOhhK   ########12 8  ===
-     W /l\ E   ########12 8  ###
-     </ l \>   ########34 8  ###
-      <SZS>      PP    12=== ###
-    HHH !HHHH    PP    12    ###
-    HHH !HHHH          12    ###
-    HHH !HHHH          12    ###
+#            ##########12  8  ##
+#            ##########12  8  ##
+#   BBB      ##########34  8  ##
+             ##########12  8  ##
+      {NGN}    ########12  8
+     {\ l /}   ########12  8
+     W \l/ E  :########12  8
+ BB  DhhOhhK   ########12  8 ===
+     W /l\ E     PP    12  8 ###
+     </ l \>     PP    34  8 ###
+      <SZS>      PP    12  8 ###
+    HHH !HHHH    PP    12  8 ###
+    HHH !HHHH          12  HH###
+    HHH !HHHH          12  HH###
 ________________________________
 HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
@@ -206,14 +206,14 @@ map
 #####    |          |  HHHHHHHHH
 ##### :  |    :     |  HHHHHHHHH
          |          |  d L
-           HH       |  d
-           HH    HH    d
+         HH         |  d
+         HH            d
 ________________________________
 ################################
 ################################
 ################################
 ################################
-thing sentry 24 15 1
+thing sentry 22 15 1
 thing life 28 16
 thing grenades 3 16
 
@@ -294,26 +294,26 @@ band 146 3 green/green
 map
 #   ############################
 #   ############################
-#                       |()|   #
-#                       |[]|   #
-#                       |  |   #
-#                       |  |   #
-#======                 |  |   #
-#                       AAAA   #
-#                       AAAA   #
-#        ======         AAAA   #
-#                     ##########
-#                     ##########
-# ======              ##########
-#                     ##########
+#         L   |  L      |()|   #
+#             |         |[]|   #
+#             |         |  |   #
+#             |         |  |   #
+#====         |         |  |   #
+#             |         AAAA   #
+#             |         AAAA   #
+#    ====     |         AAAA   #
+#             |       ##########
+#             |       ##########
+#             |       ##########
+#             |       ##########
 #                     =========#
 #                              #
 #        HH                    #
 #        HH                    #
-__________________~~____________
-HHHHHHHHHHHHHHHHHHwwHHHHHHHHHHHH
-HHHHHHHHHHHHHHHHHHwwHHHHHHHHHHHH
-HHHHHHHHHHHHHHHHHHwwHHHHHHHHHHHH
+_______~~_______________________
+HHHHHHHwwHHHHHHHHHHHHHHHHHHHHHHH
+HHHHHHHwwHHHHHHHHHHHHHHHHHHHHHHH
+HHHHHHHwwHHHHHHHHHHHHHHHHHHHHHHH
 thing sentry 23 16 1
 thing exit 28 15
 
