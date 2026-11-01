@@ -12,9 +12,10 @@ assembly.
 
 ### ▶ [Play it in your browser](https://bbc.xania.org/?disc=github:mattgodbolt/redshift-beeb/redshift.ssd&autoboot)
 
-A teletext title page, then Sector 1, THE LEACH WORKS: nine rooms from
-the LANDING ZONE down to the cage in the SKIP SHAFT, and the first room of
-Sector 2, whose rooms the cage loads from the disc. Each **SHIFT** costs a
+A teletext title page, then two sectors of nine rooms each: THE LEACH
+WORKS, from the LANDING ZONE down to the cage in the SKIP SHAFT, and THE
+MARSHALLING YARD, from the ENGINE SHED to the CRUSHER'S MOUTH. The cage
+loads each sector from the disc as it takes Ash down. Each **SHIFT** costs a
 phase cell. Blocks and enemies of the
 other phase are dotted ghosts: you walk through them, and they can't touch
 you. Green is always acid. A Drill Sergeant is armoured and dies only to a
