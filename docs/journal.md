@@ -513,3 +513,69 @@ What was done, in order, with what worked and what didn't.
 - The playthrough plays on through the Sump and the cage into Sector 4,
   checking the frame rate as the vents, the flood and the plug move and as
   the sluice drains; the README has its tour.
+
+## 2026-11-01: what the Sump's first newcomer found
+
+A newcomer played all nine of the Sump's rooms and finished each. What they
+liked: the sluice gate, the U-bend's climb that changes phase on the way up,
+the steam trap's stop and go. What broke: a shift back to the Red while
+wading in the Blue was accepted and boiled them, one accepted beside a
+closing Gadfly killed on the next frame, a respawn with a key held walked
+them back into the same death, and a pack of Slivers came together into
+what looked like one. Those are engine fixes (decision 51): a shift is
+refused into what kills and beside an enemy, a respawn waits for the keys,
+each Sliver aims at its own part of Ash. Two finds came from looking at the
+fixes: the status bar's score had come to touch the room name below it, and
+a card line of the frame's full width ran over its sides.
+
+The Sliver fix's first try aimed some of the pack at Ash's head and knees,
+and the playthrough lost two lives in the Leach Works: a Sliver aiming low
+passed under a standing bolt. The aims now keep to where a standing bolt
+meets a Sliver and a crouched Ash is still reached, and the build checks
+it, against sizes the art build now names.
+
+The rest is the sector's design, and goes back to a level agent: the Blue
+makes the steam and the flood pointless, eight of nine rooms are a pool,
+Slivers and a pickup, two never need a shift, and OUTFALL opens with a
+Gadfly that bobs above the bolt's line over the only ledge to shift on.
+
+## 2026-11-01: the Sump, reworked
+
+A level pass over all nine of the Sump's rooms (decision 52), on top of the
+engine's new rules for a shift. The playtest's verdict was that the Blue
+was a way round everything: the steam and the flood are the Red's, the dry
+bed was always there, and a cell in nearly every pool paid for the shift. So
+the Blue got costs of its own, and every room needs both phases.
+
+- The water's rule shaped it: nothing that isn't solid may stand in a hazard,
+  so the Blue's blocks and crystal can't go in the bed. They went above the
+  waterline instead: blocks across the steam trap's corridor, baffles hanging
+  over the overflow's walkway, crystal on the boilers and the office's
+  landing. The flood's walkway is the Red's because the Blue's baffles hang
+  over it, not because anything's in the water.
+- Two rooms changed most. The cistern is a tank now: full and boiling in the
+  Red, empty in the Blue, with a swarm in it and a floor of Red plates, so
+  in the Blue Ash drops right through it into the cellar. The office lost
+  its last shelf, and the Blue's span is the only way to the door.
+- A simulation of the Slivers' homing placed every pack: for each place Ash
+  is meant to shift, when each Sliver comes level with a standing bolt and
+  how far off it is then. Slivers stop at walls, so where they wait matters
+  as much as where they start. The cistern's swarm first rose straight up
+  under the walkway's end and hit Ash from below; a kerb on the tank's rim,
+  no higher than the Slivers fly at Ash's height, makes them come over it
+  level. The overflow's swarm, woken early from its entrance, came to rest
+  over the last post, where it refused the shift there; the U-Bend's way out
+  became the Red's, and the overflow's baffles moved so its Slivers wait
+  further off.
+- Jumps were checked from every x, and two traps turned up. The steam trap's
+  bed was a tunnel as low as Ash, so its step up into the last pocket couldn't
+  be climbed until the pocket's welded plates opened over it. And a jump held
+  all the way onto the overflow's last post went over it into the basin
+  behind; a kerb on the post stops it there.
+- Every room was played from its way in, in each phase, on a test disc, and
+  a scripted death in each showed the respawn where Ash came in, and Ash
+  still standing there long after. The playthrough plays the whole sector,
+  takes the cistern's cell (the sector's cells only just cover its shifts),
+  and checks the frame rate as the vents, the drain, the flood and the plug
+  move.
+

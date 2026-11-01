@@ -54,6 +54,7 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 - **A Gadfly bobs over walls that don't cover the row it fills**: bound its beat with walls the height of its bob.
 - **A Gadfly bobs 4 lines either way**: only something taller than two rows holds it, and one that slips its beat can fly the room and wait at the respawn.
 - **Scenery standing in a hazard leaves safe holes in it**: a non-solid tile in water or acid isn't hot, so a shift there survives. Nothing non-solid stands in a hazard.
+- **A shift is refused within `SHIFT_MARGIN` of an enemy of the new phase, or into its hazards** (decision 51). A scripted route waits for the enemy to be a tile off; a room needs somewhere to shift that a patrol doesn't sweep.
 - **The interrupt runs with D as the game left it**: `add_score` uses decimal mode, so the VSync path does `CLD` before anything that adds.
 - **Inside `things_update`, `attr_ptr` is the thing's own phase's tiles**, not Ash's. Anything it calls that tests Ash against the map (a switch's `crushed`) sets it back first (`set_tile_ptrs`).
 - **A thing's clock (`th_t`) drives its looks too**: a ghost's shimmer, a pickup's glint. Don't hold it still to time something; let it go round.
@@ -62,6 +63,8 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
   - Ash's box can hang over an edge, so a gap that counts as too wide can still be jumped from its very lip: start the simulation from every x.
   - Raising a ceiling lengthens the jumps under it: the WEIGHBRIDGE's taller corridor moved where the jump onto its ledge landed, into crystal.
   - A tunnel as low as Ash stops every jump in it: a step up out of one needs headroom where Ash stands to jump.
+- **A Sliver hangs wherever it was when Ash left the Blue**, and one hanging beside the only place to shift refuses the shift there (decision 51). Where a pack waits depends on where Ash has been in the Blue: simulate its homing from each place, and keep it where walls hold it away from where Ash must shift.
+- **A jump held all the way carries past a small ledge**: a post with a hazard behind it needs a kerb or a wall to stop Ash on it.
 - **A respawn comes in the way Ash came in**, a fall into the room too. Nothing may patrol that path, or every respawn dies on it (the CRANE GANTRY's Gadfly did).
 - **A lob comes down about ten cells off** (`arc_tab`, thrown at two steps a frame). A crate nearer a sergeant than that can't kill it, which breaks decision 41. A blast against a wall right behind a sergeant catches it, which widens where a lob works.
 - **The machinery's warning puts the other looks in the map only round `render`** (`mach_show`, `mach_hide`). Nothing that tests the map may run between them; anything that draws from the map elsewhere (a shift, a blast) draws the machinery as it is.

@@ -117,41 +117,53 @@ beat, flickering just before it does, or when Ash throws a switch:
 
 <table>
 <tr><td><img src="docs/media/outfall_red.png" alt="The Outfall, its sump boiling in the Red Phase"></td>
-<td><img src="docs/media/outfall_blue.png" alt="The Outfall in the Blue Phase: on the dry bed"></td></tr>
-<tr><td><img src="docs/media/cistern.png" alt="The Cistern: on its lid"></td>
+<td><img src="docs/media/outfall_blue.png" alt="The Outfall in the Blue Phase: down into the dry bed"></td></tr>
+<tr><td><img src="docs/media/cistern.png" alt="The Cistern: the swarm out of the empty tank"></td>
 <td><img src="docs/media/boiler.png" alt="Boiler Walk: on the steam dome"></td></tr>
-<tr><td><img src="docs/media/steam.png" alt="The Steam Trap: between the vents"></td>
+<tr><td><img src="docs/media/steam.png" alt="The Steam Trap: in a pocket between the vents"></td>
 <td><img src="docs/media/office.png" alt="The Drowned Office: on the filing cabinet"></td></tr>
 <tr><td><img src="docs/media/sluice.png" alt="The Sluice Gate, the gate lifted and the sump drained"></td>
+<td><img src="docs/media/ubend.png" alt="The U-Bend, in the dry bend"></td></tr>
+<tr><td><img src="docs/media/overflow.png" alt="Overflow: on a depth post over the walkway"></td>
 <td><img src="docs/media/plughole.png" alt="The Plughole: on the crate under it"></td></tr>
 </table>
 
 Every mine leaks, and the leaks all run here. In the Red Phase the sump
-boils; in the Blue the swarm has drunk it, and its dry bed is the road, while
-the cells last. Shift back in the bed and you're in the soup: the Blue draws
-the water's level as a dotted line.
+boils; in the Blue the swarm has drunk it, and its dry bed is the road, but
+the Blue has its own walls, crystal and Slivers, and cells are few. Every
+room takes both phases. A shift into the water, or right beside an enemy,
+is refused. A Sliver wakes when you shift into the Blue and comes for you:
+let it come level, and shoot it.
 
-1. **OUTFALL.** The boiling sump across the room, its dry bed in the Blue
-   (above, in each phase), and crystal in the way out: back to the
-   Red on the far bank, not in the bed, where a Gadfly patrols.
-2. **THE CISTERN.** Over the cistern in the Red, past the Trundler on its
-   lid, or along the bed under it in the Blue, past Slivers.
-3. **BOILER WALK.** Boiler to boiler over the boiling gaps, a Trundler, and
-   a Drill Sergeant at the way out: lob from the steam dome, or roll.
+1. **OUTFALL.** The first lesson (above, in each phase). The sump boils
+   across the room; in the Blue, down into its dry bed while two Slivers
+   come across it, up onto the far landing, and back to the Red there,
+   where crystal holds the way out, for the Trundler on the step above.
+2. **THE CISTERN.** A full tank in the Red, and in the Blue an empty one,
+   its floor the Red's plates, with a swarm in it that rises at you. Fight
+   it from the walkway, drop through the tank into the cellar, and leave
+   by a trapdoor that's the Blue's. A Gadfly in the cellar keeps a cell.
+3. **BOILER WALK.** Boiler to boiler over the boiling gaps, a Trundler,
+   and a Drill Sergeant: lob from the steam dome, or roll. Crystal on the
+   boilers in the Blue, and the door is welded in the Red.
 4. **STEAM TRAP.** Vents that steam in turn on the beat, flickering just
-   before they change. In the Blue the steam's gone, but crystal sends Ash
-   down through the welded plates into the bed with the Slivers.
-5. **DROWNED OFFICE.** Along the shelves over the flooded office, a filing
-   cabinet to lob from, and a sergeant on the far landing; or the dry floor
-   under them in the Blue, and a trauma kit by the desks.
-6. **SLUICE GATE.** The gate's handle is at its foot, under the water in the
-   Red. Throw it in the Blue and the gate lifts and the sump drains, in both
-   phases, so the bed is safe to shift back in.
+   before they change, with safe pockets between, in the Red. The Blue's
+   blocks bar the corridor; its way is the bed, past a pack of Slivers, and
+   up into the last pocket before the last vent.
+5. **DROWNED OFFICE.** Along the shelves over the flood: a Trundler, a
+   filing cabinet to hide behind and lob from, and a sergeant on the
+   landing. The last shelf's gone, and only the Blue's span reaches the
+   door.
+6. **SLUICE GATE.** The gate's handle is at its foot, under the water in
+   the Red. Throw it in the Blue and the gate lifts and the sump drains, in
+   both phases, and the swarm the gate held back comes through.
 7. **THE U-BEND.** The bend holds boiling water to the same level in both
-   legs: through it in the Blue, and back to the Red above the waterline for
-   the welded plate up to the way out.
-8. **OVERFLOW.** The sump floods the walkway on the beat: wait it out on the
-   depth posts, or take the bed in the Blue.
+   legs: through it in the Blue, and back to the Red above the waterline
+   for the welded plate up to the way out.
+8. **OVERFLOW.** The sump floods the walkway on the beat, so wait it out
+   on the depth posts; the Blue's baffles hang over the walkway, so it's
+   the Red's. Then the basin, where only the Blue's steps climb to the way
+   out.
 9. **THE PLUGHOLE.** Down the plughole in the Blue while the plug's drawn
    up; back to the Red on the crate under it, out of a sergeant's fire; and
    the cage down to Sector 4, which is as far as the game goes for now.

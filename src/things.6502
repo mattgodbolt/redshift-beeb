@@ -468,11 +468,27 @@ ASSERT TH_SWITCHES = TH_EXIT + 1      ; (th_look: past the cage, a switch)
 \ A shard: towards the player, a step at a time, every other frame. Out
 \ of phase it hangs still: a ghost that homed would sit on the player,
 \ to kill them the moment they shifted (decision 15).
+\ Where in Ash's box each slot's Sliver aims: steps across, lines down.
+\ Across, anywhere it still overlaps Ash's box; down, only where a
+\ standing bolt still meets it and it still reaches a crouched Ash, so
+\ the spread changes nothing about how a Sliver is fought.
+SHARD_AIM = {{2, 8}, {5, 6}, {0, 6}, {4, 8}, {0, 8}, {3, 6}}
+.shard_aim_x    FOR a = SHARD_AIM : EQUB a[0] : NEXT
+.shard_aim_y    FOR a = SHARD_AIM : EQUB a[1] : NEXT
+ASSERT LEN(SHARD_AIM) = NTH
+FOR a = SHARD_AIM
+    ASSERT a[0] + SPR_SHARD0_W / 2 > PL_BOX_L AND a[0] <= PL_BOX_R
+    ASSERT a[1] + SPR_SHARD0_H > PL_CROUCH_TOP
+    ASSERT a[1] < PL_GUN + SPR_BOLT_H AND a[1] + SPR_SHARD0_H > PL_GUN
+NEXT
+ASSERT P% - shard_aim_y = NTH AND shard_aim_y - shard_aim_x = NTH
 .shard_move
 {
     LDA th_t,X : AND #1 : BNE done
     JSR th_in_phase : BNE done
-    LDA obj_x + PL : CLC : ADC #2 : CMP obj_x,X
+    \ Each slot aims at its own part of Ash (decision 51), or a swarm comes
+    \ together into what looks like one Sliver.
+    LDA obj_x + PL : CLC : ADC shard_aim_x - TH0,X : CMP obj_x,X
     BEQ y_axis : BCC left
     INC obj_x,X
     JSR th_solid : BEQ y_axis
@@ -482,7 +498,7 @@ ASSERT TH_SWITCHES = TH_EXIT + 1      ; (th_look: past the cage, a switch)
     JSR th_solid : BEQ y_axis
     INC obj_x,X
 .y_axis
-    LDA obj_y + PL : CLC : ADC #8 : CMP obj_y,X
+    LDA obj_y + PL : CLC : ADC shard_aim_y - TH0,X : CMP obj_y,X
     BEQ moved : BCC up
     INC obj_y,X : INC obj_y,X
     JSR th_solid : BEQ moved
