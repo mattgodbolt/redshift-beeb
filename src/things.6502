@@ -480,10 +480,17 @@ SHARD_AIM = {{2, 8}, {5, 6}, {0, 6}, {4, 8}, {0, 8}, {3, 6}}
 .shard_aim_x    FOR a = SHARD_AIM : EQUB a[0] : NEXT
 .shard_aim_y    FOR a = SHARD_AIM : EQUB a[1] : NEXT
 ASSERT LEN(SHARD_AIM) = NTH
+\ Against a crouched Ash it aims SHARD_CROUCH_DY lines lower, where the
+\ crouched bolt meets it: otherwise a Sliver over the crouched bolt's line
+\ still reached Ash, and couldn't be shot (decision 61).
+SHARD_CROUCH_DY = 6
 FOR a = SHARD_AIM
     ASSERT a[0] + SPR_SHARD0_W / 2 > PL_BOX_L AND a[0] <= PL_BOX_R
     ASSERT a[1] + SPR_SHARD0_H > PL_CROUCH_TOP
     ASSERT a[1] < PL_GUN + SPR_BOLT_H AND a[1] + SPR_SHARD0_H > PL_GUN
+    c = a[1] + SHARD_CROUCH_DY
+    ASSERT c + SPR_SHARD0_H > PL_CROUCH_TOP AND c + SPR_SHARD0_H <= PL_H
+    ASSERT c < PL_GUN_CROUCH + SPR_BOLT_H AND c + SPR_SHARD0_H > PL_GUN_CROUCH
 NEXT
 ASSERT P% - shard_aim_y = NTH AND shard_aim_y - shard_aim_x = NTH
 
@@ -509,7 +516,11 @@ ASSERT P% - shard_aim_y = NTH AND shard_aim_y - shard_aim_x = NTH
     JSR shard_blocked : BEQ y_axis
     INC obj_x,X
 .y_axis
-    LDA obj_y + PL : CLC : ADC shard_aim_y - TH0,X : CMP obj_y,X
+    LDA obj_y + PL : CLC : ADC shard_aim_y - TH0,X
+    LDY pl_crouch : BEQ aimed
+    CLC : ADC #SHARD_CROUCH_DY
+.aimed
+    CMP obj_y,X
     BEQ moved : BCC up
     INC obj_y,X : INC obj_y,X
     JSR shard_blocked : BEQ moved
