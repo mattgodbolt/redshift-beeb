@@ -27,3 +27,51 @@ ENDMACRO
         CARD_LINE "WHATEVER IT IS, IT'S AWAKE."
 .card_lo EQUB LO(card_1), LO(card_2), LO(card_3), LO(card_4), LO(card_5)
 .card_hi EQUB HI(card_1), HI(card_2), HI(card_3), HI(card_4), HI(card_5)
+
+\ The endings' words (decision 59, endings.6502): cards one after another
+\ (game.6502's cards), each a count of its lines (with its top bit, its
+\ first line white), then the lines; a count of 0 ends them. Every card
+\ fits on the screen with its frame, a row out all round.
+CARD_MOST = 6
+ASSERT SCREEN_ROWS / 2 + 1 - CARD_MOST - 1 >= 0 AND SCREEN_ROWS / 2 + CARD_MOST < SCREEN_ROWS
+MACRO CARD lines
+    ASSERT (lines AND &7F) >= 1 AND (lines AND &7F) <= CARD_MOST
+    EQUB lines
+ENDMACRO
+\ Victory.
+.win_cards
+    CARD 5
+    CARD_LINE "THE HINGE FOLDS SHUT."
+    CARD_LINE "THE PRISM GOES DARK,"
+    CARD_LINE "FACET BY FACET, AND THE TWO"
+    CARD_LINE "MINES SLIDE BACK INTO ONE."
+    CARD_LINE "THE LAMPS COME UP WHITE."
+    CARD 4
+    CARD_LINE "AT BORE NINE, FORTY-ONE"
+    CARD_LINE "MINERS ASK WHY IT'S GONE"
+    CARD_LINE "SO QUIET. THEIR SHIFT"
+    CARD_LINE "ENDED SIX WEEKS AGO."
+    CARD 4
+    CARD_LINE "WELL DONE, TROOPER CALDER."
+    CARD_LINE "BUT YOUR VISOR STILL SHOWS"
+    CARD_LINE "ONE THING BELOW,"
+    CARD_LINE "IN DOTTED LINES."
+    CARD &80 + 1                    ; (in white)
+    CARD_LINE "THE END"
+    EQUB 0
+\ Out of lives, after OUT OF LIVES. OUT OF PHASE.
+.lost_cards
+    CARD 6
+    CARD_LINE "THE HARNESS CRACKS ITS LAST"
+    CARD_LINE "CELL AND STOPS CHOOSING."
+    CARD_LINE "ASH GOES WHERE THE NIGHT"
+    CARD_LINE "SHIFT WENT: INTO NEITHER"
+    CARD_LINE "PHASE, A DOTTED OUTLINE ON"
+    CARD_LINE "NOBODY'S VISOR."
+    CARD 5
+    CARD_LINE "THE SPLIT CLIMBS THE SHAFT."
+    CARD_LINE "TALLIS DEEPWORKS RECORDS"
+    CARD_LINE "THE LOSS OF KHARON-4 IN ITS"
+    CARD_LINE "QUARTERLY REPORT,"
+    CARD_LINE "UNDER OTHER."
+    EQUB 0

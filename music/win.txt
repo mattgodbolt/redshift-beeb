@@ -1,0 +1,45 @@
+# REDSHIFT: the Hinge folds shut (decision 59). (music/instruments.txt says
+# how a score is written.)
+#
+# The two mines slide back into one, so the two modes meet. The theme's
+# opening fall in the Red's E Phrygian (B A G F E, over Em), then the
+# split's climb in the Blue's E Lydian (E F# G# A# B), and both come home
+# to E: the Blue's bright tonic chord, E G# B, as the lamps come up white,
+# with a low E struck under it like a very large door closing. Every note
+# fades out on its own, and the piece stops: the words follow in silence.
+#
+# 125 crotchets a minute: a row is a semiquaver, 6 frames.
+
+piece win
+speed 6
+bar 16
+then stop
+voice lead   0 fade  quiet 1
+voice harm   1 fade  quiet 3
+voice bass   2 fade  quiet 1
+voice drum   noise   quiet 1
+
+pattern fall
+lead:  B4  .   A4  .   G4  .   F4  .   E4  .   .   .   .   .   .   .   |
+harm:  G4  .   .   .   D4  .   .   .   B3  .   .   .   .   .   .   .   |
+bass:  E3  .   .   .   .   .   .   .   E3  .   .   .   .   .   .   .   |
+drum:  k   .   .   .   .   .   .   .   k   .   .   .   .   .   .   .   |
+
+pattern rise
+lead:  E4  .   F#4 .   G#4 .   A#4 .   B4  .   .   .   .   .   .   .   |
+harm:  B3  .   .   .   C#4 .   .   .   D#4 .   .   .   .   .   .   .   |
+bass:  B2  .   .   .   .   .   .   .   B2  .   .   .   .   .   .   .   |
+drum:  .   .   .   .   .   .   .   .   k   .   .   .   .   .   .   .   |
+
+pattern home
+lead:  E5  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+harm:  G#4 .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+bass:  E3  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+drum:  k   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+lead:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+harm:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+bass:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+drum:  .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   .   |
+
+play fall rise home

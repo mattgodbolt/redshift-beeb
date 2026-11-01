@@ -1,0 +1,156 @@
+\ ***************************************************************************
+\ The endings (decision 59), and their words (docs/story.md, section 6).
+\
+\ Victory: the Hinge's core takes its last bolt (hinge.6502). Its swarm and
+\ every bolt go with it, and the Hinge folds shut, a column at a time from
+\ its far side to its heart. The Prism goes dark one facet at a time: each
+\ of the room's bands of colour black in turn, from the top, then the rest.
+\ The lamps come up white. Then the story's words, a card at a time, and
+\ THE END, with what the visor still shows dotted under it, which waits for
+\ a key before a new game.
+\
+\ Out of lives: game_over (game.6502) shows its cards after its phrase.
+\ ***************************************************************************
+
+FOLD_VSYNCS = 12                    ; each column of the fold
+\ The second Prism under THE END: an outline pointing down, its top edge at
+\ pixel PRISM_X, line PRISM_Y of the screen, its sides PRISM_H lines long,
+\ dotted. Below THE END's card (card_lines: one line, centred).
+PRISM_H = 28
+PRISM_X = 128 - PRISM_H
+PRISM_Y = (SCREEN_ROWS / 2 + 3) * 8
+ASSERT PRISM_Y + PRISM_H < SCREEN_ROWS * 8 AND PRISM_X + 2 * PRISM_H < 256
+FACET_VSYNCS = 12                   ; each facet going dark
+DARK_VSYNCS = 50                    ; the dark, before the lamps come up
+WHITE_VSYNCS = 100                  ; the white, before the words
+
+.hinge_win
+{
+    ZA_AUTO2 hw_map
+    ZA_AUTO1 hw_col, hw_row, hw_any, hw_n, hw_w, dp_x, dp_y
+    LDA #0 : STA hinge_on
+    JSR sound_quiet
+    LDA #MUS_WIN : JSR music_play
+    \ Everything but Ash goes with it: the swarm, the bolts, the charge.
+    LDX #NOBJ - 1
+.gone
+    LDA #&FF : STA obj_spr,X
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
+    DEX : BNE gone
+    ASSERT PL = 0
+    JSR render
+    JSR sound_boom
+    \ It folds shut: its cells (a look that's another thing in each phase)
+    \ gone, a column at a time, from the far side to its heart's column.
+    LDA #MAP_W - 1 : STA hw_col
+.fold
+    LDA #0 : STA hw_any
+    LDY #MAP_H - 1
+.cell
+    STY hw_row
+    LDA maprow_lo,Y : STA hw_map
+    LDA maprow_hi,Y : STA hw_map+1
+    LDY hw_col : LDA (hw_map),Y : TAX
+    LDA tile_attr,X : AND #TF_RED OR TF_BLUE : CMP #TF_RED OR TF_BLUE : BNE not_it
+    LDA #T_EMPTY : STA (hw_map),Y
+    INC hw_any
+.not_it
+    LDY hw_row : DEY : BPL cell
+    LDA hw_any : BEQ next_col
+    \ The column drawn again, as a part of machinery is.
+    LDA hw_col : ASL A : STA parts_c0
+    ADC #2 : STA parts_c1
+    LDA #0 : STA parts_r0
+    LDA #MAP_H : STA parts_r1
+    LDA #1 : STA parts_n
+    JSR render
+    JSR sound_clank
+    LDA #FOLD_VSYNCS : JSR hw_wait
+.next_col
+    LDA hw_col : CMP hg_hx : BEQ folded
+    DEC hw_col
+    JMP fold
+.folded
+    JSR sound_crack
+    \ The Prism goes dark, a facet at a time: the colour at the top, then
+    \ each band's, black.
+    LDA #BLACK : STA top_red + 1 : STA top_blue + 1
+    LDX #0 : STX hw_n
+.facet
+    JSR set_colours
+    LDA #FACET_VSYNCS : JSR hw_wait
+    LDX hw_n : CPX band_n : BCS faceted
+    LDA #BLACK : STA band_red,X : STA band_blue,X
+    INC hw_n
+    JMP facet
+.faceted
+    LDA #BLACK : JSR hw_all
+    LDA #DARK_VSYNCS : JSR hw_wait
+    \ The lamps come up white.
+    LDA #WHITE : JSR hw_all
+    LDA #WHITE_VSYNCS : JSR hw_wait
+    \ The words, and THE END, under which the visor still shows one thing in
+    \ dotted lines: a second Prism, deeper down, facing the other way.
+    JSR sound_quiet
+    LDA #LO(win_cards) : STA text_ptr
+    LDA #HI(win_cards) : STA text_ptr+1
+    JSR cards
+    LDX #0
+.prism
+    TXA : CLC : ADC #PRISM_X : STA dp_x
+    LDA #PRISM_Y : STA dp_y
+    JSR dot                         ; (its top)
+    CPX #PRISM_H : BCS sides_done
+    TXA : CLC : ADC #PRISM_X : STA dp_x
+    TXA : CLC : ADC #PRISM_Y : STA dp_y
+    JSR dot                         ; (its left side, down to its point)
+    TXA : EOR #&FF : SEC : ADC #PRISM_X + 2 * PRISM_H : STA dp_x
+    JSR dot                         ; (its right)
+.sides_done
+    INX : INX
+    CPX #2 * PRISM_H + 1 : BCC prism
+    JSR read_keys                   ; (keys held now aren't new)
+.key
+    JSR wait_vsync
+    JSR read_keys
+    LDA keys_new : BEQ key
+    JMP game_start
+\ Every colour A, in both phases, bands too.
+.hw_all
+    LDX #3
+.top
+    STA top_red,X : STA top_blue,X
+    DEX : BNE top
+    LDX band_n : BEQ all_done
+.band
+    STA band_red - 1,X : STA band_blue - 1,X
+    DEX : BNE band
+.all_done
+    JMP set_colours
+\ A dot in logical 3 at pixel dp_x, line dp_y of the screen. X kept.
+.dot
+    LDA dp_y : LSR A : LSR A : LSR A : ASL A
+    ADC #HI(screen) : STA hw_map+1  ; (a character row is two pages)
+    LDA dp_x : AND #&FC : ASL A     ; (a byte column is 8 bytes, 4 pixels)
+    BCC low
+    INC hw_map+1
+.low
+    STA hw_map
+    LDA dp_x : AND #3 : TAY
+    LDA dot_bits,Y : STA hw_any
+    LDA dp_y : AND #7 : TAY
+    LDA (hw_map),Y : ORA hw_any : STA (hw_map),Y
+    RTS
+.dot_bits EQUB &88, &44, &22, &11
+\ A VSyncs, stepping the game's sounds every other one, as play does.
+.hw_wait
+    STA hw_w
+.wait
+    JSR wait_vsync
+    LDA hw_w : LSR A : BCC even
+    JSR sound_update
+.even
+    DEC hw_w : BNE wait
+    RTS
+}
+\ (The words, win_cards and lost_cards, are with the rest: text.6502.)

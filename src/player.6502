@@ -365,7 +365,7 @@ CATCH = 6                       ; lines below the top that still catch
     LDA #TF_SOLID : JSR test_area
     PHP : LDX sh_x : PLP            ; (LDX would set Z for X)
     BEQ next
-    JSR spark                       ; (into a wall)
+    JSR hinge_struck                ; (into a wall: a spark, or the Hinge's core)
     JMP next
 .gone
     LDA #&FF : STA obj_spr,X

@@ -60,6 +60,7 @@ ENDIF
     JSR grenade_update
     JSR things_update
     JSR ebolts_update
+    JSR hinge_update                ; (THE HINGE, in its room)
     \ (The beat after the things, which throw switches: one that stops it
     \ leaves it nothing to do, so a frame lists each part once at most.)
     JSR mach_update
@@ -275,9 +276,9 @@ FLASH_FRAMES = 16               ; a refused shift's red, in frames
 \ few seconds or until a key, and the sector's sting, which runs on into
 \ the music under play. The card doesn't step the game's sounds, so they
 \ stop: one left playing (the cage's) would keep its channel from the sting.
+CARD_TIME = 150                     ; a card's VSyncs, unless a key's pressed
 .show_card
 {
-    ZA_AUTO1 sc_row, sc_n
     PHA
     JSR sound_quiet
     PLA : PHA                       ; (the sector again: sound_quiet keeps only X and Y)
@@ -288,25 +289,66 @@ FLASH_FRAMES = 16               ; a refused shift's red, in frames
     LDA card_hi,X : STA text_ptr+1
     \ The sector's name in white (logical 2), its lines in yellow (1).
     LDA #1 : STA pr_ink
-    LDA #10 : STA sc_row
-    LDA #3 : STA sc_n
-.line
-    LDY sc_row : JSR print_centred
-    LDA #0 : STA pr_ink
-    LDA sc_row : CLC : ADC #2 : STA sc_row
-    DEC sc_n : BNE line
-    JSR card_frame                  ; (over the text: a long line reaches it)
-    JSR card_show
-    \ Three seconds, or a key once all are up. (read_keys uses X and Y.)
-    \ Keys already down (the title's SPACE) aren't new.
+    LDA #3 : JSR card_lines
+    LDA #CARD_TIME
+}
+\ Up to A VSyncs, or a key once all are up. (read_keys uses X and Y.) Keys
+\ already down (the title's SPACE, play's fire) aren't new.
+.card_wait
+{
+    ZA_AUTO1 cw_n
+    STA cw_n
     JSR read_keys
-    LDA #150 : STA sc_n
 .wait
     JSR wait_vsync
     JSR read_keys
     LDA keys_new : BNE done
-    DEC sc_n : BNE wait
+    DEC cw_n : BNE wait
 .done
+    RTS
+}
+
+\ A lines at text_ptr, each ending in a 0, on a card's screen (card_begin):
+\ every other row in the middle of it, the first in pr_ink's ink and the rest
+\ in yellow, in a frame; then shown. text_ptr ends past them.
+.card_lines
+{
+    ZA_AUTO1 cl_row, cl_n, cl_top
+    STA cl_n
+    EOR #&FF : SEC : ADC #SCREEN_ROWS / 2 + 1 : STA cl_row     ; (13 - A: centred)
+    STA cl_top
+.line
+    LDY cl_row : JSR print_centred
+    LDA #0 : STA pr_ink
+    INC cl_row : INC cl_row
+    DEC cl_n : BNE line
+    \ The frame (over the text: a long line reaches it), a row out all round.
+    LDY cl_row : DEY
+    LDA cl_top : SEC : SBC #1 : JSR card_frame
+    JMP card_show
+}
+
+\ Cards from text_ptr, one after another: each a count of its lines, then
+\ the lines (card_lines; with the count's top bit, its first line white). A
+\ count of 0 ends them. Each stays up for CARD_TIME, or until a key; the
+\ last stays up, for the caller.
+.cards
+{
+.card
+    JSR card_begin
+    LDY #0 : STY pr_ink
+    LDA (text_ptr),Y : BPL plain
+    INC pr_ink
+.plain
+    AND #&7F : PHA
+    INC text_ptr : BNE ok
+    INC text_ptr+1
+.ok
+    PLA : JSR card_lines
+    LDY #0 : LDA (text_ptr),Y : BEQ last
+    LDA #CARD_TIME : JSR card_wait
+    JMP card
+.last
     RTS
 }
 
@@ -372,14 +414,18 @@ START_CELLS = 5
 START_GRENADES = 5
 
 \ The last life gone: GAME OVER in the status bar, and its music, heard
-\ to the end; then a new game when a key is pressed (pressed then: a key
-\ still held from play doesn't skip it).
+\ to the end; then the story's ending for it, on cards (decision 59,
+\ endings.6502), and a new game when a key is pressed (pressed then: a
+\ key still held from play doesn't skip it).
 .game_over
 {
     JSR sound_quiet
     LDA #MUS_OVER : JSR music_play
     PRINT_AT 0, 1, over_text
     JSR music_wait                  ; (the phrase heard out)
+    LDA #LO(lost_cards) : STA text_ptr
+    LDA #HI(lost_cards) : STA text_ptr+1
+    JSR cards
     JSR read_keys                   ; (keys held now aren't new)
 .key
     JSR wait_vsync
@@ -406,26 +452,28 @@ START_GRENADES = 5
 .rk_down EQUB 0
 }
 
-\ A sector card's frame, in logical 3 (cyan on the card): a box round
-\ character rows FRAME_TOP to FRAME_BOT, columns FRAME_L to FRAME_R.
-FRAME_TOP = 9 : FRAME_BOT = 15 : FRAME_L = 1 : FRAME_R = 30
+\ A card's frame, in logical 3 (cyan on the card): a box round character
+\ rows A to Y, columns FRAME_L to FRAME_R.
+FRAME_L = 1 : FRAME_R = 30
 .card_frame
 {
     ZA_AUTO2 cf_p, cf_q
-    ZA_AUTO1 cf_n
-    \ The top's first line and the bottom's last.
-    LDA #LO(screen + FRAME_TOP * ROW_BYTES + FRAME_L * 16) : STA cf_p
-    LDA #HI(screen + FRAME_TOP * ROW_BYTES + FRAME_L * 16) : STA cf_p+1
-    LDY #0 : JSR across
-    LDA #LO(screen + FRAME_BOT * ROW_BYTES + FRAME_L * 16) : STA cf_p
-    LDA #HI(screen + FRAME_BOT * ROW_BYTES + FRAME_L * 16) : STA cf_p+1
+    ZA_AUTO1 cf_n, cf_top
+    STA cf_top
+    STY cf_n
+    \ The bottom's last line and the top's first. (Row r is 2r pages on.)
+    LDA #LO(FRAME_L * 16) : STA cf_p
+    TYA : ASL A : ADC #HI(screen + FRAME_L * 16) : STA cf_p+1
     LDY #7 : JSR across
+    LDA #LO(FRAME_L * 16) : STA cf_p
+    LDA cf_top : ASL A : ADC #HI(screen + FRAME_L * 16) : STA cf_p+1
+    LDY #0 : JSR across
     \ The sides: the left column's leftmost pixel, the right's rightmost.
-    LDA #FRAME_BOT - FRAME_TOP + 1 : STA cf_n
-    LDA #LO(screen + FRAME_TOP * ROW_BYTES + FRAME_L * 16) : STA cf_p
-    LDA #HI(screen + FRAME_TOP * ROW_BYTES + FRAME_L * 16) : STA cf_p+1
-    LDA #LO(screen + FRAME_TOP * ROW_BYTES + FRAME_R * 16 + 8) : STA cf_q
-    LDA #HI(screen + FRAME_TOP * ROW_BYTES + FRAME_R * 16 + 8) : STA cf_q+1
+    LDA cf_n : SEC : SBC cf_top : STA cf_n : INC cf_n
+    LDA #LO(FRAME_L * 16) : STA cf_p
+    LDA cf_top : ASL A : ADC #HI(screen + FRAME_L * 16) : STA cf_p+1
+    LDA #LO(FRAME_R * 16 + 8) : STA cf_q
+    LDA cf_top : ASL A : ADC #HI(screen + FRAME_R * 16 + 8) : STA cf_q+1
 .side_row
     LDY #7
 .side_line
@@ -449,5 +497,5 @@ FRAME_TOP = 9 : FRAME_BOT = 15 : FRAME_L = 1 : FRAME_R = 30
     DEX : BNE col
     RTS
 }
-ASSERT ROW_BYTES = 2 * 256
+ASSERT ROW_BYTES = 2 * 256 AND LO(screen) = 0 AND FRAME_R * 16 + 8 < 512
 

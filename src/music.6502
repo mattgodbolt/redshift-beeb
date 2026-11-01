@@ -36,6 +36,7 @@ MUS_CARD1 = mus.MUS_CARD1
 MUS_PLAY = mus.MUS_PLAY
 MUS_OVER = mus.MUS_OVER
 MUS_CAGE = mus.MUS_CAGE
+MUS_WIN = mus.MUS_WIN
 ASSERT mus.MUS_CARD5 = MUS_CARD1 + 4
 
 \ From the VSync interrupt (irq.6502), which keeps X: a frame of the music,

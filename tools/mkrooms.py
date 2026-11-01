@@ -29,7 +29,9 @@ Each room's record (rooms.6502 reads it):
                 none; down, &80 + its number for the next sector's room
     colours     logical 1-3 at the top, Red Phase then Blue Phase
     bands       a count, then each band's line, logical colour, Red, Blue
-    things      a count, then each thing's type, x, y and argument
+    things      a count, then each thing's type, x, y and argument (a
+                "hinge" is THE HINGE's heart: the game finds the rest of it
+                on the map, and it takes no thing's slot)
     map         packed: a byte under &80 is a look (gfxlib.Looks numbers
                 them: a tile, as its surroundings choose, gfxlib.resolve);
                 &80+n repeats the last
@@ -50,16 +52,20 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gfxlib as g  # noqa: E402
 
-THING_TYPES = ["sentry", "drone", "crawler", "shard", "cell", "grenades", "life", "exit", "lever", "plate"]
+THING_TYPES = ["sentry", "drone", "crawler", "shard", "cell", "grenades", "life", "exit", "lever", "plate",
+               "hinge"]
 # What throws a room's switch (decision 46): shot, or touched.
 SWITCH_THINGS = ("lever", "plate")
 # A down exit's room number with this set is the next sector's room (the cage's).
 NEXT_SECTOR = 0x80
 # Each type's size in pixels, with what it reaches beyond its sprite: the
-# drone bobs 4 lines up and down, a pickup 2 lines up (things.6502).
+# drone bobs 4 lines up and down, a pickup 2 lines up (things.6502). The
+# Hinge (decision 58) is tiles: its thing marks its heart, the plate's two
+# cells, and the game finds the rest of it on the map (hinge.6502).
 THING_BOX = {"sentry": (16, 0, 16), "drone": (16, -4, 14), "crawler": (16, 0, 16),
              "shard": (8, 0, 8), "cell": (8, -2, 8), "grenades": (8, -2, 8),
-             "life": (8, -2, 8), "exit": (16, 0, 24), "lever": (8, 0, 16), "plate": (16, 0, 8)}
+             "life": (8, -2, 8), "exit": (16, 0, 24), "lever": (8, 0, 16), "plate": (16, 0, 8),
+             "hinge": (8, 0, 16)}
 
 
 def cell_look(lk):
@@ -144,6 +150,8 @@ def render(room, tiles, phase, scale=2, state=(0, 0)):
         for tx, lk in enumerate(line):
             other = "blue" if phase == 0 else "red"
             pix = g.ghost_tile(lk.pixels) if other in lk.flags else lk.pixels
+            if phase == 1 and lk.blue_pixels is not None:
+                pix = lk.blue_pixels
             for y in range(8):
                 pal = pal_rows[ty * 8 + y]
                 for x in range(8):
@@ -209,6 +217,8 @@ def main():
             rec += list(b)
         if len(r.things) > 6:
             raise SystemExit(f"{where}: at most 6 things a room")
+        if sum(typ == "hinge" for typ, *_ in r.things) > 1:
+            raise SystemExit(f"{where}: at most one hinge a room (hinge.6502 keeps one)")
         rec.append(len(r.things))
         for (typ, x, y, args) in r.things:
             if typ not in THING_TYPES:

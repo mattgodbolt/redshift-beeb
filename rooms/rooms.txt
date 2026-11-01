@@ -19,12 +19,14 @@
 # thing <type> <x> <y> [arg]  an enemy or pickup: its top-left, in tiles;
 #                             arg 1 faces it left. Types: sentry drone
 #                             crawler shard cell grenades life exit lever
-#                             plate. An exit is the cage: it takes you down
-#                             (exits down=) to the next sector. A lever (shot
-#                             or touched) or a plate (stood on) is a switch:
-#                             it changes the room's tiles that say switch=,
-#                             and with arg 2 (add 1 to face it left) stops
-#                             its beat too.
+#                             plate hinge. An exit is the cage: it takes you
+#                             down (exits down=) to the next sector. A lever
+#                             (shot or touched) or a plate (stood on) is a
+#                             switch: it changes the room's tiles that say
+#                             switch=, and with arg 2 (add 1 to face it left)
+#                             stops its beat too. A hinge is THE HINGE's heart
+#                             (decision 58), the top of its plate's two cells:
+#                             the rest of it is the tiles drawn round it.
 #
 # A colour is black red green yellow blue magenta cyan white: the Red Phase's.
 # The Blue Phase's is its opposite (red-blue, yellow-cyan, magenta-green)
@@ -1194,7 +1196,7 @@ thing cell 5 6
 
 room bore
 name BORE NINE
-exits left=- right=- up=- down=s5end
+exits left=- right=- up=- down=hinge
 start 28 2
 colours red yellow white
 map
@@ -1227,32 +1229,46 @@ thing shard 0 15
 thing shard 1 16
 thing shard 0 17
 
-room s5end
-name THE END, FOR NOW
+# THE HINGE (decision 58), at the Prism's focus: the Drill Sergeant the
+# size of a house in the Red, the crystal bloom in the Blue, one heart. Its
+# gun covers the walkway, a patchwork of the Red's and the Blue's blocks
+# over white spikes; the pillar stands above its line, the place to lob at
+# the plate from. Its core is shot from the walkway in the Blue, through
+# the crack. Bore Nine's cage brings Ash in on the ledge.
+room hinge
+name THE HINGE
 sector 5
 exits left=- right=- up=- down=-
-start 3 17
-colours magenta/blue cyan white
+start 2 14
+colours red/blue white white
+band 24 1 magenta/cyan
+band 48 1 yellow/blue
+band 72 1 red/cyan
+band 96 1 magenta/blue
+band 120 1 yellow/cyan
+band 144 1 red/blue
+band 168 1 magenta/cyan
 map
-################################
-################################
-################################
-################################
-#     L        L        L      #
-#                              #
-#                              #
-#                              #
-#                              #
-#                              #
-#                              #
-#                              #
-#                              #
-#                              #
-#                              #
-#                              #
-#                              #
-#                              #
-________________________________
-HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+ϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟ
+ϟ                            ϟϟϟ
+ϟ                            ϟϟϟ
+ϟ                            ϟϟϟ
+ϟ                            ϟϟϟ
+ϟ                       ԱԲԳ  ϟϟϟ
+ϟ                      ԱԸՒԸԳ ϟϟϟ
+ϟ                     ԱՒԸՒԸՒԳϟϟϟ
+ϟ                     ԹԼԺԼԺԼԺϟϟϟ
+ϟ                     ՌՒԸՒԸՒԸϟϟϟ
+ϟ                     ԾՒԸՒԸՒԸϟϟϟ
+ϟ        ϟϟ           ՀՒԸՒԸՒԸϟϟϟ
+ϟ        ϟϟ           ՂՒԸՒԸՒԸϟϟϟ
+ϟ        ϟϟ           ՃՒԸՒԸՒԸϟϟϟ
+ϟϟϟϟϟRRBBϟϟBBRRBBRR   ՊՋՋՋՋՋՋϟϟϟ
+ϟϟϟϟϟ    ϟϟ           ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟϟ    ϟϟ           ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟϟ    ϟϟ           ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟϟ    ϟϟ           ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟϟ    ϟϟ           ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟϟ^^^^ϟϟ^^^^^^^^^^^ϟϟϟϟϟϟϟϟϟϟ
+thing hinge 22 13
