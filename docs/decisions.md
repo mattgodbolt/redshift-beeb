@@ -292,4 +292,43 @@ Matt was away is marked *provisional* until reviewed.
       hut's sergeant steps out from under the eave; the Skip Shaft's pit
       moves behind the crate, and walking down its ledges lands on the
       crate.
+42. **2026-10-31: the rooms load a sector at a time, at the cage** (Matt's
+    design). The sideways bank held the art, the text and every room, and
+    was nearly full; one sector's rooms are a sizeable part of it, and the
+    game is meant to have five. Now:
+    - Each sector's rooms are a file of their own, S1 to S5. The bank keeps
+      the art, the text and a room region sized for the largest sector's.
+      RSLOAD loads RSDATA and S1 at boot, as before.
+    - Rooms are numbered within their sector. Their exits stay in it; the
+      cage's down exit names the next sector's room, and that room's start
+      is where Ash arrives. `tools/mkrooms.py` checks this and writes a
+      file of rooms per sector, and what the game needs about all of them.
+      `rooms/rooms.txt` stays one file.
+    - At the cage, after its ride, the game blacks the screen and silences
+      the music, saves what the OS and the DFS will write (the DFS's
+      workspace, over which the game runs, and page 8) in screen memory,
+      gives the OS its interrupts back, loads the file with OSFILE into
+      screen memory, takes the machine back, puts everything back, and
+      copies the rooms into the bank. Then the sector's card.
+    - What was killed or taken resets at a new sector: sectors are one way.
+    - A disc error says so on the screen, and SPACE tries again.
+
+    Calls made in building it (*provisional*):
+    - The DFS gets back its catalogue and its state (`&0E00-&10FF`) as it
+      left them, kept in main RAM between loads, not only its state. DFS
+      1.2 trusts the catalogue it has while the drive still spins from its
+      last call, so a retry soon after an error searched the game's code
+      for the file, and hung.
+    - RSLOAD closes `!BOOT`, the `*EXEC` file, so the DFS has no file open
+      whose buffer it would need.
+    - A cage's down exit to the next sector has its own mark in the room's
+      record (`NEXT_SECTOR`). Falling off the bottom of that room is a pit,
+      not a way into the next sector: only the cage loads it.
+    - A game that ends in a later sector loads Sector 1 again for the new
+      game.
+    - During the load ESCAPE is an ordinary key (`*FX229`) and the VDU
+      drivers are off (`*FX3`), and the CRTC's display is off as well as
+      the palette black: the OS's flash writes its own mode into the ULA.
+    - The level editor finds the new exit rule's errors too, since it must
+      refuse just what `mkrooms.py` refuses.
 

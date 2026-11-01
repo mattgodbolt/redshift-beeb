@@ -1,0 +1,260 @@
+\ ***************************************************************************
+\ A sector's rooms from the disc (decision 42).
+\
+\ The bank keeps one sector's rooms at a time, in its room region
+\ (ROOMS_AT, main.6502). RSLOAD puts the first sector's there at boot; the
+\ cage loads the next one's, and a new game the first's again if it's gone.
+\
+\ The game owns the machine, so for a load it gives the OS back what the
+\ OS and the DFS need, loads the file (OSFILE), and takes the machine back:
+\
+\ 1. Black, and silent: the palette (blackout), then the CRTC's display
+\    off, since the OS's flash rewrites the ULA's control register with
+\    its own mode's; the music held, and the chip quiet.
+\ 2. What the OS and the DFS write while they run is saved in screen
+\    memory: the DFS's workspace (DFS_WORK to DFS_WORK_END, a Model B's; a
+\    Master's DFS keeps its own in hidden RAM, but it's saved all the same)
+\    and page 8, the OS's sound workspace and buffers, which its 100Hz
+\    interrupt rewrites.
+\ 3. Theirs goes back in place, as it was when the game started (the
+\    loader kept it) or as the last load left it: what the DFS keeps
+\    between calls (DFS_KEEP: its catalogue and its state; the rest of its
+\    workspace is open files' buffers, and none is open, since RSLOAD
+\    closed !BOOT, the *EXEC file), and the OS's page 8. The catalogue has
+\    to be the DFS's own: while the drive still spins from its last call,
+\    it takes the catalogue it has for the disc's, without reading it.
+\ 4. IRQ1V and the VIAs' interrupt enables go back as start-up found them,
+\    and the keyboard goes back on auto-scan. ESCAPE is made an ordinary
+\    key (*FX229), so a press can't stop the load, and the VDU drivers are
+\    turned off (*FX3), so nothing the DFS says is printed on our screen.
+\ 5. The file loads into screen memory, everything goes back as it was,
+\    the machine is the game's again (install_irq), and the rooms go into
+\    the bank. What was killed or taken (room_gone) is cleared: sectors
+\    are one way.
+\
+\ A disc error (no disc, the wrong one) comes back as a BRK, through BRKV
+\ to se_error: the screen says what, and SPACE tries again.
+\
+\ All of this, code and data, is clear of what the OS and the DFS write
+\ while they run (the ASSERTs at the end): what it uses then is here.
+\ ***************************************************************************
+
+\ Screen memory while a sector loads: the game's memory that the OS and the
+\ DFS write, then the file.
+SE_WORK  = screen
+SE_PAGE8 = SE_WORK + (DFS_WORK_END - DFS_WORK)
+SE_FILE  = SE_PAGE8 + &100
+ASSERT SE_FILE + ROOMS_PAGES * &100 <= &8000   ; (a DFS can write all of the last sector)
+
+.sector_code
+
+\ Load sector A's rooms into the bank. It leaves the screen black, with
+\ what was on it gone, and the music silent but no longer held: the next
+\ thing shown (a sector's card) clears it and starts its own.
+.sector_load
+{
+    STA se_sector
+.again
+    LDA #1 : STA blackout
+    JSR wait_vsync                  ; (the interrupt has blacked the palette)
+    LDA #8 : STA crtc_reg
+    LDA #CRTC_BLANK : STA crtc_data
+    JSR sound_quiet
+    JSR music_hold
+    LDX #3
+.quiet
+    LDA quiet_cmds,X : JSR sound_write
+    DEX : BPL quiet
+    SEI
+    \ The game's memory that they write, to the screen; and theirs back.
+    LDX #CP_SAVE : LDY #CP_SAVE + 2 : JSR copies
+.theirs                             ; (tools/sectortest.mjs notes the game's memory here)
+    LDX #CP_THEIRS : LDY #CP_THEIRS + 2 : JSR copies
+    \ The OS's interrupts, as start-up found them.
+    LDA #&7F : STA sysvia_ier : STA usrvia_ier
+    LDA os_irq1v : STA irq1v
+    LDA os_irq1v+1 : STA irq1v+1
+    LDA os_sysier : ORA #&80 : STA sysvia_ier
+    LDA os_usrier : ORA #&80 : STA usrvia_ier
+    LDA #LATCH_SCAN : STA sysvia_orb
+    CLI
+    \ An error comes to se_error, with the stack as it is here.
+    LDA brkv : STA se_brkv
+    LDA brkv+1 : STA se_brkv+1
+    LDA #LO(se_error) : STA brkv
+    LDA #HI(se_error) : STA brkv+1
+    TSX : STX se_sp
+    LDA #229 : LDX #1 : LDY #0 : JSR osbyte : STX se_fx229
+    LDA #3 : LDX #6 : LDY #0 : JSR osbyte : STX se_fx3
+    \ The file, S and the sector's digit, into screen memory (the block's
+    \ byte 6 zero: at the address given, not the file's own). OSFILE
+    \ writes the file's details over the block, so it's set each time.
+    LDA se_sector : ORA #'0' : STA se_name + 1
+    LDX #se_block_end - se_block - 1
+.block
+    LDA se_block_init,X : STA se_block,X
+    DEX : BPL block
+    LDA #&FF : LDX #LO(se_block) : LDY #HI(se_block) : JSR osfile
+    JSR se_back
+    \ Into the bank, which the OS paged back in after the call.
+    LDX #CP_BANK : LDY #CP_BANK + 1 : JSR copies
+    LDA se_sector : STA loaded_sector
+    LDA #0
+    LDX #MAX_ROOMS - 1
+.gone
+    STA room_gone,X
+    DEX : BPL gone
+.done
+    RTS
+.quiet_cmds EQUB &9F, &BF, &DF, &FF     ; each channel's volume off
+}
+
+\ After the OS's call, or its error: its settings and BRKV as they were,
+\ its state kept for the next load, the game's memory back, and the machine
+\ the game's again.
+.se_back
+{
+    LDA #229 : LDX se_fx229 : LDY #0 : JSR osbyte
+    LDA #3 : LDX se_fx3 : LDY #0 : JSR osbyte
+    SEI
+    LDA se_brkv : STA brkv
+    LDA se_brkv+1 : STA brkv+1
+    LDX #CP_KEEP : LDY #CP_RESTORE + 2 : JSR copies
+    ASSERT CP_RESTORE = CP_KEEP + 2
+.restored                           ; (tools/sectortest.mjs checks it's all as it was)
+    \ The OS's flash may have set its own mode in the ULA.
+    LDA #ULA_MODE1 : STA ula_ctrl
+    JSR install_irq
+    JMP music_release
+}
+
+\ A disc error: from the OS's BRK handler, through BRKV, with (&FD) at the
+\ error's number, then its message (the DFS copies it to page 1 first). The
+\ message, what to do, and SPACE to try again.
+.se_error
+{
+    ZA_ENTRY
+    LDX se_sp : TXS
+    \ The OS paged the language's ROM in for its handler.
+    LDA RS_BANK : STA romshad : STA romsel
+    \ The message, while it's still there below the stack: at most a line,
+    \ and none if it's in a ROM.
+    LDX #0
+    LDY &FE : BMI copied
+    LDY #1
+.copy
+    LDA (&FD),Y : BEQ copied
+    CMP #' ' : BCC next
+    STA se_msg,X
+    INX : CPX #32 : BEQ copied
+.next
+    INY : BNE copy
+.copied
+    LDA #0 : STA se_msg,X
+    JSR se_back
+    JSR card_begin
+    LDA #LO(se_text) : STA text_ptr
+    LDA #HI(se_text) : STA text_ptr+1
+    LDY #9 : JSR print_centred
+    LDA text_ptr : PHA : LDA text_ptr+1 : PHA
+    LDA #LO(se_msg) : STA text_ptr
+    LDA #HI(se_msg) : STA text_ptr+1
+    LDY #11 : JSR print_centred
+    PLA : STA text_ptr+1 : PLA : STA text_ptr
+    LDY #13 : JSR print_centred
+    LDY #15 : JSR print_centred
+    JSR card_show
+    JSR read_keys                   ; (keys already down aren't new)
+.wait
+    JSR wait_vsync
+    JSR read_keys
+    LDA keys_new : AND #KB_GRENADE : BEQ wait
+    JMP sector_load.again
+}
+\ (Here, not in the bank's text: it's the bank that's full.)
+.se_text
+    EQUS "THE DISC WON'T LOAD:", 0
+    EQUS "PUT THE REDSHIFT DISC BACK IN", 0
+    EQUS "AND PRESS SPACE TO TRY AGAIN.", 0
+
+\ The copies a load makes, by number (the cp_ tables, below).
+CP_SAVE    = 0              ; the game's memory that the OS and the DFS write, to the screen
+CP_THEIRS  = 2              ; theirs in its place
+CP_KEEP    = 4              ; theirs kept, after the call
+CP_RESTORE = 6              ; the game's memory back
+CP_BANK    = 8              ; the rooms into the bank
+
+\ Copies X to Y - 1: each one's pages, from and to.
+.copies
+{
+    STY cp_end
+.copy
+    STX cp_i
+    LDA cp_from_lo,X : STA src+1
+    LDA cp_from_hi,X : STA src+2
+    LDA cp_to_lo,X : STA dst+1
+    LDA cp_to_hi,X : STA dst+2
+    LDA cp_pages,X : TAX
+    LDY #0
+.loop
+.src
+    LDA &FF00,Y
+.dst
+    STA &FF00,Y
+    INY : BNE loop
+    INC src+2 : INC dst+2
+    DEX : BNE loop
+    LDX cp_i : INX : CPX cp_end : BNE copy
+    RTS
+}
+
+.loaded_sector  EQUB START_SECTOR   ; the sector whose rooms are in the bank (RSLOAD's at boot)
+.se_sector      EQUB 0              ; the sector being loaded
+.se_sp          EQUB 0              ; the stack at the call, for an error
+.se_brkv        EQUW 0              ; BRKV as it was
+.se_fx229       EQUB 0              ; *FX229 (ESCAPE's effect) as it was
+.se_fx3         EQUB 0              ; *FX3 (where output goes) as it was
+.se_name        EQUS "S?", 13
+.se_block_init                      ; OSFILE's block: the name, then the address
+    EQUW se_name                    ; to load at, and byte 6 zero to use it
+    EQUD &FFFF0000 + SE_FILE
+    EQUD 0, 0, 0
+.se_block       SKIP P% - se_block_init
+.se_block_end
+ASSERT se_block_end - se_block = 18
+.se_msg         SKIP 33             ; the error's message, as a line
+.cp_i           EQUB 0              ; (copies)
+.cp_end         EQUB 0
+\ As start-up found them (startup.6502).
+.os_irq1v       EQUW 0
+.os_sysier      EQUB 0              ; the VIAs' interrupt enables
+.os_usrier      EQUB 0
+\ What the DFS keeps, and the OS's page 8: as they were when the game
+\ started (the loader puts them here), then as each load left them.
+.dfs_keep       SKIP DFS_KEEP_END - DFS_KEEP
+.os_page8       SKIP &100
+
+\ The copies, by CP_*.
+WORK_PAGES = HI(DFS_WORK_END - DFS_WORK)
+KEEP_PAGES = HI(DFS_KEEP_END - DFS_KEEP)
+CP_FROM  = {DFS_WORK, OS_SOUND,     dfs_keep, os_page8,     DFS_KEEP, OS_SOUND,
+            SE_WORK, SE_PAGE8,      SE_FILE}
+CP_TO    = {SE_WORK, SE_PAGE8,      DFS_KEEP, OS_SOUND,     dfs_keep, os_page8,
+            DFS_WORK, OS_SOUND,     ROOMS_AT}
+CP_PAGES = {WORK_PAGES, 1,          KEEP_PAGES, 1,          KEEP_PAGES, 1,
+            WORK_PAGES, 1,          ROOMS_PAGES}
+.cp_from_lo     EQUB LO(CP_FROM)
+.cp_from_hi     EQUB HI(CP_FROM)
+.cp_to_lo       EQUB LO(CP_TO)
+.cp_to_hi       EQUB HI(CP_TO)
+.cp_pages       EQUB CP_PAGES
+ASSERT LEN(CP_FROM) = CP_BANK + 1 AND LEN(CP_TO) = CP_BANK + 1 AND LEN(CP_PAGES) = CP_BANK + 1
+ASSERT MIN(CP_PAGES) > 0
+.sector_code_end
+
+\ Clear of what the OS and the DFS write while they run: the DFS's
+\ workspace, page 8, and the screen memory the load uses.
+ASSERT sector_code >= DFS_WORK_END
+ASSERT sector_code_end <= screen
+\ What the DFS keeps is part of its workspace, and saved with it.
+ASSERT DFS_KEEP >= DFS_WORK AND DFS_KEEP_END <= DFS_WORK_END

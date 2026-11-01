@@ -2,12 +2,15 @@
 \ REDSHIFT for the BBC Micro - build file
 \
 \ !BOOT runs RSLOAD (rsload.6502), which puts RSDATA, the art and the
-\ rooms, in a sideways RAM bank (decision 12) and runs REDSHFT: it loads at
-\ &1900, copies the game down to &0E00 (over the DFS's workspace: the game
-\ never calls the DFS) and starts it.
+\ text, and S1, the first sector's rooms, in a sideways RAM bank (decisions
+\ 12 and 42) and runs REDSHFT: it loads at &1900, copies the game down to
+\ &0E00 (over the DFS's workspace: sector.6502 puts it back for a load)
+\ and starts it. The cage loads each sector's rooms after.
 \ ***************************************************************************
 
 INCLUDE "defs.6502"
+\ What the rooms are: the sectors, their sizes, where a new game starts.
+INCLUDE "../build/data/rooms.6502"
 INCLUDE "memory.6502"
 
 \ The build stamp comes from the Makefile (-D BUILD="date sha"), so a disc
@@ -19,21 +22,50 @@ ELSE
     build_stamp = "DEV"
 ENDIF
 
+\ The sector a game starts in, whose rooms RSLOAD loads at boot: the first
+\ room's, or in a test build (make ROOM=n) the start room's.
+IF DEFINED(START_ROOM)
+    START_SECTOR = ROOM_SECTOR[START_ROOM]
+ELSE
+    START_SECTOR = FIRST_SECTOR
+ENDIF
+\ (A sector's file is S and its digit: sector.6502 and RSLOAD write it.)
+ASSERT SECTORS <= 9
+
 SECTION Boot, filename = "!BOOT", exec = &FFFFFFFF
     EQUS "*| REDSHIFT ", build_stamp, 13
     EQUS "*RUN RSLOAD", 13
 ENDSECTION
 
-\ The art and the rooms, read where they are in the sideways bank.
+\ The art and the text, read where they are in the sideways bank.
 SECTION Data, org = &8000, load = &FFFF3000, filename = "RSDATA", guard = &C000
     INCLUDE "../build/data/gfx.6502"
-    INCLUDE "../build/data/rooms.6502"
     INCLUDE "text.6502"
 .data_end
-    PRINT "data &8000-&", ~data_end, " (", &C000 - data_end, " bytes free)"
 ENDSECTION
 
-\ Below MODE 7's screen, above where RSDATA loads (the ASSERT): RSDATA
+\ Then the room region: one sector's rooms at a time, read in place, sized
+\ for the largest sector's (decision 42). Each sector's file (S1, S2...)
+\ is assembled here. The first's loads at boot just after RSDATA, so
+\ RSLOAD copies both into the bank at once; the cage loads the next one's
+\ into screen memory and copies it in (sector.6502).
+ROOMS_AT   = data_end
+rooms_end  = ROOMS_AT + ROOMS_SIZE
+ROOMS_LOAD = &3000 + (ROOMS_AT - &8000)
+\ Copies into the bank go by whole pages, so past the region's end, into
+\ the bank's free space: nothing follows the region.
+ROOMS_PAGES = HI(ROOMS_SIZE + &FF)
+ASSERT ROOMS_AT + ROOMS_PAGES * &100 <= &C000, "the room region's copies run past the bank"
+room_lo = ROOMS_AT                  ; each room's record, by its number in the sector
+room_hi = ROOMS_AT + SECTOR_ROOMS
+ASSERT SECTOR_ROOMS <= MAX_ROOMS
+PRINT "data &8000-&", ~data_end, ", rooms &", ~ROOMS_AT, "-&", ~rooms_end, " (", &C000 - rooms_end, " bytes free)"
+FOR s = 1..SECTORS
+    PRINT "  S", s, ": ", SECTOR_NROOMS[s - 1], " rooms, ", SECTOR_BYTES[s - 1], " bytes"
+NEXT
+INCLUDE "../build/data/sectors.6502"
+
+\ Below MODE 7's screen, above where RSDATA and S1 load (the ASSERT): they
 \ would reach it only with the bank nearly full. Low enough for the title
 \ theme and its player (decision 33).
 RSLOAD_AT = &6C00
@@ -42,7 +74,9 @@ SECTION RsLoad, org = RSLOAD_AT, load = &FFFF0000 + RSLOAD_AT, exec = &FFFF0000 
 .rsload_end
     PRINT "rsload &", ~RSLOAD_AT, "-&", ~rsload_end, " (", &7C00 - rsload_end, " bytes free)"
 ENDSECTION
-ASSERT &3000 + (data_end - &8000) <= RSLOAD_AT, "RSDATA loads over RSLOAD"
+\ (A DFS can write the whole of a file's last sector, so S1's load is
+\ checked to the end of its last.)
+ASSERT ROOMS_LOAD + ROOMS_PAGES * &100 <= RSLOAD_AT, "RSDATA and S1 load over RSLOAD"
 
 SECTION Loader, org = &1900, load = &FFFF1900, exec = &FFFF0000 + loader, filename = "REDSHFT"
 .payload
@@ -61,6 +95,7 @@ SECTION Loader, org = &1900, load = &FFFF1900, exec = &FFFF0000 + loader, filena
     INCLUDE "things.6502"
     INCLUDE "status.6502"
     INCLUDE "game.6502"
+    INCLUDE "sector.6502"
 \ The OS's font, characters 32-95 (startup.6502's grab_font), with a byte
 \ before it for OSWORD 10's block.
     SKIP 1
@@ -73,6 +108,18 @@ SECTION Loader, org = &1900, load = &FFFF1900, exec = &FFFF0000 + loader, filena
 \ Runs from where the file loaded, after the payload; nothing in here is
 \ needed afterwards.
 .loader
+{
+    \ What the DFS keeps between calls, and the OS's page 8, as they are
+    \ now, before the copy down writes over the one and the game takes the
+    \ other: into the payload, so the copy takes them to dfs_keep and
+    \ os_page8, for a sector's load (sector.6502).
+    LDX #0
+.keep
+FOR p = 0..KEEP_PAGES - 1
+    LDA DFS_KEEP + p * &100,X : STA dfs_keep - code_start + payload + p * &100,X
+NEXT
+    LDA OS_SOUND,X : STA os_page8 - code_start + payload,X
+    INX : BNE keep
     LDX #HI(code_end - code_start + &FF)
     LDY #0
 .copy_down
@@ -80,6 +127,7 @@ SECTION Loader, org = &1900, load = &FFFF1900, exec = &FFFF0000 + loader, filena
     INY : BNE copy_down
     INC copy_down+2 : INC copy_down+5
     DEX : BNE copy_down
+}
     INCLUDE "startup.6502"
 .loader_end
     ASSERT loader_end <= &7C00      ; below MODE 7's screen, where it loads

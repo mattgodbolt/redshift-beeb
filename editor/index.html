@@ -300,8 +300,9 @@ dialog .btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 1
     start, where a new game begins; in another room, it's where the cage brings Ash in.</p>
   <h3>Rooms and sectors</h3>
   <p>New, Duplicate, Rename id and Delete are above the view. Set the exits and the sector (1 to 5) on the
-    right: a room without a sector is in the same one as the room before it. The map under the view shows
-    how the rooms join, with each one's sector. Click a room there to go to it.</p>
+    right: a room without a sector is in the same one as the room before it. Exits stay in the room's
+    sector: the one way on to the next is a cage's down exit. The map under the view shows how the rooms
+    join, with each one's sector. Click a room there to go to it.</p>
   <h3>Keys</h3>
   <table>
     <tr><td><kbd>P</kbd> <kbd>R</kbd> <kbd>T</kbd> <kbd>S</kbd></td><td>Paint, Rectangle, Things, Start</td></tr>
@@ -814,6 +815,17 @@ function validate(doc, tiles, thingTypes = THING_TYPES, thingBox = THING_BOX) {
       const t = r.exits[d];
       if (t === '-' || uses.has(t)) continue;
       add('error', k, t ? `The ${d} exit goes to '${t}', which isn't a room.` : `The ${d} exit is blank: use - for none.`);
+    }
+    // The game holds one sector's rooms at a time, and loads the next only at the cage, so exits
+    // stay in the room's sector, but for a cage's down exit, which goes to the next (decision 42).
+    const cage = r.things.some(t => t.type === 'exit');
+    for (const d of DIRS) {
+      const to = rooms.findIndex(o => o.id === r.exits[d]);
+      if (to < 0 || sector[to] === sector[k] || (d === 'down' && cage && sector[to] === sector[k] + 1)) continue;
+      add('error', k, d === 'down' && sector[to] === sector[k] + 1
+        ? `The down exit goes to '${r.exits[d]}', in the next sector: only a cage (an exit thing) goes there.`
+        : `The ${d} exit goes to '${r.exits[d]}', in sector ${sector[to]}: exits stay in the room's sector, ` +
+          "but for a cage's down exit, which goes to the next.");
     }
     if (r.bands.length > 8) add('error', k, `It has ${r.bands.length} bands: at most 8 fit.`);
     let last = 0;

@@ -10,21 +10,55 @@ traps; `docs/decisions.md` has the why of each choice.
 1. It shows the teletext title page.
 2. It finds a sideways RAM bank: the highest with no ROM that keeps what's
    written to it.
-3. It loads `RSDATA` at `&3000` and copies it into the bank. `RSDATA` is
-   the art, the rooms and the screen text.
-4. It waits for SPACE, playing the title theme, then runs `REDSHFT`.
+3. It closes `!BOOT`, the `*EXEC` file, so the DFS has no file open.
+4. It loads `RSDATA` at `&3000`, and `S1` just after it, and copies both
+   into the bank. `RSDATA` is the art and the screen text; `S1` is the
+   first sector's rooms.
+5. It waits for SPACE, playing the title theme, then runs `REDSHFT`.
 
-`REDSHFT` loads at `&1900` and copies the game down to `&0E00`, over the
-DFS's workspace. Start-up (`src/startup.6502`, run once from where it
-loaded):
+`REDSHFT` loads at `&1900`. Its loader keeps what the DFS keeps between
+calls (its catalogue and state, `DFS_KEEP`) and the OS's page 8, then
+copies the game down to `&0E00`, over the DFS's workspace. Start-up
+(`src/startup.6502`, run once from where it loaded):
 
 - reads the OS's font through OSWORD 10;
+- notes the OS's interrupts (IRQ1V and the VIAs' enables);
 - pages the data bank in for good;
 - sets MODE 1 in the hardware, narrowed to 256x192 at `&5000`;
 - takes over IRQ1V.
 
-From then on the game makes no OS calls. It reads the keyboard from the
-System VIA itself, and writes the sound chip itself.
+From then on the game makes no OS calls but for a sector's load (below).
+It reads the keyboard from the System VIA itself, and writes the sound
+chip itself.
+
+## A sector at a time
+
+The bank keeps one sector's rooms at a time, in its room region
+(`ROOMS_AT`), sized for the largest sector's (decision 42). Rooms are
+numbered within their sector, and their exits stay in it. The one way out
+is the cage: its down exit names a room in the next sector, marked
+`NEXT_SECTOR` in the record. After the cage's ride, `sector_load`
+(`src/sector.6502`) brings that sector's file in:
+
+1. The screen goes black (the palette, and the CRTC's display off) and
+   the music is held, the chip silent.
+2. The game's memory that the OS and the DFS write is copied to screen
+   memory: the DFS's workspace and page 8.
+3. What the DFS keeps, and the OS's page 8, go back in place as the last
+   load (or the loader) left them.
+4. IRQ1V and the VIAs' interrupt enables go back as start-up found them.
+   ESCAPE is made an ordinary key and the VDU drivers are switched off.
+5. OSFILE loads the file into screen memory.
+6. Everything goes back, the interrupts are the game's again
+   (`install_irq`), and the rooms are copied into the bank. What was
+   killed or taken is forgotten: sectors are one way.
+
+The sector's card follows, and then its first room. A death reloads the
+room from the bank, not the disc. A game that ends in a later sector
+loads the first sector's file again for the new one.
+
+A disc error comes back as a BRK through BRKV to `se_error`, which puts
+everything back, shows the DFS's message, and tries again on SPACE.
 
 ## A frame
 
@@ -155,6 +189,8 @@ the editor.
 - `rooms/rooms.txt` holds the rooms.
 - `music/*.txt` hold the music: `music/instruments.txt` says how.
 - `tools/mkgfx.py`, `tools/mkrooms.py` and `tools/mkmusic.py` turn them
-  into `build/data/*.6502`.
+  into `build/data/*.6502`. `tools/mkrooms.py` writes a file of rooms for
+  each sector (`sector<n>.6502`, the disc's `S<n>`), and in `rooms.6502`
+  what the game needs to know about them all.
 - A room packs as runs of tiles and runs copied from the row above. The
   record format is in `tools/mkrooms.py`'s docstring.

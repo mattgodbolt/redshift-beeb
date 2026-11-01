@@ -103,6 +103,28 @@ ENDIF
     JMP done
 }
 
+\ Put irq_handler on IRQ1V: VSync and User VIA T1 only. With interrupts
+\ off, at start-up and after a sector's load (sector.6502); they're on
+\ after.
+.install_irq
+{
+    LDA #&7F : STA sysvia_ier : STA usrvia_ier  ; anything we don't service
+                                                ; would hold IRQ asserted
+    LDA #LO(irq_handler) : STA irq1v
+    LDA #HI(irq_handler) : STA irq1v+1
+    LDA usrvia_acr : AND #&1F : ORA #&40        ; T1 free-running, T2 one-shot
+    STA usrvia_acr
+    LDA #&82 : STA sysvia_ier                   ; CA1: VSync
+    \ T1 as far off as it goes, and its flag clear, until VSync starts it
+    \ (its tables may not be set yet).
+    LDA #&FF : STA usrvia_t1ll : STA usrvia_t1lh
+    STA usrvia_t1cl : STA usrvia_t1ch
+    LDA #&40 : STA usrvia_ifr
+    LDA #&C0 : STA usrvia_ier                   ; T1
+    CLI
+    RTS
+}
+
 \ Wait for the next VSync.
 .wait_vsync
 {

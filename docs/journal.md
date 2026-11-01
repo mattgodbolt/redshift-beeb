@@ -296,3 +296,38 @@ What was done, in order, with what worked and what didn't.
   interrupt's blackout path, and T1 stopped before its interrupt is
   enabled at start-up.
 
+
+## 2026-10-31: a sector at a time
+
+- The bank held the art, the text and every room, and was nearly full.
+  Matt's design (decision 42): each sector's rooms a file of their own,
+  the bank keeping one sector's at a time, and the cage loading the next.
+  `tools/mkrooms.py` numbers rooms within their sector and writes a file
+  of them for each; RSLOAD loads S1 with RSDATA; the cage's load is
+  `src/sector.6502`.
+- The game owns the machine, so a load gives the OS back its interrupts
+  and the DFS its workspace, calls OSFILE, and takes everything back. The
+  first load worked on both machines.
+- The trap was DFS 1.2's catalogue. It reads the catalogue afresh only if
+  the drive has stopped or the catalogue it has is another drive's
+  (`&AA5F` in the ROM, `&1082` in its workspace). Giving back just its
+  state page passed the cage's load, the drive long stopped since boot,
+  but a retry straight after an error found the drive still spinning and
+  searched the game's code as the catalogue, for ever. Now the catalogue
+  is kept with the state, as the DFS left them, and the test retries at
+  once to check.
+- Three more things to know: an error's BRK reaches BRKV with the
+  language's ROM paged in, so the handler pages the bank back first;
+  OSFILE writes the file's details over its block, so it's set afresh for
+  each call; and DFS 1.2's error for a missing file is "Not found".
+- `tools/sectortest.mjs`, in `make check` on both machines, takes the
+  cage from the first room and checks that the game's memory comes back
+  as it was, that the screen is black and the chip silent while the DFS
+  runs, that Ash arrives and the frame rate holds, that a death in
+  Sector 2 doesn't touch the disc, that a game over there loads Sector 1
+  again, and that a disc without S2 gives the error and then loads once
+  the disc is back. It reports how long a load takes. By hand: junk in
+  the rest of the DFS's workspace at the call, and ESCAPE held through
+  the load, changed nothing.
+- The level editor refuses an exit across sectors too, since it must
+  refuse just what `mkrooms.py` does.

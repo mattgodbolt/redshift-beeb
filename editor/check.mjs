@@ -168,10 +168,11 @@ const blankMap = Array(RS.MAP_H).fill('');
 const rich = [
   '# A header.', '', 'room alpha   # the first', 'name ALPHA ROOM', 'sector 2', 'exits left=- right=beta up=- down=gamma', 'start 3 10',
   'colours red yellow/white white', '# the sky', 'band 60 2 cyan', 'band 20 1 magenta/red   # out of order',
-  'band 100 3 green', 'map', ...map(3), 'thing sentry 4 5 1', '# a pickup', 'thing cell 10 12', '',
+  'band 100 3 green', 'map', ...map(3), 'thing sentry 4 5 1', '# a pickup', 'thing cell 10 12',
+  '# the cage, down to gamma in the next sector', 'thing exit 20 19', '',
   '# beta: no colours line, odd spacing, and blank map lines', 'room beta', 'name   BETA', 'exits  left=alpha',
   'map', ...blankMap.map((l, k) => (k === 21 ? '______' : l)), '',
-  'room gamma', 'name GAMMA', 'sector 3 # deeper', 'exits up=alpha', 'start 20 18', 'colours blue green magenta', 'band 2 1 white', 'band 4 1 black',
+  'room gamma', 'name GAMMA', 'sector 3 # deeper', 'exits up=gamma', 'start 20 18', 'colours blue green magenta', 'band 2 1 white', 'band 4 1 black',
   'band 175 3 red', 'map', ...map(5), 'thing shard 1 1', 'thing exit 29 19 0 extra', '', '# the end', '',
 ].join('\n');
 const richDoc = roundTrip(rich, 'made-up rooms', false);
@@ -243,10 +244,18 @@ const broken = {
   'a sentry at x 31, off the right': one({tail: ['thing sentry 31 4']}),
   'a cage on row 20, off the bottom': one({tail: ['thing exit 4 20']}),
   'a thing at x -1': one({tail: ['thing cell -1 4']}),
+  // (Rooms load a sector at a time, so only a cage's down exit leaves one, to the next.)
+  'an exit to another sector': one({head: ['exits right=duo']}) + one({head: ['sector 2']}).replace('solo', 'duo'),
+  'down to the next sector with no cage': one({head: ['exits down=duo']}) + one({head: ['sector 2']}).replace('solo', 'duo'),
+  'a cage down two sectors': one({head: ['exits down=duo'], tail: ['thing exit 4 4']}) + one({head: ['sector 3']}).replace('solo', 'duo'),
+  'a cage back to the sector before': one({head: ['sector 2', 'exits down=duo'], tail: ['thing exit 4 4']})
+    + one({head: ['sector 1']}).replace('solo', 'duo'),
 };
 check(compareVerdictOk(one({})), 'a plain room is fine by the editor');
 compareVerdict(one({tail: ['thing drone 4 1', 'thing crawler 30 20', 'thing exit 30 19', 'thing cell 31 21', 'thing sentry 0 0', 'thing shard 5 5 1']}),
   'six things, each just fitting');
+compareVerdict(one({head: ['exits down=duo'], tail: ['thing exit 4 4']}) + one({head: ['sector 2']}).replace('solo', 'duo'),
+  'a cage down to the next sector');
 for (const [what, text] of Object.entries(broken)) compareVerdict(text, what);
 function compareVerdictOk(text) {
   return RS.validate(RS.parseRooms(text), tiles).filter(p => p.level === 'error').length === 0;

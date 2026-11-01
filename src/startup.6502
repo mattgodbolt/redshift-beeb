@@ -9,9 +9,15 @@
     ZA_ENTRY
     JSR grab_font               ; (while the OS is still ours to call)
     SEI                         ; interrupts stay off until install_irq
+    \ The OS's interrupts as they are, for a sector's load to give back
+    \ (sector.6502).
+    LDA irq1v : STA os_irq1v
+    LDA irq1v+1 : STA os_irq1v+1
+    LDA sysvia_ier : STA os_sysier
+    LDA usrvia_ier : STA os_usrier
     \ The data's bank (RSLOAD's), paged in for good.
-    LDA RS_BANK : STA &F4 : STA romsel
-    LDA #&D8 : STA ula_ctrl     ; MODE 1's pixels: 4 colours, 20 columns of bytes
+    LDA RS_BANK : STA romshad : STA romsel
+    LDA #ULA_MODE1 : STA ula_ctrl
     LDX #crtc_end - crtc_regs - 2
 .crtc
     LDA crtc_regs,X : STA crtc_reg
@@ -56,26 +62,6 @@
     \ land in a 32us blank.
     EQUB 8, CRTC_BLANK
 .crtc_end
-
-\ Put irq_handler on IRQ1V: VSync and User VIA T1 only.
-.install_irq
-{
-    LDA #&7F : STA sysvia_ier : STA usrvia_ier  ; anything we don't service
-                                                ; would hold IRQ asserted
-    LDA #LO(irq_handler) : STA irq1v
-    LDA #HI(irq_handler) : STA irq1v+1
-    LDA usrvia_acr : AND #&1F : ORA #&40        ; T1 free-running, T2 one-shot
-    STA usrvia_acr
-    LDA #&82 : STA sysvia_ier                   ; CA1: VSync
-    \ T1 as far off as it goes, and its flag clear, until VSync starts it
-    \ (its tables aren't set yet).
-    LDA #&FF : STA usrvia_t1ll : STA usrvia_t1lh
-    STA usrvia_t1cl : STA usrvia_t1ch
-    LDA #&40 : STA usrvia_ifr
-    LDA #&C0 : STA usrvia_ier                   ; T1
-    CLI
-    RTS
-}
 
 \ The OS's font, characters 95 down to 32, read through OSWORD 10 (on a
 \ Master the font isn't at &C000). Each call's block starts a byte early,
