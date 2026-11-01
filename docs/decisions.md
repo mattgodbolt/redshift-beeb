@@ -331,4 +331,45 @@ Matt was away is marked *provisional* until reviewed.
       the palette black: the OS's flash writes its own mode into the ULA.
     - The level editor finds the new exit rule's errors too, since it must
       refuse just what `mkrooms.py` refuses.
+43. **2026-10-31: a sector's own looks travel with it.** Every look (a
+    tile as written, or one of its variants or alts) has a number under
+    128, since the rooms' packing has 7 bits for one, and most were taken,
+    many by Sector 1's landmarks. Sector 2 needs landmarks of its own, and
+    the bank had little room for more art. Now:
+    - A look is shared, in RSDATA and the same in every sector, or a
+      sector's own, in its file (S1, S2...) with its rooms, and in the bank
+      only while that sector is loaded.
+    - A tile's looks are a sector's own when only that sector's rooms use
+      it. A tile used in several sectors, or in none, is shared, and
+      `gfx/tiles.txt` flags `shared` the building blocks every sector needs
+      (everything above the set pieces). Nobody numbers anything by hand:
+      `gfxlib.Looks` numbers the shared looks from 0, then each sector's
+      own from the first number after them, the same numbers in every
+      sector.
+    - A sector's file carries its own looks, their dotted outlines, and the
+      tables. It loads into the bank's sector region (the room region that
+      was), sized for the largest sector's file. A death reloads a room
+      from the bank, as before.
+    - The build fails if a sector's shared and own looks are more than 128,
+      and prints how many are shared, each sector's own, and how many a
+      new sector could have.
+    - Sector 1's landmark kit is its own. The Engine Shed, Sector 2's
+      placeholder, shares the small wheel, the mast and the beacon with
+      Sector 1; its signal arm is Sector 2's own.
+
+    Calls made in building it (*provisional*):
+    - The look tables (each look's graphics in either phase, and its
+      flags) travel whole in each sector's file, the shared looks' entries
+      and the sector's own, rather than staying in RSDATA with the
+      sector's range patched in at a load. The copy that brings the rooms
+      brings them, so there's no code to patch them, nor a second copy of
+      the sector's entries kept in the bank to patch from, and RSLOAD's
+      copy at boot puts the first sector's in place. It costs each file
+      the shared looks' entries again on the disc.
+    - The sprites' mask table moved to the start of RSDATA, where it's
+      page-aligned with nothing lost to padding.
+    - The level editor counts looks as `gfxlib.Looks` does and refuses a
+      sector with too many, since it must refuse just what `mkrooms.py`
+      refuses. It draws every room as before, whichever sector a tile is
+      in.
 

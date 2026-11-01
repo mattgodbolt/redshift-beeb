@@ -53,8 +53,9 @@ def _pixels(art, w, where):
 
 
 class Tile:
-    def __init__(self, key, name, flags, pixels):
+    def __init__(self, key, name, flags, pixels, shared=False):
         self.key, self.name, self.flags, self.pixels = key, name, flags, pixels
+        self.shared = shared    # its looks are in every sector, whatever the rooms use (Looks)
         self.variants = []      # (when, pixels), in file order: the first that holds is used
         self.alts = {}          # when -> [pixels]: looks used now and then instead
 
@@ -102,11 +103,12 @@ def read_tiles(path=ROOT / "gfx/tiles.txt"):
         key = " " if words[1] == "space" else words[1]
         if len(key) != 1:
             raise SystemExit(f"{path}:{line}: a tile's key is one character")
-        flags = set(words[3:])
+        # (shared says which file a look travels in, not what the tile is.)
+        flags = set(words[3:]) - {"shared"}
         bad = flags - set(TILE_FLAGS)
         if bad:
             raise SystemExit(f"{path}:{line}: unknown flags {bad}")
-        tiles.append(Tile(key, words[2], flags, _pixels(art, 8, f"{path}:{line}")))
+        tiles.append(Tile(key, words[2], flags, _pixels(art, 8, f"{path}:{line}"), "shared" in words[3:]))
     if not tiles or tiles[0].key != " ":
         raise SystemExit(f"{path}: the first tile must be 'space'")
     keys = [t.key for t in tiles]
@@ -220,10 +222,11 @@ def tile_bytes(pixels):
 
 class Look:
     """One 8x8 picture the game can draw: a tile as written, or one of its
-    variants or alts. It has its tile's flags."""
-    def __init__(self, index, tile, when, alt, pixels):
+    variants or alts. It has its tile's flags, and the sector it travels
+    with: None for a shared look (Looks)."""
+    def __init__(self, index, tile, when, alt, pixels, sector=None):
         self.index, self.tile, self.when, self.alt, self.pixels = index, tile, when, alt, pixels
-        self.key, self.flags = tile.key, tile.flags
+        self.key, self.flags, self.sector = tile.key, tile.flags, sector
         self.name = tile.name
         if when != "base":
             self.name += "_" + when.replace("+", "_")
@@ -231,17 +234,88 @@ class Look:
             self.name += f"_alt{alt}"
 
 
-def looks(tiles):
-    """Every look, numbered: the tiles as written first (so a tile's number
-    is its place in the file), then each tile's variants and alts in order."""
-    out = [Look(i, t, "base", None, t.pixels) for i, t in enumerate(tiles)]
+def looks(tiles, first=0, sector=None):
+    """These tiles' looks, numbered from first: the tiles as written, then
+    each tile's variants and alts in order."""
+    out = [Look(first + i, t, "base", None, t.pixels, sector) for i, t in enumerate(tiles)]
     for t in tiles:
         for when, px in t.variants:
-            out.append(Look(len(out), t, when, None, px))
+            out.append(Look(first + len(out), t, when, None, px, sector))
         for when, pxs in t.alts.items():
             for k, px in enumerate(pxs):
-                out.append(Look(len(out), t, when, k, px))
+                out.append(Look(first + len(out), t, when, k, px, sector))
     return out
+
+
+# The rooms' packing has 7 bits a look.
+MAX_LOOKS = 128
+# The game's tables take this many bytes for each look number (mkgfx.py):
+# tiles_red and tiles_blue two each, tile_attr, attr_red and attr_blue one.
+TABLE_BYTES = 7
+
+
+class Looks:
+    """Every look, numbered for the game (decision 43). The shared looks are
+    in RSDATA; a sector's own travel in its file, and are in the bank only
+    while it's loaded.
+
+    A tile's looks are a sector's own when only that sector's rooms use the
+    tile and it isn't flagged shared. The empty tile's are always shared:
+    the game fills with it (T_EMPTY) and draws the back wall from its
+    looks. The shared looks number from 0, in file order (looks), so the
+    empty tile is 0 and its variants stay in order; each sector's own
+    number on from the first number after them, so they take the same
+    numbers in every sector.
+
+        shared   the shared looks
+        own      sector -> its own looks, for each sector with rooms
+        ntiles   how many the game's tables hold: the shared looks, and
+                 room for the most any sector has of its own"""
+    def __init__(self, tiles, rooms):
+        used = {}
+        for r in rooms:
+            for line in r.map:
+                for c in line:
+                    used.setdefault(c, set()).add(r.sector)
+
+        def owner(i, t):
+            s = used.get(t.key, set())
+            return None if i == 0 or t.shared or len(s) != 1 else next(iter(s))
+
+        whose = [owner(i, t) for i, t in enumerate(tiles)]
+        self.shared = looks([t for t, s in zip(tiles, whose) if s is None])
+        n = len(self.shared)
+        self.own = {s: looks([t for t, o in zip(tiles, whose) if o == s], n, s)
+                    for s in sorted({r.sector for r in rooms})}
+        for s, own in self.own.items():
+            if n + len(own) > MAX_LOOKS:
+                raise SystemExit(f"Sector {s}: {n} shared looks and {len(own)} of its own, "
+                                 f"at most {MAX_LOOKS} in all (the rooms' packing has 7 bits a look)")
+        self.ntiles = n + max((len(own) for own in self.own.values()), default=0)
+
+    def of(self, sector):
+        """The looks a sector's rooms draw with, in number order."""
+        return self.shared + self.own.get(sector, [])
+
+    def file_bytes(self, sector):
+        """What a sector's looks take in its file (mkgfx.py's looks<n>.6502):
+        the tables, and its own looks' graphics."""
+        return TABLE_BYTES * self.ntiles + 16 * len(look_blocks(self.own[sector])[0])
+
+
+def look_blocks(lks):
+    """These looks' graphics, 16 bytes each (tile_bytes) in their order,
+    then the dotted outlines of the phase ones; and each look's block in
+    the Red Phase and in the Blue (out of its phase, its outline)."""
+    blocks = [tile_bytes(lk.pixels) for lk in lks]
+    hollow_of = {}
+    for i, lk in enumerate(lks):
+        if lk.flags & {"red", "blue"}:
+            hollow_of[i] = len(blocks)
+            blocks.append(tile_bytes(ghost_tile(lk.pixels)))
+    red = [hollow_of[i] if "blue" in lk.flags else i for i, lk in enumerate(lks)]
+    blue = [hollow_of[i] if "red" in lk.flags else i for i, lk in enumerate(lks)]
+    return blocks, red, blue
 
 
 def look_hash(c, r, salt):
@@ -257,7 +331,9 @@ def resolve(room, tiles, all_looks=None):
     phases; a side of any other tile is open when the tile there is another
     one. Past the map's edge, a side is closed. A tile takes its first
     variant whose <when> holds, or else its own look; then, where the cell's
-    look_hash falls below the number of alts for that <when>, that alt."""
+    look_hash falls below the number of alts for that <when>, that alt.
+    The looks are all_looks, for the game's numbers the room's sector's
+    (Looks.of), or else every look numbered in file order."""
     all_looks = all_looks or looks(tiles)
     keys = {t.key: t for t in tiles}
     by = {(lk.key, lk.when, lk.alt): lk for lk in all_looks}

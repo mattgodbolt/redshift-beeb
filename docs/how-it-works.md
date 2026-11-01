@@ -12,8 +12,9 @@ traps; `docs/decisions.md` has the why of each choice.
    written to it.
 3. It closes `!BOOT`, the `*EXEC` file, so the DFS has no file open.
 4. It loads `RSDATA` at `&3000`, and `S1` just after it, and copies both
-   into the bank. `RSDATA` is the art and the screen text; `S1` is the
-   first sector's rooms.
+   into the bank. `RSDATA` is the shared art and the screen text; `S1` is
+   the first sector's file: its rooms, its own looks, and the tables for
+   drawing every look (see "Looks").
 5. It waits for SPACE, playing the title theme, then runs `REDSHFT`.
 
 `REDSHFT` loads at `&1900`. Its loader keeps what the DFS keeps between
@@ -33,12 +34,13 @@ chip itself.
 
 ## A sector at a time
 
-The bank keeps one sector's rooms at a time, in its room region
-(`ROOMS_AT`), sized for the largest sector's (decision 42). Rooms are
-numbered within their sector, and their exits stay in it. The one way out
-is the cage: its down exit names a room in the next sector, marked
-`NEXT_SECTOR` in the record. After the cage's ride, `sector_load`
-(`src/sector.6502`) brings that sector's file in:
+The bank keeps one sector's file at a time, in its sector region
+(`SECTOR_AT`), sized for the largest (decisions 42 and 43): the sector's
+rooms, its own looks, and the look tables. Rooms are numbered within their
+sector, and their exits stay in it. The one way out is the cage: its down
+exit names a room in the next sector, marked `NEXT_SECTOR` in the record.
+After the cage's ride, `sector_load` (`src/sector.6502`) brings that
+sector's file in:
 
 1. The screen goes black (the palette, and the CRTC's display off) and
    the music is held, the chip silent.
@@ -50,8 +52,9 @@ is the cage: its down exit names a room in the next sector, marked
    ESCAPE is made an ordinary key and the VDU drivers are switched off.
 5. OSFILE loads the file into screen memory.
 6. Everything goes back, the interrupts are the game's again
-   (`install_irq`), and the rooms are copied into the bank. What was
-   killed or taken is forgotten: sectors are one way.
+   (`install_irq`), and the file is copied into the bank, its look tables
+   over the last sector's. What was killed or taken is forgotten: sectors
+   are one way.
 
 The sector's card follows, and then its first room. A death reloads the
 room from the bank, not the disc. A game that ends in a later sector
@@ -158,8 +161,9 @@ mirrored too.
 - Every tile has flags (`gfx/tiles.txt`). `red` or `blue` makes it exist in
   that phase only.
 - `tools/mkgfx.py` writes two tables of tile pointers and two of
-  attributes, one of each per phase. Out of phase, a tile points at its
-  dotted outline and has no flags at all.
+  attributes, one of each per phase, in each sector's file (see "Looks").
+  Out of phase, a tile points at its dotted outline and has no flags at
+  all.
 - Collision reads the phase's attribute table (`attr_ptr`), and drawing its
   pointer table (`tp_lo` and `tp_hi`).
 - A shift redraws only the phase tiles (`draw_room_phase`).
@@ -172,8 +176,28 @@ A tile in `gfx/tiles.txt` can have variants: other pictures for where it
 is in a room (open to air above, below or to a side, deep in a wall, under
 a ceiling, in an exit) and alts used here and there by a hash of the cell.
 `tools/gfxlib.py`'s `resolve` picks each cell's look when the rooms are
-built, so the game just draws a tile number, and the editor picks them the
-same way.
+built, so the game just draws a look's number, and the editor picks them
+the same way.
+
+A room has 7 bits for a look, so a sector can draw with 128 at most.
+Looks are shared or a sector's own (decision 43), and `gfxlib.Looks`
+sorts and numbers them:
+
+- A tile's looks are a sector's own when only that sector's rooms use it,
+  unless `gfx/tiles.txt` flags it `shared`. The rest are shared: a tile
+  used in several sectors or in none, the flagged building blocks, and
+  always the empty tile.
+- The shared looks are numbered from 0 and live in `RSDATA`
+  (`tile_gfx`). Each sector's own are numbered from the first number
+  after them, so every sector's own take the same numbers; they live in
+  the sector's file (`build/data/looks<n>.6502`, part of `sector<n>.6502`).
+- The tables the game draws and collides with (`tiles_red`, `tiles_blue`,
+  `tile_attr`, `attr_red`, `attr_blue`), `NTILES` long, are in the
+  sector's file too, at the same place in each (`src/main.6502`): a
+  sector's load brings its tables with its rooms, and the drawing code is
+  as it was.
+- The build fails if a sector has more than 128, and `make` prints how
+  many are shared and each sector's own.
 
 Air is the exception. Its looks are a two by two grid of faint panel seams,
 and storing them would break up the rooms' runs of air, so the map keeps
@@ -189,8 +213,9 @@ the editor.
 - `rooms/rooms.txt` holds the rooms.
 - `music/*.txt` hold the music: `music/instruments.txt` says how.
 - `tools/mkgfx.py`, `tools/mkrooms.py` and `tools/mkmusic.py` turn them
-  into `build/data/*.6502`. `tools/mkrooms.py` writes a file of rooms for
-  each sector (`sector<n>.6502`, the disc's `S<n>`), and in `rooms.6502`
-  what the game needs to know about them all.
+  into `build/data/*.6502`. `tools/mkrooms.py` writes a file for each
+  sector (`sector<n>.6502`, the disc's `S<n>`), its rooms with its looks
+  from `tools/mkgfx.py` (`looks<n>.6502`), and in `rooms.6502` what the
+  game needs to know about them all.
 - A room packs as runs of tiles and runs copied from the row above. The
   record format is in `tools/mkrooms.py`'s docstring.

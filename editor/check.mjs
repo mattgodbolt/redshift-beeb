@@ -6,6 +6,7 @@
 // - rooms.txt survives a load and a save byte for byte, and rooms written afresh read back the same;
 // - every room draws, in both phases, pixel for pixel as mkrooms.py's render() draws it;
 // - the editor finds problems in just the rooms that mkrooms.py (or gfxlib's reader) refuses;
+// - it counts the looks shared and each sector's own as gfxlib's Looks does (decision 43);
 // - the editor's copy of THING_TYPES matches mkrooms.py's.
 //
 // It runs the page's core script (<script id="core">) as it is. The drawing and the mkrooms.py
@@ -51,9 +52,15 @@ elif mode == 'render':
     tiles = g.read_tiles()
     print(json.dumps([[base64.b64encode(m.render(r, tiles, p, scale=1).tobytes()).decode() for p in (0, 1)]
                       for r in g.read_rooms(sys.argv[3])]))
+elif mode == 'looks':
+    lks = g.Looks(g.read_tiles(), g.read_rooms(sys.argv[3]))
+    print(json.dumps([len(lks.shared), {s: len(own) for s, own in lks.own.items()}]))
 elif mode == 'build':
     real = g.read_rooms
     g.read_rooms = lambda p=sys.argv[3]: real(p)
+    if len(sys.argv) > 5:
+        real_tiles = g.read_tiles
+        g.read_tiles = lambda p=sys.argv[5]: real_tiles(p)
     sys.argv = ['mkrooms.py', sys.argv[4]]
     try:
         m.main()
@@ -117,20 +124,34 @@ function compareDrawing(file, doc, label) {
   }));
 }
 
-// The editor's errors against mkrooms.py's verdict, which is the one that counts.
-function compareVerdict(text, label) {
+// The editor's errors against mkrooms.py's verdict, which is the one that counts: with tiles.txt, or
+// the tiles given (their text).
+function compareVerdict(text, label, tilesText = null) {
   const file = path.join(tmp, 'rooms.txt');
   writeFileSync(file, text);
-  const res = py('build', file, path.join(tmp, 'rooms.6502'));
+  const tilesFile = path.join(tmp, 'tiles.txt');
+  if (tilesText) writeFileSync(tilesFile, tilesText);
+  const res = py('build', file, path.join(tmp, 'rooms.6502'), ...(tilesText ? [tilesFile] : []));
   if (res.error) return skip(`${label}: against mkrooms.py`, res.error);
   let mine;
   try {
-    mine = RS.validate(RS.parseRooms(text), tiles).filter(p => p.level === 'error').map(p => p.msg);
+    mine = RS.validate(RS.parseRooms(text), tilesText ? RS.parseTiles(tilesText) : tiles)
+      .filter(p => p.level === 'error').map(p => p.msg);
   } catch (e) {
     mine = [e.message];
   }
   const theirs = res.out === 'ok' ? 'takes it' : `refuses it (${res.out})`;
   check(!mine.length === (res.out === 'ok'), `${label}: mkrooms.py ${theirs}; the editor ${mine.length ? 'says ' + mine[0] : 'finds no errors'}`);
+}
+
+// The looks shared and each sector's own, as the editor counts them (lookCounts) and gfxlib's Looks.
+function compareLooks(file, doc, label) {
+  const res = py('looks', file);
+  if (res.error) return skip(`${label}: looks against gfxlib`, res.error);
+  const want = JSON.stringify(JSON.parse(res.out)), mine = RS.lookCounts(doc, tiles);
+  const got = JSON.stringify([mine.shared, Object.fromEntries([...mine.own].sort((a, b) => a[0] - b[0]))]);
+  check(got === want, `${label}: the looks shared, and each sector's own, as gfxlib's Looks has them: ${got}`,
+    `gfxlib says ${want}`);
 }
 
 // --- The real rooms -------------------------------------------------------------------------------
@@ -142,6 +163,7 @@ const doc = roundTrip(real, label, true);
 for (const p of RS.validate(doc, tiles)) console.log(`     ${p.level}: ${doc.rooms[p.room] ? doc.rooms[p.room].id + ': ' : ''}${p.msg}`);
 compareVerdict(real, label);
 compareDrawing(roomsFile, doc, label);
+compareLooks(roomsFile, doc, label);
 
 const types = py('types');
 if (types.error) skip('THING_TYPES', types.error);
@@ -181,6 +203,7 @@ compareVerdict(rich, 'made-up rooms');
 const richFile = path.join(tmp, 'rich.txt');
 writeFileSync(richFile, rich);
 compareDrawing(richFile, richDoc, 'made-up rooms');
+compareLooks(richFile, richDoc, 'made-up rooms');
 
 // An edit rewrites only the room it touches, and keeps that room's comments.
 {
@@ -257,6 +280,14 @@ compareVerdict(one({tail: ['thing drone 4 1', 'thing crawler 30 20', 'thing exit
 compareVerdict(one({head: ['exits down=duo'], tail: ['thing exit 4 4']}) + one({head: ['sector 2']}).replace('solo', 'duo'),
   'a cage down to the next sector');
 for (const [what, text] of Object.entries(broken)) compareVerdict(text, what);
+// A tile with as many looks as a sector can have, used only in Sector 2: too many for it, with the
+// shared ones (decision 43).
+{
+  const art = Array(8).fill('.1.1.1.1').join('\n');
+  const big = `${read('gfx/tiles.txt')}\ntile 7 big\n${art}\n` + `alt 7 base\n${art}\n`.repeat(RS.MAX_LOOKS - 1);
+  compareVerdict(one({}) + one({head: ['sector 2'], map: blankMap.map((l, k) => (k ? l : '7'))}).replace('solo', 'duo'),
+    "a sector's own looks past what fits", big);
+}
 function compareVerdictOk(text) {
   return RS.validate(RS.parseRooms(text), tiles).filter(p => p.level === 'error').length === 0;
 }

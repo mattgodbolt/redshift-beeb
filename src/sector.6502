@@ -1,9 +1,10 @@
 \ ***************************************************************************
-\ A sector's rooms from the disc (decision 42).
+\ A sector's file from the disc (decisions 42 and 43).
 \
-\ The bank keeps one sector's rooms at a time, in its room region
-\ (ROOMS_AT, main.6502). RSLOAD puts the first sector's there at boot; the
-\ cage loads the next one's, and a new game the first's again if it's gone.
+\ The bank keeps one sector's file at a time, in its sector region
+\ (SECTOR_AT, main.6502): its rooms, and its looks, with the tables for
+\ every look. RSLOAD puts the first sector's there at boot; the cage loads
+\ the next one's, and a new game the first's again if it's gone.
 \
 \ The game owns the machine, so for a load it gives the OS back what the
 \ OS and the DFS need, loads the file (OSFILE), and takes the machine back:
@@ -28,9 +29,9 @@
 \    key (*FX229), so a press can't stop the load, and the VDU drivers are
 \    turned off (*FX3), so nothing the DFS says is printed on our screen.
 \ 5. The file loads into screen memory, everything goes back as it was,
-\    the machine is the game's again (install_irq), and the rooms go into
-\    the bank. What was killed or taken (room_gone) is cleared: sectors
-\    are one way.
+\    the machine is the game's again (install_irq), and the file goes into
+\    the bank, its looks' tables over the last sector's. What was killed
+\    or taken (room_gone) is cleared: sectors are one way.
 \
 \ A disc error (no disc, the wrong one) comes back as a BRK, through BRKV
 \ to se_error: the screen says what, and SPACE tries again.
@@ -44,11 +45,11 @@
 SE_WORK  = screen
 SE_PAGE8 = SE_WORK + (DFS_WORK_END - DFS_WORK)
 SE_FILE  = SE_PAGE8 + &100
-ASSERT SE_FILE + ROOMS_PAGES * &100 <= &8000   ; (a DFS can write all of the last sector)
+ASSERT SE_FILE + SECTOR_PAGES * &100 <= &8000  ; (a DFS can write all of the last sector)
 
 .sector_code
 
-\ Load sector A's rooms into the bank. It leaves the screen black, with
+\ Load sector A's file into the bank. It leaves the screen black, with
 \ what was on it gone, and the music silent but no longer held: the next
 \ thing shown (a sector's card) clears it and starts its own.
 .sector_load
@@ -182,7 +183,7 @@ CP_SAVE    = 0              ; the game's memory that the OS and the DFS write, t
 CP_THEIRS  = 2              ; theirs in its place
 CP_KEEP    = 4              ; theirs kept, after the call
 CP_RESTORE = 6              ; the game's memory back
-CP_BANK    = 8              ; the rooms into the bank
+CP_BANK    = 8              ; the file into the bank
 
 \ Copies X to Y - 1: each one's pages, from and to.
 .copies
@@ -208,7 +209,7 @@ CP_BANK    = 8              ; the rooms into the bank
     RTS
 }
 
-.loaded_sector  EQUB START_SECTOR   ; the sector whose rooms are in the bank (RSLOAD's at boot)
+.loaded_sector  EQUB START_SECTOR   ; the sector whose file is in the bank (RSLOAD's at boot)
 .se_sector      EQUB 0              ; the sector being loaded
 .se_sp          EQUB 0              ; the stack at the call, for an error
 .se_brkv        EQUW 0              ; BRKV as it was
@@ -240,9 +241,9 @@ KEEP_PAGES = HI(DFS_KEEP_END - DFS_KEEP)
 CP_FROM  = {DFS_WORK, OS_SOUND,     dfs_keep, os_page8,     DFS_KEEP, OS_SOUND,
             SE_WORK, SE_PAGE8,      SE_FILE}
 CP_TO    = {SE_WORK, SE_PAGE8,      DFS_KEEP, OS_SOUND,     dfs_keep, os_page8,
-            DFS_WORK, OS_SOUND,     ROOMS_AT}
+            DFS_WORK, OS_SOUND,     SECTOR_AT}
 CP_PAGES = {WORK_PAGES, 1,          KEEP_PAGES, 1,          KEEP_PAGES, 1,
-            WORK_PAGES, 1,          ROOMS_PAGES}
+            WORK_PAGES, 1,          SECTOR_PAGES}
 .cp_from_lo     EQUB LO(CP_FROM)
 .cp_from_hi     EQUB HI(CP_FROM)
 .cp_to_lo       EQUB LO(CP_TO)

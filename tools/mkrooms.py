@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 """The rooms (rooms/rooms.txt) as records for the game, a file of them for
-each sector (decision 42).
+each sector (decisions 42 and 43).
 
     mkrooms.py build/data/rooms.6502 [--preview build/preview]
 
 It writes, beside the file named:
     rooms.6502      what the game needs to know about every sector: how many
                     there are, how many rooms each has, the most bytes one's
-                    rooms take (the size of the bank's room region), where a
-                    new game starts, and each room's sector and number there
-                    (for make ROOM=n)
-    sector<n>.6502  sector n's rooms: the disc's file S<n>, assembled where
-                    the bank keeps them (ROOMS_AT): a table of each room's
-                    address, low bytes then high bytes, SECTOR_ROOMS long,
-                    then the records
+                    file takes (the size of the bank's sector region), where
+                    a new game starts, and each room's sector and number
+                    there (for make ROOM=n)
+    sector<n>.6502  sector n's file, the disc's S<n>, assembled where the
+                    bank keeps it (SECTOR_AT): a table of each room's
+                    address, low bytes then high bytes, SECTOR_ROOMS long;
+                    its looks (looks<n>.6502, from tools/mkgfx.py: the look
+                    tables and its own looks); then the records
     sectors.6502    an INCLUDE of each sector<n>.6502
 
 Rooms are numbered within their sector, in rooms.txt's order, and a room's
@@ -29,8 +30,9 @@ Each room's record (rooms.6502 reads it):
     colours     logical 1-3 at the top, Red Phase then Blue Phase
     bands       a count, then each band's line, logical colour, Red, Blue
     things      a count, then each thing's type, x, y and argument
-    map         packed: a byte under &80 is a look (gfxlib.looks: a tile, as
-                its surroundings choose); &80+n repeats the last
+    map         packed: a byte under &80 is a look (gfxlib.Looks numbers
+                them: a tile, as its surroundings choose, gfxlib.resolve);
+                &80+n repeats the last
                 tile n+1 more times; &C0+n copies n+1 tiles from the row
                 above. MAP_W * MAP_H tiles in all.
 """
@@ -115,7 +117,6 @@ def main():
     a = ap.parse_args()
     tiles = g.read_tiles()
     keys = {t.key: i for i, t in enumerate(tiles)}
-    all_looks = g.looks(tiles)
     rooms = g.read_rooms()
     ids = {r.ident: r for r in rooms}
     if len(ids) != len(rooms):
@@ -130,6 +131,8 @@ def main():
             raise SystemExit(f"room {r.ident}: sectors are 1-5")
         sectors.setdefault(r.sector, []).append(r)
     number = {r.ident: sectors[r.sector].index(r) for r in rooms}
+    # The looks' numbers: the shared, then each sector's own (decision 43).
+    lks = g.Looks(tiles, rooms)
 
     records = {}
     for r in rooms:
@@ -181,52 +184,55 @@ def main():
         # The back wall's grid isn't kept: those cells stay plain air, and the
         # game draws air as the back wall for where it is (screen.6502's
         # back_look), so long runs of air still pack.
-        cells = [0 if lk.key == " " and lk.when in g.BACK_WHENS else lk.index
-                 for line in g.resolve(r, tiles, all_looks) for lk in line]
+        grid = g.resolve(r, tiles, lks.of(r.sector))
+        assert all(lk.sector in (None, r.sector) for line in grid for lk in line)
+        cells = [0 if lk.key == " " and lk.when in g.BACK_WHENS else lk.index for line in grid for lk in line]
         packed = pack(cells)
         assert unpack(packed) == cells
         records[r.ident] = rec + packed
 
     # Every sector's file has its tables the same length, so the game finds
-    # them in the bank whichever sector is there.
+    # them in the bank whichever sector is there: the rooms' (the most rooms
+    # a sector has), then the looks' (NTILES long), then its own looks.
     most = max(len(rs) for rs in sectors.values())
-    size = {s: 2 * most + sum(len(r.name[:20]) + 1 + len(records[r.ident]) for r in rs)
+    size = {s: 2 * most + lks.file_bytes(s) + sum(len(r.name[:20]) + 1 + len(records[r.ident]) for r in rs)
             for s, rs in sectors.items()}
     head = "\\ Made by tools/mkrooms.py from rooms/rooms.txt: don't edit."
     out_dir = Path(a.out).parent
     out_dir.mkdir(parents=True, exist_ok=True)
     for s, rs in sorted(sectors.items()):
         pad = ["0"] * (most - len(rs))
-        out = [head, f"\\ Sector {s}'s rooms, the file S{s}, assembled where the bank keeps them.", "",
-               f'SECTION Sector{s}, org = ROOMS_AT, load = &FFFF0000 + ROOMS_LOAD, filename = "S{s}", '
-               "guard = ROOMS_AT + ROOMS_SIZE",
+        out = [head, f"\\ Sector {s}'s file, S{s}, assembled where the bank keeps it: its rooms and its looks.", "",
+               f'SECTION Sector{s}, org = SECTOR_AT, load = &FFFF0000 + SECTOR_LOAD, filename = "S{s}", '
+               "guard = SECTOR_AT + SECTOR_SIZE",
                f".sector{s}",
                "{",
                "    EQUB " + ", ".join([f"LO(room_{k})" for k in range(len(rs))] + pad),
                "    EQUB " + ", ".join([f"HI(room_{k})" for k in range(len(rs))] + pad),
-               "    ASSERT P% = ROOMS_AT + 2 * SECTOR_ROOMS"]
+               "    ASSERT P% = SECTOR_AT + 2 * SECTOR_ROOMS",
+               f'    INCLUDE "looks{s}.6502"']
         for k, r in enumerate(rs):
             rec = records[r.ident]
             out.append(f".room_{k}    \\ {r.ident}: {r.name}")
             out.append(f'    EQUS "{r.name[:20]}", 0')
             for j in range(0, len(rec), 16):
                 out.append("    EQUB " + ", ".join(f"&{v:02X}" for v in rec[j:j + 16]))
-        out += [f"    ASSERT P% = ROOMS_AT + SECTOR_BYTES[{s - 1}]", "}", "ENDSECTION"]
+        out += [f"    ASSERT P% = SECTOR_AT + SECTOR_BYTES[{s - 1}]", "}", "ENDSECTION"]
         (out_dir / f"sector{s}.6502").write_text("\n".join(out) + "\n")
     (out_dir / "sectors.6502").write_text(
         "\n".join([head] + [f'INCLUDE "sector{s}.6502"' for s in sorted(sectors)]) + "\n")
 
     top = max(sectors)
     out = [head, "",
-           "\\ Sectors 1 to SECTORS, each a file of rooms on the disc, S1 to S<SECTORS>",
-           "\\ (sectors.6502): the rooms each has, and the bytes they take.",
+           "\\ Sectors 1 to SECTORS, each a file of rooms and looks on the disc, S1 to",
+           "\\ S<SECTORS> (sectors.6502): the rooms each has, and the bytes its file takes.",
            f"SECTORS = {top}",
            "SECTOR_NROOMS = {" + ", ".join(str(len(sectors.get(s, []))) for s in range(1, top + 1)) + "}",
            "SECTOR_BYTES = {" + ", ".join(str(size.get(s, 0)) for s in range(1, top + 1)) + "}",
-           "\\ The most rooms in a sector (each file's tables are that long), and the",
-           "\\ most bytes, the size of the bank's room region.",
+           "\\ The most rooms in a sector (each file's room table is that long), and",
+           "\\ the most bytes, the size of the bank's sector region.",
            f"SECTOR_ROOMS = {most}",
-           f"ROOMS_SIZE = {max(size.values())}",
+           f"SECTOR_SIZE = {max(size.values())}",
            f"NEXT_SECTOR = &{NEXT_SECTOR:02X}          \\ in a down exit: the next sector's room",
            "\\ A new game: the first room, the first of its sector, at its start.",
            f"FIRST_SECTOR = {first.sector}",

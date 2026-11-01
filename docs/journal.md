@@ -331,3 +331,30 @@ What was done, in order, with what worked and what didn't.
   the load, changed nothing.
 - The level editor refuses an exit across sectors too, since it must
   refuse just what `mkrooms.py` does.
+
+## 2026-10-31: a sector's own looks
+
+- Every look has a number under 128, and most were taken, many by Sector
+  1's landmarks, with Sector 2's still to draw. Now a sector's own looks
+  travel in its file with its rooms, and only the shared ones stay in
+  RSDATA (decision 43). `gfxlib.Looks` sorts them from the rooms and the
+  `shared` flag, and numbers the shared ones from 0 and each sector's own
+  after them; `mkgfx.py` writes the shared art into RSDATA and each
+  sector's looks into `looks<n>.6502`, which `mkrooms.py`'s sector file
+  includes.
+- The look tables went into the sector's file whole, at the same place in
+  every file, rather than staying in RSDATA to be patched at a load: the
+  copy that brings the rooms brings them, nothing in the bank is kept
+  twice, and the game's code changed only in where the tables are and in
+  the region's name, the sector region now.
+- The sprites' mask table, page-aligned, moved to RSDATA's start, where
+  the alignment costs nothing.
+- Checked that nothing looks different: every room of both sectors, in
+  both phases, captured at `draw_status` after a death had put Ash in it
+  (the playfield's screen memory and the palette program), came out byte
+  for byte as before, and so did the playthrough's screenshots, but for
+  the title page's build stamp. `make check` passes on both machines, and
+  the playthrough goes through the cage into Sector 2.
+- The level editor counts looks the same way (`lookCounts`), which
+  `editor/check.mjs` holds to `gfxlib.Looks`, and refuses a sector with
+  too many, as `mkrooms.py` does.

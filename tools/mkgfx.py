@@ -5,9 +5,17 @@
 
 Tiles: every look (gfxlib.looks: each tile as written, then its variants
 and alts), 16 bytes each in screen order (gfxlib.tile_bytes), then the dotted
-outlines the phase tiles show out of phase. tiles_red and tiles_blue are
-each phase's pointer per tile number (low bytes, then high bytes), so
-drawing a tile in either phase is one lookup.
+outlines the phase tiles show out of phase. The shared looks are in
+gfx.6502 (RSDATA), and each sector's own in looks<n>.6502 beside it, which
+is part of the sector's file (decision 43; gfxlib.Looks says which are
+which, from the rooms). Each looks<n>.6502 starts with the tables for every
+look number, the shared and that sector's own, NTILES long, where main.6502
+says (tiles_red ... attr_blue):
+    tiles_red, tiles_blue   each phase's pointer to a look's graphics (low
+                            bytes, then high bytes), so drawing a look in
+                            either phase is one lookup
+    tile_attr               its flags (TF_*)
+    attr_red, attr_blue     its flags in each phase: out of its phase, none
 
 Sprites: four versions each, column by column (each column's bytes top
 to bottom, then the next): facing right at an even byte, facing right two
@@ -66,38 +74,72 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--preview")
     a = ap.parse_args()
-    tiles = g.looks(g.read_tiles())
+    tiles = g.read_tiles()
+    lks = g.Looks(tiles, g.read_rooms())
     sprites = g.read_sprites()
-    if len(tiles) > 128:
-        raise SystemExit(f"{len(tiles)} looks: at most 128 (the rooms' packing has 7 bits a tile)")
+    head = "\\ Made by tools/mkgfx.py from gfx/tiles.txt, gfx/sprites.txt and rooms/rooms.txt: don't edit."
 
-    out = ["\\ Made by tools/mkgfx.py from gfx/tiles.txt and gfx/sprites.txt: don't edit.", ""]
-    out.append(f"NTILES = {len(tiles)}")
+    out = [head, ""]
+    out.append("\\ The look numbers: the shared looks from 0, then each sector's own, and")
+    out.append("\\ the tables' length, room for the most a sector has (decision 43).")
+    out.append(f"NSHARED = {len(lks.shared)}")
+    out.append(f"NTILES = {lks.ntiles}")
+    out.append("SECTOR_LOOKS = {" + ", ".join(str(len(lks.own.get(s, []))) for s in range(1, max(lks.own) + 1)) + "}")
     for f, b in FLAG_BITS.items():
         out.append(f"TF_{f.upper()} = {b}")
-    # Graphics: each tile, then each phase tile's outline.
-    gfx = [g.tile_bytes(t.pixels) for t in tiles]
-    hollow_of = {}
-    for i, t in enumerate(tiles):
-        if t.flags & {"red", "blue"}:
-            hollow_of[i] = len(gfx)
-            gfx.append(g.tile_bytes(g.ghost_tile(t.pixels)))
+    # The sprites' masks: a byte's see-through pixels (both bits 0) keep the
+    # screen's, the others take the sprite's. In a page of their own, first,
+    # where RSDATA starts a page: aligned, with nothing lost to padding.
+    mask = []
+    for b in range(256):
+        m = 0
+        for k in range(4):
+            if not (b >> (7 - k)) & 1 and not (b >> (3 - k)) & 1:
+                m |= 1 << (7 - k) | 1 << (3 - k)
+        mask.append(m)
+    out.append("    ALIGN 256")
+    out.append(".mask_tab")
+    out.append(eqb(mask))
+    # The shared looks' graphics, then their phase looks' outlines.
+    gfx, red, blue = g.look_blocks(lks.shared)
     out.append(".tile_gfx")
-    for i, b in enumerate(gfx):
+    for b in gfx:
         out.append(eqb(b))
-    for phase, other in (("red", "blue"), ("blue", "red")):
-        idx = [hollow_of[i] if other in t.flags else i for i, t in enumerate(tiles)]
-        out.append(f".tiles_{phase}")
-        out.append("    EQUB " + ", ".join(f"LO(tile_gfx + {k * 16})" for k in idx))
-        out.append("    EQUB " + ", ".join(f"HI(tile_gfx + {k * 16})" for k in idx))
-    out.append(".tile_attr")
-    out.append(eqb(sum(FLAG_BITS[f] for f in t.flags) for t in tiles))
-    # What each tile is in each phase: out of its phase, nothing at all.
-    for phase, other in (("red", "blue"), ("blue", "red")):
-        out.append(f".attr_{phase}")
-        out.append(eqb(0 if other in t.flags else sum(FLAG_BITS[f] for f in t.flags) for t in tiles))
-    for i, t in enumerate(tiles):
-        out.append(f"T_{t.name.upper()} = {i}")
+    for lk in lks.shared:
+        out.append(f"T_{lk.name.upper()} = {lk.index}")
+
+    # Each sector's looks file: the tables, then its own looks' graphics.
+    out_dir = Path(a.out).parent
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for s, own in lks.own.items():
+        ogfx, ored, oblue = g.look_blocks(own)
+        # (Past the sector's own, nothing uses a number: the empty look.)
+        pad = lks.ntiles - len(lks.shared) - len(own)
+        ptrs = {phase: [f"tile_gfx + {k * 16}" for k in shared] + [f"own_gfx + {k * 16}" for k in mine]
+                + ["tile_gfx"] * pad
+                for phase, shared, mine in (("red", red, ored), ("blue", blue, oblue))}
+        every = lks.shared + own
+        attr = [sum(FLAG_BITS[f] for f in lk.flags) for lk in every] + [0] * pad
+        # What each look is in each phase: out of its phase, nothing at all.
+        phased = {phase: [0 if other in lk.flags else a for lk, a in zip(every, attr)] + [0] * pad
+                  for phase, other in (("red", "blue"), ("blue", "red"))}
+        lo = [head, f"\\ Sector {s}'s looks, in its file (sector{s}.6502): the tables for every look",
+              "\\ number, the shared looks' as in every sector and then its own, and its own",
+              "\\ looks' graphics. Its own looks are:"]
+        lo += [f"\\   {lk.index} {lk.name}" for lk in own] or ["\\   (none)"]
+        for phase in ("red", "blue"):
+            lo.append(f"    ASSERT P% = tiles_{phase}")
+            for part in ("LO", "HI"):
+                for i in range(0, lks.ntiles, 8):
+                    lo.append("    EQUB " + ", ".join(f"{part}({p})" for p in ptrs[phase][i:i + 8]))
+        lo.append("    ASSERT P% = tile_attr")
+        lo.append(eqb(attr))
+        for phase in ("red", "blue"):
+            lo.append(f"    ASSERT P% = attr_{phase}")
+            lo.append(eqb(phased[phase]))
+        lo.append(".own_gfx")
+        lo += [eqb(b) for b in ogfx]
+        (out_dir / f"looks{s}.6502").write_text("\n".join(lo) + "\n")
 
     # Sprites.
     descs = []
@@ -123,27 +165,15 @@ def main():
     out.append(".spr_h")
     out.append("    EQUB " + ", ".join(str(d[2]) for d in descs))
 
-    # The sprites' masks: a byte's see-through pixels (both bits 0) keep the
-    # screen's, the others take the sprite's.
-    mask = []
-    for b in range(256):
-        m = 0
-        for k in range(4):
-            if not (b >> (7 - k)) & 1 and not (b >> (3 - k)) & 1:
-                m |= 1 << (7 - k) | 1 << (3 - k)
-        mask.append(m)
-    out.append("    ALIGN 256")
-    out.append(".mask_tab")
-    out.append(eqb(mask))
-
-    Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text("\n".join(out) + "\n")
 
     if a.preview:
         p = Path(a.preview)
         p.mkdir(parents=True, exist_ok=True)
-        imgs = [(t.name, t.pixels) for t in tiles]
-        imgs += [(t.name + "~", g.ghost_tile(t.pixels)) for t in tiles if t.flags & {"red", "blue"}]
+        # Every look: the shared, then each sector's own.
+        every = lks.shared + [lk for s in lks.own for lk in lks.own[s]]
+        imgs = [(lk.name, lk.pixels) for lk in every]
+        imgs += [(lk.name + "~", g.ghost_tile(lk.pixels)) for lk in every if lk.flags & {"red", "blue"}]
         preview(p / "tiles.png", imgs, scale=6)
         preview(p / "sprites.png", [(s.name, s.pixels) for s in sprites], scale=5)
 
