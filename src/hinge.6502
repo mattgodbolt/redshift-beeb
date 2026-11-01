@@ -3,8 +3,8 @@
 \ at once. In the Red it's a Drill Sergeant the size of a house; in the
 \ Blue, a crystal bloom that sheds Slivers. It's tiles, each a picture in
 \ each phase (gfx/tiles.txt's "blue" blocks), and the room's thing "hinge"
-\ marks its heart: the plate's two cells in the Red, the crystal over the
-\ core in the Blue. Its tiles are solid in both phases.
+\ marks its heart, two cells by two: the plate in the Red, the crystal over
+\ the core in the Blue. Its tiles are solid in both phases.
 \
 \ A round of the fight:
 \ 1. In the Red, charges burst on the plate dent it, and crack it
@@ -15,24 +15,33 @@
 \    one, begins. A crack that closes unshot is a round to try again.
 \ The last lamp out, the Hinge folds shut (endings.6502).
 \
-\ Its gun covers Ash's head in its row, and fires, its muzzle lit first,
-\ while Ash is in the Red and in its line; a crouch ducks it, as a
-\ sergeant's. Out of its line or out of the Red, its clock goes round short
-\ of its warning, as a sergeant's does (decision 47). Its bud sheds a
+\ The rest of it is armour (decision 62): a bolt that strikes it flies back,
+\ as off a Drill Sergeant, and a charge that bursts on it rings it and the
+\ plate flickers to how a charge there would leave it.
+\
+\ Its gun has two muzzles, one level with Ash's head on the walkway and one
+\ with it on the pillar. It fires along the line of whichever Ash is in,
+\ that muzzle lit first, while Ash is in the Red; a crouch ducks either, as
+\ a sergeant's. Out of both lines or out of the Red, its clock goes round
+\ short of its warning, as a sergeant's does (decision 47). Its bud sheds a
 \ Sliver in front of it, lit first, while Ash is in the Blue and the swarm
 \ isn't full; otherwise its clock waits just short of its warning, so it
 \ sheds soon after Ash comes into the Blue, but never without warning.
 \
-\ The game finds its gun, its bud and its lamps on the map, by their looks
-\ (Sector 5's own, named by mkgfx.py for their chains), when the room is
-\ read; and changes them on the map, drawn again as the machinery's parts
-\ are (render). A death reads the room again: the fight from its start
-\ (decision 30).
+\ The game finds its muzzles, its bud and its lamps on the map, by their
+\ looks (Sector 5's own, named by mkgfx.py for their chains), when the room
+\ is read; and changes them on the map, drawn again as the machinery's
+\ parts are (render). A death reads the room again and the round starts
+\ over (decision 30), but the lamps its core has put out stay out
+\ (decision 62): hg_round lasts until a new game.
 \ ***************************************************************************
 
 HG_PLATE = 2                    ; charges that crack the plate, each round
 HG_WARN = 12                    ; frames of the gun's or the bud's warning
 HG_SHUT = 50                    ; the crack's last frames: a slit, closing
+HG_FLASH = 16                   ; frames the plate flickers after a blast on the armour
+HG_FLICK = 2                    ; ... each way (a bit of hg_flash: a power of two)
+ASSERT (HG_FLICK - 1 AND HG_FLICK) = 0 AND HG_FLICK < HG_FLASH
 \ Each round's: frames between the gun's shots, and the bud's Slivers; the
 \ most Slivers out at once; and frames the crack stays open.
 HG_GUN = {50, 40, 32}
@@ -50,17 +59,15 @@ HG_GRENADES = 9
 \ A shed Sliver's place in the room's list, for room_gone: past any thing's.
 HG_IDX = 7
 ASSERT HG_IDX >= NTH
-\ The gun's bolt, in lines below the top of the muzzle's row: where a
+\ A bolt from either muzzle, in lines below the top of its row: where a
 \ standing Ash's head is in that row, and over a crouch, as a sergeant's.
 HG_GUN_LINE = 2
 ASSERT HG_GUN_LINE + SPR_EBOLT_H <= PL_CROUCH_TOP AND HG_GUN_LINE < PL_H
 
-\ The plate's looks, top then bottom, in the order mkgfx.py numbers them.
+\ The plate's states (hg_shown), and its cells, from the heart's.
 HP_WHOLE = 0 : HP_DENT = 1 : HP_OPEN = 2 : HP_SHUT = 3
-ASSERT T_HINGE_HEART_B = T_HINGE_HEART_T + 1
-ASSERT T_HINGE_DENT_T = T_HINGE_HEART_T + 2 * HP_DENT AND T_HINGE_DENT_B = T_HINGE_DENT_T + 1
-ASSERT T_HINGE_OPEN_T = T_HINGE_HEART_T + 2 * HP_OPEN AND T_HINGE_OPEN_B = T_HINGE_OPEN_T + 1
-ASSERT T_HINGE_SHUT_T = T_HINGE_HEART_T + 2 * HP_SHUT AND T_HINGE_SHUT_B = T_HINGE_SHUT_T + 1
+HP_W = 2 : HP_H = 2 : HP_CELLS = HP_W * HP_H
+ASSERT HP_W = 2 AND HP_H = 2      ; (hg_plate_look's cells: bit 0 across, bit 1 down)
 ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD + 1
 
 .hg_gun_gap     EQUB HG_GUN
@@ -70,19 +77,20 @@ ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD
 .hg_swarm       EQUB HG_SWARM
 .hg_crack       EQUB HG_CRACK
 
-\ The room's thing "hinge": its heart at cell A, row Y. The fight from its
-\ start, and its gun, bud and lamps found on the map.
+\ The room's thing "hinge": its heart at cell A, row Y. The round from its
+\ start, and its muzzles, bud and lamps found on the map; the lamps put out
+\ already, out again.
 .hinge_spawn
 {
     ZA_AUTO2 hp_map
     ZA_AUTO1 hp_row
     STA hg_hx : STY hg_hy
     LDA #0
-    STA hg_won : STA hg_round : STA hg_plate : STA hg_open
+    STA hg_won : STA hg_plate : STA hg_open : STA hg_flash
     STA hg_gun_t : STA hg_shed_t : STA hg_warn : STA hg_lamps
     ASSERT HP_WHOLE = 0
     STA hg_shown
-    LDA #&FF : STA hg_mx : STA hg_bx
+    LDA #&FF : STA hg_wy : STA hg_wy + 1 : STA hg_wy + HG_BUD
     INC hinge_on
     \ What a round needs, at the least.
     LDA cells : CMP #HG_CELLS : BCS cells_ok
@@ -102,12 +110,15 @@ ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD
 .col
     LDA (hp_map),Y
     CMP #T_HINGE_MUZZLE : BNE not_gun
-    STY hg_mx
-    LDA hp_row : STA hg_my
+    \ (The lower is found first, and moves along for the upper.)
+    LDX hg_wx : STX hg_wx + 1
+    LDX hg_wy : STX hg_wy + 1
+    STY hg_wx
+    LDX hp_row : STX hg_wy
 .not_gun
     CMP #T_HINGE_BUD : BNE not_bud
-    STY hg_bx
-    LDA hp_row : STA hg_by
+    STY hg_wx + HG_BUD
+    LDX hp_row : STX hg_wy + HG_BUD
 .not_bud
     CMP #T_HINGE_LAMP : BNE next
     LDX hg_lamps : CPX #HG_ROUNDS : BCS next
@@ -118,6 +129,16 @@ ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD
     DEY : BPL col
     LDY hp_row
     DEY : BPL row
+    \ A lamp for each round won.
+    LDX #0
+.dark
+    CPX hg_round : BCS lit
+    STX hp_row
+    LDY hg_ly,X
+    LDA hg_lx,X : TAX
+    LDA #T_HINGE_LAMP_DARK : JSR hg_set
+    LDX hp_row : INX : BNE dark     ; (always)
+.lit
     RTS
 }
 
@@ -151,28 +172,39 @@ ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD
     RTS
 }
 
-\ In the Red: the gun fires along its row while Ash is in it, every so
-\ often, its muzzle lit first. Y = the round.
+\ In the Red: the gun fires along the line of the muzzle Ash is level with,
+\ every so often, that muzzle lit first. Y = the round.
 .hg_gun
 {
     ZA_AUTO1 hg_line
-    LDA hg_mx : BMI done            ; (no gun)
     INC hg_gun_t
-    LDA hg_my : ASL A : ASL A : ASL A
+    \ Which muzzle's line Ash is in, if either.
+    LDX #HG_MUZZLES - 1
+.muzzle
+    LDA hg_wy,X : BMI next          ; (none)
+    ASL A : ASL A : ASL A
     ADC #HG_GUN_LINE : STA hg_line  ; (carry clear: rows are under 32)
-    \ Ash in its line?
     LDA obj_y + PL : CLC : ADC #PL_H
-    CMP hg_line : BCC unsighted : BEQ unsighted
+    CMP hg_line : BCC next : BEQ next
     LDA hg_line : CLC : ADC #SPR_EBOLT_H : CMP obj_y + PL
-    BCC unsighted : BEQ unsighted
-    LDA hg_gun_t : CMP hg_gun_gap,Y : BCC done
+    BCC next : BEQ next
+    \ In its line. Till its warning starts, the gun turns to that muzzle;
+    \ once one is lit, Ash keeps to its line or the clock starts again.
+    LDA hg_gun_t : CMP hg_gun_warn,Y : BEQ aim : BCC aim
+    CPX hg_aim : BNE unsighted
+    CMP hg_gun_gap,Y : BCC done
     LDA #0 : STA hg_gun_t
     LDY #EB0 + NEB - 1
 .find
     LDA obj_spr,Y : CMP #&FF : BEQ free
     DEY : CPY #EB0 : BCS find
+    RTS
+.aim
+    STX hg_aim
 .done
     RTS
+.next
+    DEX : BPL muzzle
 .unsighted
     LDA hg_gun_t : CMP hg_gun_warn,Y : BCC done
     LDA #0 : STA hg_gun_t
@@ -181,7 +213,7 @@ ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD
     LDA #SPR_EBOLT : STA obj_spr,Y
     LDA #OS_CHANGED : STA obj_st,Y
     LDA hg_line : STA obj_y,Y
-    LDA hg_mx : ASL A : ASL A : SEC : SBC #SPR_EBOLT_W / 2 : STA obj_x,Y
+    LDA hg_wx,X : ASL A : ASL A : SEC : SBC #SPR_EBOLT_W / 2 : STA obj_x,Y
     LDA #256 - 3 : STA shot_dx,Y
     JMP sound_zap
 }
@@ -190,7 +222,7 @@ ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD
 \ full, every so often, lit first.
 .hg_shed
 {
-    LDA hg_bx : BMI done            ; (no bud)
+    LDA hg_wy + HG_BUD : BMI done   ; (no bud)
     JSR hg_count
     LDY hg_round : CMP hg_swarm,Y : BCS full
     INC hg_shed_t
@@ -210,8 +242,8 @@ ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD
     LDA type_spr,Y : STA obj_spr,X
     LDA type_phase,Y : STA th_phase,X
     LDA type_hp,Y : STA th_hp,X
-    LDA hg_bx : ASL A : ASL A : SEC : SBC #SPR_SHARD0_W / 2 : STA obj_x,X
-    LDA hg_by : ASL A : ASL A : ASL A
+    LDA hg_wx + HG_BUD : ASL A : ASL A : SEC : SBC #SPR_SHARD0_W / 2 : STA obj_x,X
+    LDA hg_wy + HG_BUD : ASL A : ASL A : ASL A
     STA obj_y,X : STA th_y0,X
     LDA #0 : STA obj_face,X : STA th_boom,X : STA th_hurt,X : STA th_t,X
     LDA #HG_IDX : STA th_idx,X
@@ -247,38 +279,51 @@ ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD
 }
 
 \ A charge's blast (grenade_bang), three cells wide about column A, four
-\ high from the row over Y: on the plate, in the Red, it dents it, and the
-\ last cracks it, and the crystal with it.
+\ high from the row over Y, where it burst. In the Red, into the Hinge (a
+\ look that's another thing in each phase): on the plate, it dents it, and
+\ the last cracks it, and the crystal with it; anywhere else, it rings on
+\ the armour, and the plate flickers to show where (decision 62).
 .hinge_blast
 {
-    ZA_AUTO1 hb_cx
-    STA hb_cx
-    LDA hinge_on : BEQ done
+    ZA_AUTO2 hb_map
+    ZA_AUTO1 hb_cx, hb_ry
+    STA hb_cx : STY hb_ry
     LDA phase : BNE done            ; (the plate's the Red's)
     LDA hg_open : BNE done          ; (cracked already)
-    LDA hg_hx : SEC : SBC hb_cx : CLC : ADC #1
-    CMP #3 : BCS done               ; (its column: 1 either side)
-    TYA : SEC : SBC hg_hy : CLC : ADC #2
-    CMP #5 : BCS done               ; (its two rows: one over, two under)
+    LDA maprow_lo,Y : STA hb_map
+    LDA maprow_hi,Y : STA hb_map+1
+    LDY hb_cx : LDA (hb_map),Y : TAY
+    LDA tile_attr,Y : AND #TF_RED OR TF_BLUE : CMP #TF_RED OR TF_BLUE : BNE done
+    LDA hb_cx : SEC : SBC hg_hx : CLC : ADC #1
+    CMP #HP_W + 2 : BCS armour      ; (its columns, and one either side)
+    LDA hb_ry : SEC : SBC hg_hy : CLC : ADC #2
+    CMP #HP_H + 3 : BCS armour      ; (its rows, two over and one under)
+    LDA #0 : STA hg_flash
     INC hg_plate
-    LDA hg_plate : CMP #HG_PLATE : BCC done
+    LDA hg_plate : CMP #HG_PLATE : BCC rung
     LDY hg_round : LDA hg_crack,Y : STA hg_open
+.rung
     JMP sound_crack
+.armour
+    LDA #HG_FLASH : STA hg_flash
+    JMP sound_ping
 .done
     RTS
 }
 
-\ Bolt X has struck the tile ta_c0, ta_r0 (shots_update): it sparks, and if
-\ that's the core, through the crack, in the Blue, the core takes it. X kept.
+\ Bolt X has struck look Y, at ta_c0, ta_r0 (shots_update: test_area's Y).
+\ A wall sparks. The Hinge's core, through the crack, in the Blue, takes
+\ it; the rest of the Hinge is armour, and the spark flies back, as off a
+\ Drill Sergeant (decision 62). X kept.
 .hinge_struck
 {
-    JSR spark
-    LDA hinge_on : BEQ done
-    LDA phase : BEQ done            ; (the core's in the Blue's crystal)
-    LDA hg_open : BEQ done
-    LDA ta_c0 : CMP hg_hx : BNE done
-    LDA ta_r0 : SEC : SBC hg_hy : CMP #2 : BCS done
+    LDA tile_attr,Y : AND #TF_RED OR TF_BLUE : CMP #TF_RED OR TF_BLUE : BNE wall
+    LDA phase : BEQ armour          ; (the core's in the Blue's crystal)
+    LDA hg_open : BEQ armour
+    LDA ta_c0 : SEC : SBC hg_hx : CMP #HP_W : BCS armour
+    LDA ta_r0 : SEC : SBC hg_hy : CMP #HP_H : BCS armour
     \ The core takes it: the crack snaps shut, a lamp goes out.
+    JSR spark
     STX hs_x
     LDA #0 : STA hg_open : STA hg_plate
     LDX hg_round : CPX hg_lamps : BCS lamped
@@ -293,65 +338,99 @@ ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD
     INC hg_won
 .more
     LDX hs_x
-.done
     RTS
+.armour
+    LDA shot_dx,X : PHA
+    JSR spark                       ; (which stops it)
+    PLA : EOR #&FF : CLC : ADC #1 : CMP #&80 : ROR A : STA shot_dx,X
+    JMP sound_ping
+.wall
+    JMP spark
 .hs_x EQUB 0
 }
 HG_SCORE = &50                      ; (hundreds, in BCD: add_score's)
 
-\ The plate's look, and so the crystal's, from how it is.
+\ The plate's look, and so the crystal's, from how it is, in each of its
+\ cells (hp_looks). For a while after a blast on the armour, in the Red, it
+\ flickers to how the next charge on it would leave it.
 .hg_plate_look
 {
+    ZA_AUTO1 hp_i
+    LDA hg_flash : BEQ steady
+    DEC hg_flash
+.steady
     LDA hg_open : BEQ closed
     CMP #HG_SHUT + 1 : LDA #HP_OPEN : BCS got
     LDA #HP_SHUT : BNE got          ; (always)
 .closed
-    LDA hg_plate : BEQ got          ; (HP_WHOLE)
+    LDA hg_plate : BEQ whole        ; (HP_WHOLE)
     LDA #HP_DENT
+.whole
+    LDX phase : BNE got
+    PHA
+    LDA hg_flash : AND #HG_FLICK : CMP #1   ; (carry: the next state's look)
+    PLA : ADC #0
 .got
     CMP hg_shown : BEQ done
     STA hg_shown
-    ASL A : ADC #T_HINGE_HEART_T    ; (carry clear: the state's under 128)
-    PHA
-    LDX hg_hx : LDY hg_hy : JSR hg_set
-    PLA : CLC : ADC #1
-    LDX hg_hx : LDY hg_hy : INY : JMP hg_set
+    ASL A : ASL A : ORA #HP_CELLS - 1 : STA hp_i
+.cell
+    LDY hp_i : LDA hp_looks,Y : PHA
+    TYA : AND #1 : CLC : ADC hg_hx : TAX
+    TYA : LSR A : AND #1 : CLC : ADC hg_hy : TAY
+    PLA : JSR hg_set
+    DEC hp_i
+    LDA hp_i : AND #HP_CELLS - 1 : CMP #HP_CELLS - 1 : BNE cell
 .done
     RTS
 }
+\ Each state's looks for the plate's cells: top left, top right, bottom
+\ left, bottom right. A charge dents only its left half, where it bursts,
+\ and the crack closes there, so those states keep the right half whole.
+.hp_looks
+    EQUB T_HINGE_HEART_T, T_HINGE_HEART_TR, T_HINGE_HEART_B, T_HINGE_HEART_BR
+    EQUB T_HINGE_DENT_T, T_HINGE_HEART_TR, T_HINGE_DENT_B, T_HINGE_HEART_BR
+    EQUB T_HINGE_OPEN_T, T_HINGE_OPEN_TR, T_HINGE_OPEN_B, T_HINGE_OPEN_BR
+    EQUB T_HINGE_SHUT_T, T_HINGE_HEART_TR, T_HINGE_SHUT_B, T_HINGE_HEART_BR
+ASSERT P% - hp_looks = (HP_SHUT + 1) * HP_CELLS
 
-\ The muzzle lit while the gun warns, in the Red, and the bud while it
-\ does, in the Blue; dark otherwise.
+\ Each muzzle lit while the gun warns from it, in the Red, and the bud while
+\ it does, in the Blue; dark otherwise.
 .hg_warn_look
 {
-    ZA_AUTO1 hw_want, hw_diff
+    ZA_AUTO1 hw_want, hw_diff, hw_x
     LDA #0 : STA hw_want
     LDY hg_round
     LDA phase : BNE blue
     LDA hg_gun_t : CMP hg_gun_warn,Y : BCC set
-    LDA #1 : STA hw_want
+    LDX hg_aim : LDA bit_masks,X : STA hw_want
     BNE set                         ; (always)
 .blue
     LDA hg_shed_t : CMP hg_shed_warn,Y : BCC set
-    LDA #2 : STA hw_want
+    LDA #1 << HG_BUD : STA hw_want
 .set
     LDA hw_want : EOR hg_warn : STA hw_diff
     LDA hw_want : STA hg_warn
-    LSR hw_diff : BCC gun_same
-    LDX hg_mx : BMI gun_same
-    LDA hw_want : AND #1 : CLC : ADC #T_HINGE_MUZZLE
-    LDY hg_my : JSR hg_set
-.gun_same
-    LSR hw_diff : BCC done
-    LDX hg_bx : BMI done
-    LDA hw_want : LSR A : CLC : ADC #T_HINGE_BUD
-    LDY hg_by : JMP hg_set
-.done
+    \ Each that's changed, the muzzles then the bud, drawn again.
+    LDX #0
+.part
+    LSR hw_diff : BCC same
+    LDY hg_wy,X : BMI same          ; (none)
+    LDA hw_want : AND bit_masks,X : CMP #1  ; (carry: lit)
+    LDA hw_dark,X : ADC #0
+    STX hw_x
+    PHA : LDA hg_wx,X : TAX : PLA
+    JSR hg_set
+    LDX hw_x
+.same
+    INX : CPX #HG_BUD + 1 : BNE part
     RTS
+.hw_dark EQUB T_HINGE_MUZZLE, T_HINGE_MUZZLE, T_HINGE_BUD
 }
+ASSERT HG_MUZZLES = 2 AND HG_BUD = HG_MUZZLES
 
 \ Cell X, row Y becomes look A, listed to be drawn again (render's parts,
-\ as the machinery's are: a frame lists a few of them at most).
+\ as the machinery's are: a frame lists a few of them at most). X kept.
 .hg_set
 {
     ZA_AUTO2 hs_map
