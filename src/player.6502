@@ -121,6 +121,14 @@ JUMP_LEN = P% - jump_tab
 
     \ Left and right, unless crouching (which turns you, though).
     LDA #0 : STA pl_moved
+    \ After a respawn, only once both have been let go, so a key still held
+    \ doesn't walk Ash straight back into what killed them (decision 51).
+    LDA pl_hold : BEQ walk
+    LDA keys : AND #KB_LEFT OR KB_RIGHT : BEQ let_go
+    JMP horiz_done
+.let_go
+    STA pl_hold                     ; (A is 0)
+.walk
     LDA keys : AND #KB_LEFT : BEQ not_left
     LDA #2 : STA obj_face + PL
     LDA pl_crouch : BNE horiz_done
@@ -518,5 +526,6 @@ ASSERT P% - die_look = DIE_FRAMES      ; (the burst starts at DIE_BURST: its fir
     LDA obj_st + PL : ORA #OS_CHANGED : STA obj_st + PL
     LDA #0 : STA pl_air
     LDA #SAFE_FRAMES : STA pl_safe
+    STA pl_hold
     RTS
 }

@@ -177,13 +177,6 @@ ASSERT T_EMPTY = 0
     ASL A : ROL pr_glyph+1
     ADC #LO(font) : STA pr_glyph
     LDA pr_glyph+1 : ADC #HI(font) : STA pr_glyph+1
-    \ On the bar's top row, a line lower: a margin above the score.
-    LDA pr_dst+1 : CMP #HI(screen + ROW_BYTES) : BCS margin_done
-    LDA pr_glyph : BNE glyph_lo
-    DEC pr_glyph+1
-.glyph_lo
-    DEC pr_glyph
-.margin_done
     \ Each row's left four pixels in the left cell, the right four in the
     \ right cell, in the ink (pr_ink: logical colour 1, 2 or 3).
     LDY #7
@@ -194,11 +187,6 @@ ASSERT T_EMPTY = 0
     STA (pr_dst),Y
     TYA : AND #7 : TAY
     DEY : BPL row
-    \ (The top row's first line, read from before its glyph: the margin.)
-    LDA pr_dst+1 : CMP #HI(screen + ROW_BYTES) : BCS top_done
-    LDA #0 : TAY : STA (pr_dst),Y
-    LDY #8 : STA (pr_dst),Y
-.top_done
     \ On the bar's second row, its bottom line is the rule.
     LDA pr_dst+1 : CMP #HI(screen + ROW_BYTES) : BCC no_rule
     CMP #HI(screen + 2 * ROW_BYTES) : BCS no_rule      ; (a card's text isn't ruled)

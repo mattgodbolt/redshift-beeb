@@ -319,8 +319,8 @@ try {
     await thrown("the Weighbridge");
     await g.jump("L", 12); await g.jump("L", 22);
     // (The siding's Trundler is a ghost in the Blue: back to the Red with it
-    // off at the far end, and shoot it.)
-    await until(async () => { const t = await thing(4); return t.x < 54 && t.f === 2; }, 300);
+    // off at the far end, more than a tile away (decision 51), and shoot it.)
+    await until(async () => { const t = await thing(4); return t.x < 50 && t.f === 2; }, 300);
     await g.tap("S", 2); await g.gf(2);
     if (!(await fireUntilDead(4, 150, true))) throw new Error("the Weighbridge's first Trundler lived");
     await g.walkTo(60);
@@ -466,7 +466,8 @@ try {
     await g.walkTo(60);
     await mark("outfall_blue");
     await g.walkTo(88);
-    await g.jump("R", 20);
+    await g.jump("R", 20); await g.land(); await g.walkTo(100);
+    // (More than a tile from the Gadfly, or the shift is refused: decision 51.)
     await until(async () => { const t = await thing(7); return t.x >= 112 && t.f === 0; }, 300);
     await shift();
     if (!(await fireUntilDead(7, 150))) throw new Error("the Outfall's Gadfly lived");

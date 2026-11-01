@@ -17,7 +17,7 @@
     LDA #&FF : STA obj_spr,X
     LDA #0 : STA obj_st,X
     DEX : BPL clear
-    LDA #0 : STA phase : STA pl_dead : STA pl_safe : STA pl_air : STA fire_cool : STA shift_flash
+    LDA #0 : STA phase : STA pl_dead : STA pl_safe : STA pl_hold : STA pl_air : STA fire_cool : STA shift_flash
     STA score : STA score+1 : STA score+2
     JSR music_phase
     LDX #MAX_ROOMS - 1
@@ -194,6 +194,7 @@ ASSERT LO(play_screen) = 0 AND ROW_BYTES = 512
 
 \ SHIFT: into the other phase, at the cost of a cell, unless the player
 \ would be inside something solid there.
+SHIFT_MARGIN = 4                ; a refused shift's room round an enemy, in steps
 FLASH_FRAMES = 16               ; a refused shift's red, in frames
 .try_shift
 {
@@ -201,8 +202,11 @@ FLASH_FRAMES = 16               ; a refused shift's red, in frames
     JSR flip
     LDA #0 : STA ta_dy : LDA #PL_H - 1 : STA ta_h
     LDA obj_x + PL : JSR box_at
-    LDA #TF_SOLID : JSR test_area : BNE refuse
-    \ Nor onto an enemy that would be there in the new phase (decision 45).
+    \ Nor into what kills in the new phase, boiling water in the Red
+    \ (decision 51).
+    LDA #TF_SOLID OR TF_HAZARD : JSR test_area : BNE refuse
+    \ Nor onto an enemy that would be there in the new phase (decision 45),
+    \ or so near one that it's on Ash before they can move (decision 51).
     JSR pl_box
     LDX #TH0
 .enemy
@@ -211,6 +215,7 @@ FLASH_FRAMES = 16               ; a refused shift's red, in frames
     LDA th_type,X : CMP #TH_ENEMIES : BCS next_enemy
     JSR th_in_phase : BNE next_enemy
     JSR th_box
+    JSR widen
     JSR boxes_overlap : BCS refuse
 .next_enemy
     INX : CPX #TH0 + NTH : BNE enemy
@@ -229,6 +234,20 @@ FLASH_FRAMES = 16               ; a refused shift's red, in frames
 .flip
     LDA phase : EOR #1 : STA phase
     JMP set_tile_ptrs
+\ The thing's box, SHIFT_MARGIN bigger all round (in steps across, and
+\ twice that in lines down), kept on the screen.
+.widen
+    LDA ox0 : SEC : SBC #SHIFT_MARGIN : BCS x0_ok
+    LDA #0
+.x0_ok
+    STA ox0
+    LDA ox1 : CLC : ADC #SHIFT_MARGIN : STA ox1
+    LDA oy0 : SEC : SBC #SHIFT_MARGIN * 2 : BCS y0_ok
+    LDA #0
+.y0_ok
+    STA oy0
+    LDA oy1 : CLC : ADC #SHIFT_MARGIN * 2 : STA oy1
+    RTS
 }
 
 \ Into the other phase, whatever's there.

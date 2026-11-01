@@ -54,6 +54,7 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 - **A Gadfly bobs over walls that don't cover the row it fills**: bound its beat with walls the height of its bob.
 - **A Gadfly bobs 4 lines either way**: only something taller than two rows holds it, and one that slips its beat can fly the room and wait at the respawn.
 - **Scenery standing in a hazard leaves safe holes in it**: a non-solid tile in water or acid isn't hot, so a shift there survives. Nothing non-solid stands in a hazard.
+- **A shift is refused within `SHIFT_MARGIN` of an enemy of the new phase, or into its hazards** (decision 51). A scripted route waits for the enemy to be a tile off; a room needs somewhere to shift that a patrol doesn't sweep.
 - **The interrupt runs with D as the game left it**: `add_score` uses decimal mode, so the VSync path does `CLD` before anything that adds.
 - **Inside `things_update`, `attr_ptr` is the thing's own phase's tiles**, not Ash's. Anything it calls that tests Ash against the map (a switch's `crushed`) sets it back first (`set_tile_ptrs`).
 - **A thing's clock (`th_t`) drives its looks too**: a ghost's shimmer, a pickup's glint. Don't hold it still to time something; let it go round.

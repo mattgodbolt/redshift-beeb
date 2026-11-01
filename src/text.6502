@@ -3,14 +3,15 @@
 \ ***************************************************************************
 
 \ Each sector's card: three lines, each ending in a 0, each short enough
-\ to sit inside the card's frame (game.6502's card_frame).
-CARD_WIDTH = FRAME_R - FRAME_L + 1
+\ to sit inside the card's frame (game.6502's card_frame), whose sides are
+\ drawn in its first and last columns.
+CARD_WIDTH = FRAME_R - FRAME_L - 1
 MACRO CARD_LINE text
     ASSERT LEN(text) <= CARD_WIDTH, "a card line is too long for its frame: ", text
     EQUS text, 0
 ENDMACRO
 .card_1 CARD_LINE "SECTOR 1: THE LEACH WORKS"
-        CARD_LINE "ACID GETS THE ORE OUT OF ROCK."
+        CARD_LINE "ACID GETS ORE OUT OF ROCK."
         CARD_LINE "IT ISN'T FUSSY ABOUT ROCK."
 .card_2 CARD_LINE "SECTOR 2: MARSHALLING YARD"
         CARD_LINE "THE TRUCKS DRIVE THEMSELVES."
@@ -19,10 +20,10 @@ ENDMACRO
         CARD_LINE "IN THE RED, IT BOILS."
         CARD_LINE "THE BLUE'S SWARM DRANK IT."
 .card_4 CARD_LINE "SECTOR 4: THE SPAR SEAMS"
-        CARD_LINE "THE RICHEST SPAR ON KHARON-4."
+        CARD_LINE "KHARON-4'S RICHEST SPAR."
         CARD_LINE "DON'T STOP TO FILL POCKETS."
 .card_5 CARD_LINE "SECTOR 5: INSIDE THE PRISM"
         CARD_LINE "THE ROCK STOPS HERE."
-        CARD_LINE "WHATEVER THIS IS, IT'S AWAKE."
+        CARD_LINE "WHATEVER IT IS, IT'S AWAKE."
 .card_lo EQUB LO(card_1), LO(card_2), LO(card_3), LO(card_4), LO(card_5)
 .card_hi EQUB HI(card_1), HI(card_2), HI(card_3), HI(card_4), HI(card_5)

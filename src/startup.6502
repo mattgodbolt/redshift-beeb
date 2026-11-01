@@ -86,7 +86,7 @@
     RTS
 \ A PHASE CELL (spar in its sleeve), a FRACTURE CHARGE, a TRAUMA KIT.
 .icons
-    EQUB &30, &78, &30, &78, &48, &78, &78, &00
+    EQUB &18, &3C, &7E, &66, &7E, &66, &7E, &00
     EQUB &08, &10, &38, &7C, &6C, &7C, &38, &00
     EQUB &38, &28, &FE, &82, &BA, &82, &FE, &00
 ASSERT ICON_GREN = ICON_CELL + 1 AND ICON_LIFE = ICON_CELL + 2

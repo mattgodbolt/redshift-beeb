@@ -598,3 +598,36 @@ Matt was away is marked *provisional* until reviewed.
     - The level editor's check splits every tile between made-up rooms in
       three sectors, not two: with a third sector's kit, two halves held
       more looks than the game can number, and that comparison was skipped.
+
+51. **2026-11-01: a shift is refused into what kills, or beside an enemy;
+    a respawn waits for the keys** (*provisional*). From the Sump's
+    newcomer playtest:
+    - **A shift is refused into the new phase's hazards** (`try_shift` tests
+      `TF_HAZARD` as well as `TF_SOLID`). Shifting back to the Red while
+      wading in the Blue's dry bed was accepted and killed at once, which
+      broke the rule that the game had taught with blocks and enemies
+      (decision 45).
+    - **And beside an enemy of the new phase**, within `SHIFT_MARGIN` steps
+      across and twice that in lines down. A shift accepted just clear of a
+      closing Gadfly killed on the next frame. The margin is the same all
+      round, whichever way the enemy is going: one rule to learn, "not
+      right next to one", and the refusal shows it (the red status bar and
+      the buzz). The playthrough's routes wait for an enemy to be a tile off.
+    - **After a respawn, left and right count only once both are let go**
+      (`pl_hold`). With a direction still held, Ash walked straight back
+      into what had killed them.
+    - **Each Sliver aims at its own part of Ash** (`SHARD_AIM`), so a pack
+      no longer comes together into what looks like one Sliver. Across, the
+      aims cover Ash's box; down, only where a standing bolt still meets a
+      Sliver and it still reaches a crouched Ash, which the build asserts,
+      so nothing about how a Sliver is fought changes. `mkgfx.py` names
+      each sprite's size (`SPR_<NAME>_W`, `_H`) for asserts like these.
+    - **The cell icon** in the status bar is the cell's shape, a nub over a
+      banded body: the old one read as a figure.
+    - **The status bar has no line above the score.** The margin a look
+      review asked for (with the card's frame) left the score's row touching
+      the room name's, since the bar's two rows of text and the rule fill
+      its lines; the screen's border is the margin.
+    - **Card lines sit inside the frame's sides**, which are drawn in its
+      first and last columns; `CARD_LINE` asserts it, and three lines are
+      shorter.

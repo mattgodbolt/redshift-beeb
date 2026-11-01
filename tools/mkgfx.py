@@ -147,6 +147,8 @@ def main():
         if s.w % 4:
             raise SystemExit(f"sprite {s.name}: width must be a multiple of 4")
         out.append(f"SPR_{s.name.upper()} = {len(descs)}")
+        # Its size in pixels, for the source's ASSERTs.
+        out.append(f"SPR_{s.name.upper()}_W = {s.w} : SPR_{s.name.upper()}_H = {s.h}")
         out.append(f".spr_{s.name}")
         # Facing left is a version of its own only for a sprite that faces
         # a way; the others' left versions are their right ones.

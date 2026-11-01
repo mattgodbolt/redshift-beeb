@@ -135,6 +135,7 @@ OS_SHOWN = &80              ; on the screen, at o_*
 \ The player (player.6502).
 .pl_dead    SKIP 1          ; frames left of dying, or 0
 .pl_safe    SKIP 1          ; frames left that enemies can't hurt (a respawn)
+.pl_hold    SKIP 1          ; not 0: left and right wait to be let go (a respawn)
 .pl_air     SKIP 1          ; 0 on the ground, 1 rising, 2 falling
 .pl_ji      SKIP 1          ; how far into the jump
 .pl_fall    SKIP 1          ; lines a frame, falling

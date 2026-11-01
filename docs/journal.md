@@ -513,3 +513,28 @@ What was done, in order, with what worked and what didn't.
 - The playthrough plays on through the Sump and the cage into Sector 4,
   checking the frame rate as the vents, the flood and the plug move and as
   the sluice drains; the README has its tour.
+
+## 2026-11-01: what the Sump's first newcomer found
+
+A newcomer played all nine of the Sump's rooms and finished each. What they
+liked: the sluice gate, the U-bend's climb that changes phase on the way up,
+the steam trap's stop and go. What broke: a shift back to the Red while
+wading in the Blue was accepted and boiled them, one accepted beside a
+closing Gadfly killed on the next frame, a respawn with a key held walked
+them back into the same death, and a pack of Slivers came together into
+what looked like one. Those are engine fixes (decision 51): a shift is
+refused into what kills and beside an enemy, a respawn waits for the keys,
+each Sliver aims at its own part of Ash. Two finds came from looking at the
+fixes: the status bar's score had come to touch the room name below it, and
+a card line of the frame's full width ran over its sides.
+
+The Sliver fix's first try aimed some of the pack at Ash's head and knees,
+and the playthrough lost two lives in the Leach Works: a Sliver aiming low
+passed under a standing bolt. The aims now keep to where a standing bolt
+meets a Sliver and a crouched Ash is still reached, and the build checks
+it, against sizes the art build now names.
+
+The rest is the sector's design, and goes back to a level agent: the Blue
+makes the steam and the flood pointless, eight of nine rooms are a pool,
+Slivers and a pickup, two never need a shift, and OUTFALL opens with a
+Gadfly that bobs above the bolt's line over the only ledge to shift on.
