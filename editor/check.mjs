@@ -46,7 +46,7 @@ sys.path.insert(0, sys.argv[1])
 import gfxlib as g, mkrooms as m
 mode = sys.argv[2]
 if mode == 'ghosts':
-    print(json.dumps({s.name: g.hollow(s.pixels) for s in g.read_sprites(ghosts=False)}))
+    print(json.dumps({s.name: [g.hollow(s.pixels), g.ghost_sprite(s.pixels, 0)] for s in g.read_sprites(ghosts=False)}))
 elif mode == 'types':
     print(json.dumps([m.THING_TYPES, m.THING_BOX, list(m.SWITCH_THINGS), [g.MAX_PARTS, g.PART_W, g.PART_CELLS]]))
 elif mode == 'render':
@@ -199,8 +199,10 @@ const ghosts = py('ghosts');
 if (ghosts.error) skip('ghosts', ghosts.error);
 else {
   const want = JSON.parse(ghosts.out);
-  const bad = sprites.filter(s => JSON.stringify(s.hollow) !== JSON.stringify(want[s.name])).map(s => s.name);
-  check(!bad.length, `every sprite's ghost is gfxlib's hollow() (${sprites.length} sprites)`, `differ: ${bad.join(' ')}`);
+  const bad = sprites.filter(s => JSON.stringify(s.hollow) !== JSON.stringify(want[s.name][0])).map(s => s.name);
+  check(!bad.length, `every sprite's outline is gfxlib's hollow() (${sprites.length} sprites)`, `differ: ${bad.join(' ')}`);
+  const badGhost = sprites.filter(s => JSON.stringify(s.ghost) !== JSON.stringify(want[s.name][1])).map(s => s.name);
+  check(!badGhost.length, `every sprite's ghost is gfxlib's ghost_sprite() (${sprites.length} sprites)`, `differ: ${badGhost.join(' ')}`);
 }
 
 // --- Made-up rooms, for what the real ones don't have yet -----------------------------------------
