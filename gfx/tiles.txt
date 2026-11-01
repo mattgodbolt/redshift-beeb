@@ -2861,6 +2861,88 @@ variant ϟ br
 22122222
 21222222
 12222222
+
+# The Prism's face cut at 45 degrees, its true angles (decision 60): white
+# on one side of the cell's diagonal, the dark on the other, where a room's
+# walls meet at a slant. Each is cut along a facet line of the wall's
+# lattice where it falls on one: α (white top left) and ο (bottom right) on
+# a cell whose column and row add up even, ε (top right) and ι (bottom
+# left) odd. Solid, the whole cell, in both phases: keep them out of Ash's
+# reach, high in a room or down in a pit.
+tile α facet_ul solid
+22222222
+2222222.
+222222..
+22222...
+2222....
+222.....
+22......
+2.......
+
+tile ε facet_ur solid
+22222222
+.2222222
+..222222
+...22222
+....2222
+.....222
+......22
+.......2
+
+tile ι facet_dl solid
+2.......
+22......
+222.....
+2222....
+22222...
+222222..
+2222222.
+22222222
+
+tile ο facet_dr solid
+.......2
+......22
+.....222
+....2222
+...22222
+..222222
+.2222222
+22222222
+
+# A ray of the light the Prism splits, on the back wall: a line in the body
+# colour, so it takes each band's colour as it crosses the room, across
+# (κ), falling to the right (λ) or rising (ν). Scenery: it sits back, and
+# a room draws with it what its name says, a beam bent, reflected or
+# brought to a focus.
+tile κ ray_across
+........
+........
+........
+11111111
+........
+........
+........
+........
+
+tile λ ray_falling
+1.......
+.1......
+..1.....
+...1....
+....1...
+.....1..
+......1.
+.......1
+
+tile ν ray_rising
+.......1
+......1.
+.....1..
+....1...
+...1....
+..1.....
+.1......
+1.......
 # ---
 # --- THE HINGE (decision 58): the one thing in the mine that's in both
 # --- phases at once, so each of its tiles is another picture in each (a
@@ -3355,3 +3437,10 @@ blue Պ
 2.....1.
 2.......
 2.......
+
+# --- The Prism's pulse (decision 60): on its room's beat a block of the
+# --- Red's becomes the Blue's (ρ), and one of the Blue's the Red's (β), and
+# --- back on the next, flickering first. So a seam between the two stays a
+# --- seam. Drawn as the blocks (as=), they cost no looks.
+tile ρ redflips solid red beat=B as=R
+tile β blueflips solid blue beat=R as=B
