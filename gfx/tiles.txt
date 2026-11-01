@@ -1253,3 +1253,484 @@ tile 6 pour_r
 .21..21.
 .21..21.
 .21..21.
+
+# --- The Marshalling Yard's kit (Sector 2). Its floors are track, its crates
+# --- ore trucks, its cracked walls ore carts jammed together, and its
+# --- landmarks are the railway's: an engine, a signal box's windows, a
+# --- turntable's pivot, a weighbridge's dial, a crane, buffer stops, a dead
+# --- man's handle and a crusher's teeth.
+
+# Track: a rail on sleepers. The rail's head is the lip you walk on; where
+# the track ends in the open, the rail ends in a fishplate.
+tile t track solid
+22222222
+11111111
+.1.1.1.1
+11111111
+.2111.2.
+.2111.1.
+........
+1...1...
+
+variant t left
+.2222222
+21111111
+21.1.1.1
+21111111
+.2111.2.
+.2111.1.
+........
+1...1...
+
+variant t right
+2222222.
+11111112
+.1.1.1.1
+11111111
+.2111.2.
+.2111.1.
+........
+1...1...
+
+# Torn rail: the line's ends wrenched up into spikes, white where they'd
+# cut you.
+tile r tornrail hazard
+........
+.3....3.
+.23..32.
+..2..2..
+..21.21.
+.121.21.
+1121.211
+11111111
+
+# An ore truck: a riveted tub with a rolled rim, the lip you stand on, over
+# its frame and wheels. Two rows high, it's the yard's crate. (Each side's
+# shadow falls off to the right.)
+tile C truck solid
+11111111
+1111111.
+........
+.211..2.
+21.11..1
+.11..11.
+........
+........
+
+variant C up+left
+.2222222
+2111111.
+21.11.1.
+2111111.
+21.11.1.
+2111111.
+21111111
+.2111111
+
+variant C up+right
+2222222.
+.1111112
+1.11.111
+.1111111
+1.11.111
+.1111111
+11111111
+1111111.
+
+variant C up
+22222222
+11111111
+1.11.11.
+11111111
+1.11.11.
+11111111
+11111111
+11111111
+
+variant C left
+.1111111
+..111111
+........
+..2111..
+.21..21.
+.11..11.
+..111...
+........
+
+variant C right
+1111111.
+111111..
+........
+..2111..
+.21..21.
+.11..11.
+..111...
+........
+
+# Ore carts jammed together: two by two, one crumpled cart, the next one's
+# wheels on its rim. A grenade brings the whole pile down. No lit edges,
+# and split by a black crack, as the cracked wall is.
+tile & jammed solid breakable
+11111111
+1.1.1.1.
+.1111111
+.1111111
+.1.11111
+..111111
+..111111
+..11.111
+
+variant & tr
+11111111
+1.1.1.11
+1.11111.
+.111111.
+.11.111.
+1.1111..
+.11111..
+.11.11..
+
+variant & bl
+...1111.
+...11111
+....111.
+..111...
+.1...1..
+.1.1.1..
+.1...1..
+..111...
+
+variant & br
+11111...
+.1111...
+1111....
+..111...
+.1...1..
+.1.1.1..
+.1...1..
+..111...
+
+# Signal-box glazing: panes with a glint, in a frame.
+tile F window
+11111111
+1.......
+1.....2.
+1....2..
+1...2...
+1.......
+1.......
+1.......
+
+# The engine: its long hood in door panels, lit along its top and front,
+# its back in shadow, and its wheels along its foot. Its cab is glazing
+# under a roof of it.
+tile @ engine solid
+11111111
+11.....1
+11.111.1
+11.....1
+11.111.1
+11.....1
+11111111
+11111111
+
+variant @ up+left
+..222222
+.2111111
+2.1.1.1.
+21111111
+21.....1
+21.111.1
+21.....1
+21111111
+
+variant @ up+right
+222222..
+1111111.
+1.1.1.1.
+1111111.
+1.....1.
+1.111.1.
+1.....1.
+1111111.
+
+variant @ up
+22222222
+11111111
+1.1.1.1.
+11111111
+11.....1
+11.111.1
+11.....1
+11111111
+
+variant @ down+left
+21111111
+21212121
+2.......
+2.2111..
+2.1.1.1.
+2.1...1.
+2..111..
+........
+
+variant @ down+right
+1111111.
+2121212.
+........
+..2111..
+.21.1.1.
+.11...1.
+..1.11..
+........
+
+variant @ down
+11111111
+21212121
+........
+..2111..
+.21.1.1.
+.11...1.
+..1.11..
+........
+
+variant @ left
+21111111
+21.....1
+21.111.1
+21.....1
+21.111.1
+21.....1
+21111111
+21111111
+
+variant @ right
+1111111.
+1.....1.
+1.111.1.
+1.....1.
+1.111.1.
+1.....1.
+1111111.
+1111111.
+
+# The engine's exhaust stack.
+tile ' stack
+..2111..
+.211111.
+..2111..
+...21...
+...21...
+...211..
+..21111.
+.2111111
+
+# Hazard-striped steel: the weighbridge's deck, a crusher's jaw. Its top,
+# where it's open, is a lip.
+tile z stripes solid
+22112211
+21122112
+11221122
+12211221
+22112211
+21122112
+11221122
+12211221
+
+variant z up
+22222222
+11111111
+11221122
+12211221
+22112211
+21122112
+11221122
+12211221
+
+# The weighbridge's dial, two by two: its face, ticks and needle.
+tile 0 dial
+....2222
+..221111
+.21.....
+.21.1...
+21...1..
+21....1.
+21.....1
+21......
+
+variant 0 tr
+2222....
+1111.1..
+.....1..
+.......1
+.......1
+......11
+.....1.1
+.......1
+
+variant 0 bl
+21....22
+21....22
+21......
+.21.....
+.21.....
+..11.1..
+....1111
+........
+
+variant 0 br
+.......1
+.......1
+.....1.1
+.......1
+.....1..
+.....1..
+1.1.11..
+1111....
+
+# The turntable's king post, and its bearing under the deck.
+tile 9 kingpost
+..2111..
+..21.1..
+..2111..
+..21.1..
+..2111..
+..21.1..
+..2111..
+..21.1..
+
+variant 9 up
+22222111
+.2111.1.
+..2111..
+..21.1..
+..2111..
+..21.1..
+..2111..
+..21.1..
+
+# A crane's tackle, hung from its beam: the trolley's wheels and block
+# where it meets the beam, the rope, and the hook at its foot.
+tile $ tackle
+...21...
+...21...
+...21...
+...21...
+...21...
+...21...
+...21...
+...21...
+
+variant $ up
+.21..21.
+.11..11.
+.2111111
+.2111111
+.2111111
+..11111.
+...21...
+...21...
+
+variant $ down
+...21...
+...21...
+..2111..
+...21...
+...21.1.
+.1.21..1
+.11...11
+..1111..
+
+# Buffer stops, two by two: a block with its buffer facing down the line
+# (to the left). Its top is a lip.
+tile ? buffers solid
+...22222
+...21111
+...21.1.
+22221111
+21111111
+21222211
+21111111
+111121.1
+
+variant ? tr
+22222222
+11111111
+1.1.1.11
+1111111.
+11111111
+11111111
+1111111.
+.1.1.1..
+
+variant ? bl
+...21111
+...21111
+...21.1.
+...21111
+...21111
+...21111
+...21111
+...21111
+
+variant ? br
+1111111.
+1111111.
+1.1.1.1.
+1111111.
+1111111.
+111111.1
+1111111.
+111111..
+
+# A dead man's handle: its grip, its shaft, and the quadrant it rides in.
+tile . handle
+...21...
+...21...
+...21...
+...21...
+...21...
+...21...
+...21...
+...21...
+
+variant . up
+.22222..
+.211111.
+..1111..
+...21...
+...21...
+...21...
+...21...
+...21...
+
+variant . down
+...21...
+...21...
+..2111..
+.21.1.1.
+21.....1
+21.....1
+211111.1
+.1111111
+
+# A crusher's teeth: up from its lower jaw, and down from its upper one.
+tile V teeth hazard
+...3...3
+..23..23
+..21..21
+.211.211
+.2111211
+21111111
+21111111
+11111111
+
+variant V ceiling
+11111111
+21111111
+21111111
+.2111211
+.211.211
+..21..21
+..23..23
+...3...3

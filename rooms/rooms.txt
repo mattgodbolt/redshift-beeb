@@ -318,31 +318,315 @@ thing sentry 23 16 1
 thing exit 28 15
 
 room engine_shed
-name THE END, FOR NOW
+name ENGINE SHED
 sector 2
-exits left=- right=- up=- down=-
-start 3 17
+exits left=- right=signal up=- down=-
+start 2 17
 colours magenta/blue yellow white
+map
+#|  |###########################
+#|  |###########################
+#|  |###########################
+#|  |==========================#
+#|  |   L      L      L      L #
+#|  |                          #
+#|  |    |                  |  #
+#|  |    |                  |  #
+#|  |    |                  |  #
+#|  |    |                  |  #
+#|  |    |                  |  #
+#|  |    |            @@@@@ |  #
+#|  |    |            FFFFF |  #
+#|  |    |      '     FFFFF |  #
+#|  |    |     @@@@@@@@@@@@ |  #
+#|  |    |     @@@@@@@@@@@@ |
+#|  | ?? |     @@@@@@@@@@@@ |
+#|  | ?? |     @@@@@@@@@@@@ |
+tttttttttttttttttttttttttttttttt
+################################
+################################
+################################
+thing crawler 11 16
+thing crawler 18 12 1
+thing cell 17 13
+
+room signal
+name SIGNAL BOX
+exits left=- right=turntable up=- down=-
+colours magenta/blue cyan white
 map
 ################################
 ################################
 ################################
 ################################
-#==============================#
-#     |   L   |   L   |   L    #
-#     |       |       |        #
-#     |       |       |        #
-#     |       |       |    *   #
-#     |       |       |   f!   #
-#     |       |       |    !   #
-#     |       |       |    !   #
-#     |       |       |    !   #
-#     |       |       |    !   #
-#     |       |       |    !   #
-#     |       | ()()  |    !   #
-#     |       | [][]  |    !   #
-#------------------------------#
+####     L     L      ##########
+#    *                         #
+#    !           ============= #
+#   f!            FFFFFFFFFFFF #
+#    !            FFFFFFFFFFFF #
+#    !            F.....FFFFFF #
+#    !            F.....FFFFFF #
+#    !           ############# #
+#    !           ############# #
+#    !           ############# #
+#    !       CCC ############# #
+     !       CCC #############
+     !       HHH #############
+    HHHHHH   HHH #############
+tttttttttttttttttttttttttttttttt
+################################
+################################
+################################
+thing crawler 6 15
+thing sentry 24 9 1
+thing grenades 14 13
+
+room turntable
+name TURNTABLE
+exits left=- right=- up=- down=weighbridge
+colours magenta/blue yellow white
+map
+################################
+################################
+################################
+######   L     L     L #########
+######                 #########
+###                    #########
+#                      #########
+#                      #########
+#                      #########
+#                      #########
+#                      #########
+#                      #########
+#                      P       #
+#                      P       #
+#                      P       #
+                       P       #
+                       P       #
+                       P       #
+ttttttt  ==========  tttttttPPP#
+#######      99      #######   #
+#######rrrrrr99rrrrrr#######   #
+############################   #
+thing crawler 10 16
+thing shard 12 16
+thing shard 16 15
+
+room weighbridge
+name WEIGHBRIDGE
+exits left=siding right=- up=- down=-
+colours red cyan white
+map
+##########################     #
+##########################     #
+##########################     #
+#######################     L  #
+###################  L         #
+###################            #
+###################            #
+###################            #
+###################     00     #
+###################     00     #
+#         &&                   #
+#         &&                   #
+#         &&                   #
+#         &&   xxx             #
+#  tttttttttttttttt            #
+   ################            #
+   ################ CCC        #
+   ################ CCC        #
+ttttttttttttttttttzzzzzzzztttttt
+################################
+################################
+################################
+thing crawler 13 12
+thing crawler 5 12
+thing grenades 26 17
+
+room siding
+name SIDING FOUR
+exits left=- right=- up=- down=gantry
+colours magenta/blue yellow white
+map
+################################
+################################
+################################
+#####     L      L       #######
+#####                    #######
+#####                    L     #
+#####                          #
+#####                          #
+#####                          #
+#   P                          #
+#   P                          #
+#   P                          #
+#   P                          #
+#   P                          #
+#   P                          #
+#   P
+#      CCCC   CCCC   CCCC
+#      CCCCrrrCCCCrrrCCCC
+#   tttttttttttttttttttttttttttt
+#   ############################
+#   ############################
+#   ############################
+thing crawler 15 14
+thing crawler 8 14 1
+thing drone 1 15
+thing cell 9 15
+
+room gantry
+name CRANE GANTRY
+exits left=- right=buffers up=- down=-
+colours red yellow white
+map
+#    ###########################
+#    ###########################
+#    ###########################
+#    B=======================  #
+#    B!      $       $      !  #
+#    B!      $       $      !  #
+#    B!      $       $      !  #
+#    B!      $       $      !  #
+#    B!      $       $      !  #
+#    B!      $       $      !  #
+#    B!      $       $      !  #
+#    B!      $       $      !  #
+#    B!      $       $      !  #
+#    B!      $       $      !  #
+#    B!     CCC     CCC    HH  #
+#    B!     CCC     CCC    HH
+#    B!                    HH
+#    B!                rrrrHH
+tttttttttttttttttttttttttttttttt
+################################
+################################
+################################
+thing drone 16 15
+thing drone 24 15 1
+thing cell 13 13
+
+room buffers
+name BUFFER STOPS
+exits left=- right=- up=- down=handle
+colours magenta/blue cyan white
+map
+################################
+################################
+################################
+########         ###############
+########         ###############
+########         #########     #
+#    ###         #########     #
+#    ###         #########     #
+#    ###         #########     #
+#    ###         #########     #
+#    ###         #########     #
+#    ###         #########     #
+#     P          #########     #
+#     P          #########     #
+#     P          #########     #
+      P
+      P                     ??
+      P                     ??
+tttttttttbbbbbbbtttPPPPPtttttt
+#########       ###     ######
+#########rrrrrrr###rrrrr######
+##############################
+thing shard 11 16
+thing shard 14 15
+thing crawler 24 16 1
+thing cell 16 17
+
+room handle
+name DEAD MAN'S HANDLE
+exits left=- right=- up=- down=crusher
+colours red cyan white
+map
+############################
+############################
+############################
+#########
+####
+####
+####
+####
+#                 tttttttttttttt
+#                              #
+#                              #
+#          .                   #
+#          .                   #
+#          .                   #
+#          .                   #
+#          .                   #
+#          .    CCC            #
+#          .    CCC            #
+#   ttttttttttttttttttttttttttt#
+#   ############################
+#   ############################
+#   ############################
+thing sentry 5 16
+thing sentry 28 16 1
+thing grenades 22 7
+
+room crusher
+name CRUSHER'S MOUTH
+exits left=- right=- up=- down=s3end
+colours red yellow white
+map
+#   ############################
+#   ############################
+#   ############################
+#        zzzzzzzz              #
+#        zzzzzzzz              #
+#        zzzzzzzz              #
+#        VVVVVVVV              #
+#                              #
+#                              #
+#                              #
+#                              #
+tttttt                         #
+######============             #
+######                         #
+######                         #
+######
+######           CCC
+######VVVVVVVVVVVCCC
+######zzzzzzzzzzzzttttttttttttt#
+######zzzzzzzzzzzz##############
+######zzzzzzzzzzzz##############
+######zzzzzzzzzzzz##############
+thing crawler 12 10
+thing crawler 23 16 1
+thing sentry 28 16 1
+thing exit 30 15
+
+room s3end
+name THE END, FOR NOW
+sector 3
+exits left=- right=- up=- down=-
+start 3 17
+colours red yellow white
+map
+################################
+################################
+################################
+################################
+#     L        L        L      #
+#         |         |          #
+#         |         |          #
+#         |         |          #
+#         |         |          #
+#         |         |          #
+#         |         |          #
+#         |         |          #
+#         |         |          #
+#         |         |          #
+#         |         |          #
+#         |         |          #
+#         |         |          #
+#         |         |          #
 ________________________________
-################################
-################################
-################################
+HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
