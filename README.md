@@ -141,29 +141,30 @@ let it come level, and shoot it.
    where crystal holds the way out, for the Trundler on the step above.
 2. **THE CISTERN.** A full tank in the Red, and in the Blue an empty one,
    its floor the Red's plates, with a swarm in it that rises at you. Fight
-   it from the walkway, drop through the tank into the cellar, and leave
-   by a trapdoor that's the Blue's. A Gadfly in the cellar keeps a cell.
-3. **BOILER WALK.** Boiler to boiler over the boiling gaps, a Trundler,
-   and a Drill Sergeant: lob from the steam dome, or roll. Crystal on the
-   boilers in the Blue, and the door is welded in the Red.
+   it from the walkway, not from the kerb, drop through the tank into the
+   cellar, and leave through a wall that's the Blue's. A Gadfly in the
+   cellar keeps a cell.
+3. **BOILER WALK.** Boiler to boiler over the boiling gaps, and a Drill
+   Sergeant: lob from the steam dome, or roll. Crystal on the boilers in
+   the Blue, and the door is welded in the Red.
 4. **STEAM TRAP.** Vents that steam in turn on the beat, flickering just
    before they change, with safe pockets between, in the Red. The Blue's
-   blocks bar the corridor; its way is the bed, past a pack of Slivers, and
-   up into the last pocket before the last vent.
+   blocks bar the corridor; its way is the dry bed, past a pack of Slivers
+   to a cell, and up into the last pocket before the last vent.
 5. **DROWNED OFFICE.** Along the shelves over the flood: a Trundler, a
-   filing cabinet to hide behind and lob from, and a sergeant on the
-   landing. The last shelf's gone, and only the Blue's span reaches the
-   door.
+   filing cabinet to hide behind and lob from, and a sergeant at the end
+   of the shelves, against a wall of the Red's. Past it, only the Blue's
+   span reaches the door.
 6. **SLUICE GATE.** The gate's handle is at its foot, under the water in
    the Red. Throw it in the Blue and the gate lifts and the sump drains, in
-   both phases, and the swarm the gate held back comes through.
+   both phases.
 7. **THE U-BEND.** The bend holds boiling water to the same level in both
    legs: through it in the Blue, and back to the Red above the waterline
    for the welded plate up to the way out.
-8. **OVERFLOW.** The sump floods the walkway on the beat, so wait it out
-   on the depth posts; the Blue's baffles hang over the walkway, so it's
-   the Red's. Then the basin, where only the Blue's steps climb to the way
-   out.
+8. **OVERFLOW.** The sump floods the walkway on the beat: hop from depth
+   post to depth post over it, or walk it while it's down. The Blue's
+   baffles hang over the walkway, so it's the Red's. Then the basin, where
+   only the Blue's steps climb to the way out.
 9. **THE PLUGHOLE.** Down the plughole in the Blue while the plug's drawn
    up; back to the Red on the crate under it, out of a sergeant's fire; and
    the cage down to Sector 4, which is as far as the game goes for now.

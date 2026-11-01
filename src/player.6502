@@ -425,10 +425,17 @@ SPARK_FRAMES = 4
     BEQ right
     CPX #2 : BEQ up
     LDA #0 : STA obj_y + PL         ; down
+.into
+    \ Down or up, Ash faces into the room, the side with more of it: the way
+    \ they walked into the shaft had them facing its wall (decision 53).
+    LDY #0 : LDA obj_x + PL : CMP #PL_X_MAX / 2 : BCC facing
+    LDY #2
+.facing
+    STY obj_face + PL
     JMP go
 .up
     LDA #PLAY_LINES - PL_H : STA obj_y + PL
-    JMP go
+    JMP into
 .left
     LDA #PL_X_MAX : STA obj_x + PL
     JMP go

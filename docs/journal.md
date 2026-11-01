@@ -579,3 +579,39 @@ the Blue got costs of its own, and every room needs both phases.
   and checks the frame rate as the vents, the drain, the flood and the plug
   move.
 
+## 2026-11-01: the Sump's second newcomer
+
+A second newcomer finished all nine rooms, found the rules consistent and
+the step up from the Marshalling Yard fair, and liked the sluice's drain, the
+U-Bend's climb and the steam trap's rhythm. What they hit was smaller, and a
+third level pass fixed it (decision 53): cells ran out one short of the
+U-Bend, the overflow's posts looked like stepping stones and weren't, three
+steps a row high stopped Ash with nothing to show they were there, two
+sergeants could be lobbed from only a few of the places a player would try,
+a jump landed in a patrol, and every room had a pack of Slivers that held
+fire took care of.
+
+- Each fix was measured before it was made. The lob windows the newcomer
+  reported, a simulation of the grenade's arc and the game itself agreed to
+  the step, so the simulation could try layouts: a wall of the Red's behind
+  the office's sergeant, and the plughole's sergeant a column back against
+  the cage, both catch a lob that sails over, since a blast reaches a little
+  way down from where it goes off.
+- Two first tries failed. The overflow's posts could be hopped once the
+  ceiling over them opened, but only from a few spots while they stood
+  where they were: lower posts, closer together, give a run of take-offs.
+  And the boiler walk's Trundler moved behind a steam dome cut to one row,
+  so a standing bolt met it over the dome; but the sergeant's bolts, fired
+  from just under its head, then crossed the dome as well and killed Ash
+  where they came in. The dome is two rows again, and the Trundler is gone:
+  nowhere else in the room is out of a jump's landing.
+- A sweep listed every step a row high in the sector, in each phase and
+  machinery state, so none was missed; the three the newcomer met were the
+  ones with something standing on their lips.
+- The office's arrival facing its wall was the way Ash walked into the steam
+  trap's shaft. A fall into a room now faces Ash into it, which the
+  playthrough's stills show in the Pickle Jar and the Skip Shaft as well.
+- Every room was played again from its way in, in each phase, and with a
+  scripted death; the playthrough takes the steam trap's Blue road for its
+  cell and hops the overflow's posts with the flood up.
+

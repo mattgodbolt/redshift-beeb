@@ -685,4 +685,89 @@ Matt was away is marked *provisional* until reviewed.
     - The playthrough takes the Red's road through the STEAM TRAP, and checks
       that the Cistern's cell is taken, since the sector's cells only just
       cover its shifts.
+53. **2026-11-01: the Sump's third pass: a cell on the Blue's road, posts that
+    can be hopped, steps that show, and fewer Slivers** (*provisional*). A
+    level pass from the Sump's second newcomer playtest, which finished every
+    room and found the rules consistent:
+    - **A cell in the STEAM TRAP's dry bed,** on the Blue's road, past its
+      pack. The cheapest route came to THE U-BEND with no cells. Ash comes
+      into the STEAM TRAP in the Blue, and each of its roads costs a shift:
+      the Red's, from the way in, is the vents' stop and go and pays nothing;
+      the Blue's, down through the bed and back to the Red in the last
+      pocket, pays the cell. A Blue arrival there was a shift spent for
+      nothing; now it's a choice with a price and a prize, and a player who
+      takes it comes to THE U-BEND with cells to spare.
+    - **OVERFLOW's posts are stepping stones that work.** They looked like
+      stepping stones, but the ceiling over them cut every jump to a hop, so
+      a newcomer jumped into the flood again and again; getting onto a post
+      from the walkway took a jump from right against it, and a bump on the
+      last one stopped Ash with no room to jump over it. The hall over the
+      walkway is open to the roof now, and the posts are lower (still clear
+      of the flood) and closer, so a jump reaches the next post from a run of
+      take-offs, and a post from the walkway too. The flood still comes and
+      goes on the beat, so walking the walkway in its dry spells is the other
+      way. The Blue's baffles hang from the roof, so the posts are still the
+      Red's, and the last post's kerb still stops a jump held all the way
+      short of the basin behind it.
+    - **A step that stops Ash shows itself.** Ash can't walk up a step a row
+      high, and three had nothing to say so. The OUTFALL's step into its way
+      out had the Blue's blocks standing on its lip, and a newcomer threw
+      grenades at them, taking them for the wall: they stand back a column
+      now, behind the step's lit lip. THE CISTERN's hanging rods came down
+      onto the kerb at the tank's rim, so the kerb read as a rod's foot and
+      the rod as the wall: the tank stands in the rock, with an inlet pipe
+      hung over it, and the kerb's lip is clear. SLUICE GATE's kerb had the
+      Blue's blocks on it too; they hang beside it now. The sector's other
+      one-row steps are desks in the office's bed, the bed's step up into the
+      STEAM TRAP's last pocket, the corners of THE U-BEND's bend and the plug
+      in its hole, each lit and looking like what it is.
+    - **DROWNED OFFICE.** A wall of the Red's stands behind the sergeant at
+      the second shelf's end. In the Red it stops Ash where the way on is
+      only the Blue's span, so they stand at it and see the span's ghost,
+      where a newcomer walked off the shelf onto it and into the flood; in the
+      Blue it's a ghost itself. A lob that sails over the sergeant goes off
+      against it and catches it, so the whole of the cabinet's top and of the
+      first shelf before it kill, where most of that shelf lobbed into the
+      water; the first shelf ends a tile sooner, where even the wall was too
+      far behind. A roll along the second shelf works as before.
+    - **THE PLUGHOLE's sergeant** stands a column back, against the cage,
+      where a lob that sails over it goes off at the screen's edge and
+      catches it: the whole of the crate's top and most of the floor before
+      it kill now. The roll works as before.
+    - **BOILER WALK has no Trundler.** Its patrol took in where the first
+      jump over a boiling gap lands. The steam dome must be two rows high to
+      stop the sergeant's bolts reaching the way in, and then nothing behind
+      it can be shot standing, and every other surface in the room is a
+      landing Ash must make. The room is the sergeant, the gaps, the dome to
+      lob from and the welded door.
+    - **Fewer Slivers, where they make Ash choose.** Every room had a pack
+      that died to held fire. Four rooms have one now: the OUTFALL's pair,
+      the lesson; THE CISTERN's tank, where a shift by the kerb brings them
+      over it in Ash's face and one back along the walkway gives room; the
+      STEAM TRAP's bed, guarding the cell, where they come up through the
+      plates beside anyone waiting over the hole; THE U-BEND's far leg, where
+      they have to be met in the bend before the climb, or they come down on
+      Ash in the leg. THE CISTERN and THE U-BEND have one fewer; BOILER WALK,
+      SLUICE GATE, OVERFLOW and THE PLUGHOLE have none.
+    - **A fall into a room faces Ash into it** (`go_exit`), towards the side
+      with more of the room; a respawn faces the same way. Walking into a
+      shaft had left Ash facing its wall at the bottom, as the DROWNED
+      OFFICE's arrival did.
+    - **Smaller.** THE CISTERN's way out is a hole at the cellar's end, with
+      the exit's chevrons in it, behind a wall of the Blue's; it was the
+      Blue's trapdoor, with no arrow. The STEAM TRAP's shaft is three tiles
+      wide, so Ash drops in as soon as they're over it, not after walking on
+      past where the sprite looks over the hole; the office's landing below
+      it is wider to match.
+
+    Calls made in building it (*provisional*):
+    - The cell is on the STEAM TRAP's Blue road, not on a road every player
+      takes, so it's the Blue's reason to be there too, and it lies in sight
+      of the way in. A player who takes the Red's road there comes to THE
+      U-BEND with no more than before.
+    - Facing Ash on a fall is an engine change, where the level alone would
+      have needed a dog-leg in the STEAM TRAP's shaft to turn them round.
+    - The playthrough takes the Blue's road through the STEAM TRAP, checks
+      its cell and THE U-BEND's are taken, hops the OVERFLOW's posts with the
+      flood up, and checks Ash comes into the office facing the room.
 
