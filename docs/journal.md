@@ -615,3 +615,46 @@ fire took care of.
   scripted death; the playthrough takes the steam trap's Blue road for its
   cell and hops the overflow's posts with the flood up.
 
+## 2026-11-01: Sector 4, the Spar Seams
+
+THE SPAR SEAMS are the deepest the Company dug, and the Blue is native
+there: the swarm's crystal has grown over everything, and it's alive. A
+level agent built the sector's nine rooms round that (decision 54): on each
+room's beat the Blue's spans draw back and grow again and its spikes sink
+and push up, flickering first, while the Red's way is the Company's welded
+plates, crates and machines. Spar, the rock's own crystal, is in both
+phases: veins of it light the walls, and a face of it comes down to a
+grenade.
+
+- The engine had what the sector needed. Machinery that belongs to a phase
+  already worked (the Sump's steam), so a span that draws back is a tile
+  drawn as the span, solid and the Blue's, that becomes air on the beat; a
+  span that grows is air that becomes one. They cost no looks, and a part
+  that flickers in the Red is a ghost flickering.
+- A search over Ash's movement in both phases, with every state of each
+  room's machinery and a shift costing a cell, checked every room from each
+  way in. It found what a glance at the maps missed: Ash's box can hang
+  over an edge, so a gap that looked too wide was jumped from its lip, and
+  every gap only the Blue may cross is a tile wider; a Red jump across the split
+  seam's gap fell past the swarm's pit into the lower road beyond its gates,
+  until spar walled the drop; and a bridge that the search let Ash wait out
+  on is too long to cross in one of its spells, which is why the paydirt's
+  lever matters.
+- The grenade's arc, simulated against each layout, set where the crates go:
+  a lob from a crate two rows high lands a few cells further than one from
+  the floor, so each crate stands a few cells further from its sergeant than
+  "about ten", and kills from every take-off on it; a wall right behind the
+  sergeant (a stub of spar, a welded door, the next crate) lets it stand a
+  little closer.
+- The rooms were each played from their way in, in each phase, on test
+  discs, with a scripted death in each to see the respawn where Ash came in
+  and still standing long after. The Sorting Table's Blue road first ended
+  on a single safe cell beside the Blue's blocks, and its spans climbed from
+  over the spikes; both moved. Bore Nine's first crate moved under its
+  shaft, where a fall from anywhere in it lands.
+- The playthrough plays on through the sector, kills its four sergeants,
+  throws the paydirt's lever and rides Bore Nine's cage into a one-room
+  Sector 5. The split seam's swarm first rose through the upper span while
+  it drew back and caught Ash waiting on the stub; the upper road's span is
+  still now, and the swarm keeps to the lower road.
+

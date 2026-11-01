@@ -12,16 +12,18 @@ assembly.
 
 ### ▶ [Play it in your browser](https://bbc.xania.org/?disc=github:mattgodbolt/redshift-beeb/redshift.ssd&autoboot)
 
-A teletext title page, then three sectors of nine rooms each: THE LEACH
+A teletext title page, then four sectors of nine rooms each: THE LEACH
 WORKS, from the LANDING ZONE down to the cage in the SKIP SHAFT; THE
-MARSHALLING YARD, from the ENGINE SHED to the CRUSHER'S MOUTH; and THE
-SUMP, from the OUTFALL down THE PLUGHOLE. The cage loads each sector from
-the disc as it takes Ash down. Each **SHIFT** costs a phase cell. Blocks
-and enemies of the other phase are dotted ghosts: you walk through them,
-and they can't touch you. Green is always acid, and the Sump's red water
-boils only in the Red Phase. A Drill Sergeant is armoured and dies only to
-a grenade: lob one from a crate, or crouch under its fire and roll one at
-it. The music follows the phase: listen to it change when you shift.
+MARSHALLING YARD, from the ENGINE SHED to the CRUSHER'S MOUTH; THE SUMP,
+from the OUTFALL down THE PLUGHOLE; and THE SPAR SEAMS, from THE MOTHER
+LODE down to BORE NINE. The cage loads each sector from the disc as it
+takes Ash down. Each **SHIFT** costs a phase cell. Blocks and enemies of
+the other phase are dotted ghosts: you walk through them, and they can't
+touch you. Green is always acid, the Sump's red water boils only in the
+Red Phase, and in the Spar Seams the Blue's crystal grows and draws back.
+A Drill Sergeant is armoured and dies only to a grenade: lob one from a
+crate, or crouch under its fire and roll one at it. The music follows the
+phase: listen to it change when you shift.
 
 | Key | Does |
 |---|---|
@@ -167,7 +169,54 @@ let it come level, and shoot it.
    only the Blue's steps climb to the way out.
 9. **THE PLUGHOLE.** Down the plughole in the Blue while the plug's drawn
    up; back to the Red on the crate under it, out of a sergeant's fire; and
-   the cage down to Sector 4, which is as far as the game goes for now.
+   the cage down to Sector 4.
+
+## Sector 4, the Spar Seams
+
+<table>
+<tr><td><img src="docs/media/mother_red.png" alt="The Mother Lode in the Red Phase, where the cage brings Ash in"></td>
+<td><img src="docs/media/mother_blue.png" alt="The Mother Lode in the Blue Phase: the span over the pit"></td></tr>
+<tr><td><img src="docs/media/face.png" alt="Spar Face: in the gallery, at the face"></td>
+<td><img src="docs/media/assay.png" alt="The Assay Room: on the furnace"></td></tr>
+<tr><td><img src="docs/media/sorting.png" alt="The Sorting Table: on the picking belt"></td>
+<td><img src="docs/media/chandelier.png" alt="The Chandelier: on its boss, between the spans"></td></tr>
+<tr><td><img src="docs/media/split.png" alt="Split Seam: on the crate over the seam"></td>
+<td><img src="docs/media/echo.png" alt="Echo Gallery: on the pier between the bays"></td></tr>
+<tr><td><img src="docs/media/paydirt.png" alt="Last Paydirt: the lever thrown"></td>
+<td><img src="docs/media/bore.png" alt="Bore Nine: the sergeants round the drill"></td></tr>
+</table>
+
+The deepest the Company dug, where the doublespar runs in veins and the
+Blue is native. The swarm's crystal is alive here: on the beat its spans
+draw back and grow again and its spikes sink and push up, flickering
+first. It's all the Blue's, so in the Red it's a ghost, and the Red's way
+is the Company's welded plates, crates and machines. Spar is the rock's
+own crystal, in both phases, and a wall of it comes down to a grenade.
+
+1. **THE MOTHER LODE.** The first lesson (above, in each phase). A span
+   over the pit whose middle draws back and grows again: cross it in the
+   Blue while two Slivers come over the pit, and back to the Red on the
+   landing, where crystal holds the way out, for the Trundler on the step.
+2. **SPAR FACE.** A face of spar from floor to roof, which one grenade
+   brings down. Reach it through the gallery, where a Gadfly hunts in the
+   Red, or over the Blue's span above it; then the welded hatch down.
+3. **THE ASSAY ROOM.** The lab's crystal sinks and pushes up on the beat.
+   Up onto the assay furnace, out of a sergeant's fire, and lob over the
+   swarm's wall at it.
+4. **SORTING TABLE.** Crystal pushes up through the picking belt in turn.
+   The Red's road is a Trundler to shoot; the Blue's times the spikes and
+   climbs for a cell.
+5. **THE CHANDELIER.** Two spans that take turns under a chandelier of spar,
+   and a Gadfly in the corridor beyond, behind the Red's plates.
+6. **SPLIT SEAM.** Two roads either side of a seam of spar: the sergeant's
+   over it, the swarm's under it.
+7. **ECHO GALLERY.** Twin bays, each the other's echo in the other phase: a
+   span in the Blue over the first, a Gadfly in the Red in the second.
+8. **LAST PAYDIRT.** A bridge that comes and goes too fast to cross, and the
+   Company's lever that stops it, if you can get a clear shot at it.
+9. **BORE NINE.** Two Drill Sergeants dug in round the drill, a swarm in the
+   drill shaft, and the shaft itself is the cage, down to Sector 5, which is
+   as far as the game goes for now.
 
 ## The idea
 

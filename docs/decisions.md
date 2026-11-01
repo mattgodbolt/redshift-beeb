@@ -770,4 +770,81 @@ Matt was away is marked *provisional* until reviewed.
     - The playthrough takes the Blue's road through the STEAM TRAP, checks
       its cell and THE U-BEND's are taken, hops the OVERFLOW's posts with the
       flood up, and checks Ash comes into the office facing the room.
+54. **2026-11-01: Sector 4, THE SPAR SEAMS** (*provisional*). A level agent
+    built the Spar Seams' nine rooms and its kit, with the existing enemies
+    and no change to the engine, and a one-room Sector 5 to ride down to,
+    held to what the playtests taught (decisions 35, 41, 44, 45, 47, 49, 51,
+    52 and 53).
+    - **The swarm's crystal grows.** The Blue is native here, and its crystal
+      is alive: on each room's beat its spans draw back and grow again, and
+      its spikes sink and push up, flickering first (decision 48). It's all
+      the Blue's, so in the Red it's a ghost, and the Red's way is the
+      Company's: welded plates, crates, a furnace, a belt, and the machines.
+      The moving crystal is drawn as the span or the spikes (as=), so it
+      costs no looks.
+    - **Spar is the rock's own crystal**, in both phases. Veins of it light
+      the walls, a block of it hangs as the chandelier's boss, and a wall of
+      it comes down whole to one grenade, as a cracked wall does: it's drawn
+      as one, solid with a black crack and no lit edge, a glint on each face.
+    - **A room an idea**, each needing both phases, neither a free pass:
+      - THE MOTHER LODE, the lesson: a span over the pit whose middle draws
+        back and grows again, and two Slivers that wake across it; back to
+        the Red on the landing, where crystal holds the way out, for the
+        Trundler on the step. The Mother Lode's crystals stand behind the
+        landing.
+      - SPAR FACE: a face of spar from floor to roof. Two roads to it: the
+        gallery, where a Gadfly hunts in the Red over the Blue's crystal, or
+        the Blue's span over it, its middle in time. Behind the face, the
+        Blue's blocks, then a welded hatch down.
+      - THE ASSAY ROOM: in through a welded hatch; the lab's crystal sinks and
+        pushes up on the beat; the assay furnace is the crate, out of the
+        sergeant's fire and with a cell on it, and a wall of the Blue's
+        crystal stands between it and the sergeant.
+      - SORTING TABLE: the Blue's spikes push up through the picking belt in
+        turn, two groups each way. The Red's road shoots the Trundler on the
+        belt from the floor and walks it; the Blue's times the spikes and
+        climbs spans under the hopper for a cell. They meet at the Blue's
+        blocks and the welded hatch to the chute.
+      - THE CHANDELIER: two spans that take turns under a chandelier of spar,
+        to its boss and off it; a cell on the boss; a Gadfly in the way
+        out's corridor, held there by the Red's plates, and the Blue's
+        crystal in the door.
+      - SPLIT SEAM: a seam of spar splits the room into two roads. Over it,
+        the sergeant's, lobbed from a crate against a stub of spar behind
+        it, then the Blue's span; under it, the swarm's, through the Red's
+        wall, over spans that grow, and up a welded step only the Red has.
+        The gap between the roads is too wide to jump in the Red.
+      - ECHO GALLERY: twin bays, each the other's echo in the other phase:
+        the Blue's span over the first bay's acid, and the Red's Gadfly in
+        the second, whose floor is the Blue's crystal.
+      - LAST PAYDIRT: a bridge that comes and goes too fast to cross. The
+        Company's lever stops it as drawn, shot across the drop from a
+        welded ledge in the Red, where a cell and charges lie; the Blue's
+        crystal hangs in every other line of fire.
+      - BORE NINE: two sergeants dug in round the drill, each lobbed from a
+        crate with a wall behind it, past walls of the Blue's crystal. The
+        swarm waits in the drill shaft, which is the cage, behind a welded
+        door: it comes out at whoever shifts back to open it.
+    - **Two roads that pay differently.** SPAR FACE, SORTING TABLE and SPLIT
+      SEAM each have a road for each phase. The dearer one skips a fight or
+      pays a cell.
+    - **The enemies:** Slivers in four rooms (the Mother Lode's pair, the
+      lesson; the split seam's swarm under the seam; a pair over the
+      paydirt's bridge; the swarm in Bore Nine's shaft), Gadflies hunting
+      three galleries, each out of reach of the way in, and four sergeants,
+      the sector's last two together round Bore Nine.
+
+    Calls made in building it (*provisional*):
+    - Green is still acid's alone: the story's green glow in the Blue is the
+      acid at the foot of the deep drops, in both phases.
+    - Walls stay the shared brick, with veins of spar through it, so the
+      sector's looks go on its set pieces: the Mother Lode's crystals, the
+      chandelier, the assay furnace and its glassware, the picking belt and
+      its hopper, and the Prism's face at the foot of Bore Nine.
+    - Cells lie where the sector's shifts need them: on the furnace, on the
+      chandelier's boss and on the paydirt's ledge, and two more on the
+      dearer Blue roads.
+    - The playthrough takes the Red's road through SORTING TABLE and the
+      sergeant's through SPLIT SEAM, kills every sergeant, throws the
+      paydirt's lever, and rides Bore Nine's cage into Sector 5.
 

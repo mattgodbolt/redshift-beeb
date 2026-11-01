@@ -895,7 +895,7 @@ map
 
 room plughole
 name THE PLUGHOLE
-exits left=- right=- up=- down=s4end
+exits left=- right=- up=- down=mother
 start 30 5
 colours red yellow white
 beat 60 40
@@ -925,9 +925,312 @@ map
 thing sentry 2 19
 thing exit 0 18
 
-room s4end
-name THE END, FOR NOW
+room mother
+name THE MOTHER LODE
 sector 4
+exits left=- right=face up=- down=-
+start 2 14
+colours red yellow white
+band 146 3 green/green
+beat 90 36
+map
+###########γ########γ###########
+##########γ########γ############
+#########γ########γ#############
+#######  L Θθ   L       L  #####
+#          Ψψ                ###
+#                              #
+#                 Δδ           #
+#                 Θθ           #
+#                 Θθ           #
+#                 ΘθΔδ         #
+#                 ΘθΘθ      ####
+#                 ΘθΘθΔδ      BB
+#                 ΘθΘθΘθ      BB
+#                 ΘθΘθΘθ      BB
+#                 ΘθΘθΘθ########
+######bbbшшшшшbbbb##############
+######            ##############
+####γ#            ############γ#
+###γ##~~~~~~~~~~~~#####γ#####γ##
+##γ###wwwwwwwwwwww####γ#####γ###
+#γ####wwwwwwwwwwww###γ#####γ####
+γ#####wwwwwwwwwwww##γ#####γ#####
+thing shard 12 11
+thing shard 15 9
+thing crawler 27 12 1
+
+room face
+name SPAR FACE
+exits left=- right=- up=- down=assay
+start 0 13
+colours magenta/blue cyan white
+beat 80 40
+map
+################################
+#######γ##########γ#############
+######γ##########γ##############
+#######   L  Θθ   L     #####γ##
+#            Ψψ         ####γ###
+#                       ###γ####
+#                       ##γ#####
+#                       #γ######
+#                     φφ#######γ
+#                     φφ######γ#
+#                     φφ#####γ##
+                      φφ####γ###
+                      φφ###γ####
+                      φφ##γ#####
+######bbbbbшшшшшbbbbbbφφ########
+#####                 φφBB    ##
+#####                 φφBB    ##
+#####    xxxxxxxxxxx  φφBB    ##
+##########################PPPP##
+######γ#######γ###########    ##
+#####γ#######γ############    ##
+####γ#######γ#############    ##
+thing grenades 3 13
+thing drone 12 15
+
+room assay
+name THE ASSAY ROOM
+exits left=sorting right=- up=- down=-
+start 27 2
+colours red yellow white
+beat 60 40
+map
+##########################    ##
+##########################    ##
+##########################    ##
+#######  L      |L       #    ##
+#       BB      |        #    ##
+#       BB      |        #    ##
+#       BB      |        #    ##
+#       BB      |        #PPPP##
+#       BB      |        #    ##
+#       BB  ϑϑϑ |  ϑϑϑ   #    ##
+#       BB      |        #    ##
+#       BB      |             ##
+#       BB  ϑϑϑ |  ϑϑϑ        ##
+#       BB      |             ##
+#       BB      |              #
+        BB      |              #
+        BB      ωω             #
+        BB      ωω  жжжжжж     #
+################################
+################################
+################################
+################################
+thing sentry 2 16
+thing cell 17 15
+
+room sorting
+name SORTING TABLE
+exits left=- right=- up=- down=chandelier
+start 30 17
+colours magenta/blue cyan white
+beat 50 50
+map
+################################
+#############γ############γ#####
+############γ############γ######
+######   L       L    |  L   ###
+#                     |       ##
+#                     |       ##
+#                     |       ##
+#                     |       ##
+#                     |       ##
+#                 bbbb|       ##
+#                     ϒϒ      ##
+#                     ϒϒ      ##
+#                             ##
+######                 bbbb   ##
+#   BB                        ##
+#   BB
+#   BB  ззз  жжж  ззз  жжж
+#   BBτττττττττττττττττττττ
+#PP#############################
+#  #######γ#########γ##########
+#  ######γ#########γ###########
+#  #####γ#########γ############
+thing crawler 15 15
+thing cell 19 7
+
+room chandelier
+name THE CHANDELIER
+exits left=- right=split up=- down=-
+start 1 2
+colours red yellow white
+band 146 3 green/green
+beat 70 70
+map
+#  #############################
+#  #############################
+#  #############################
+#  ######   L ΘθΘθΘθ L   #######
+#            ΘθΘθΘθ      #######
+#            ΘθΘθΘθ      #######
+#            ΨψΘθΨψ      #######
+#              Ψψ        #######
+#                       P
+#                       P    BB
+#                       P    BB
+#######шшшшшшξξξξξξщщщщщщ#######
+#######                  #######
+#######                  #######
+#######                  #######
+#######                  #######
+#######                  #######
+#######                  #######
+#####γ#~~~~~~~~~~~~~~~~~~##γ####
+####γ##wwwwwwwwwwwwwwwwww#γ#####
+###γ###wwwwwwwwwwwwwwwwww#######
+##γ####wwwwwwwwwwwwwwwwww#######
+thing drone 27 9 1
+thing cell 16 10
+
+room split
+name SPLIT SEAM
+exits left=- right=echo up=- down=-
+start 0 10
+colours magenta/blue cyan white
+beat 60 40
+map
+################################
+################################
+#      BB     L      ΘθΘθ L    #
+#      BB            ΘθΨψ      #
+#      BB            Ψψ        #
+#      BB                      #
+#      BB                      #
+#      BB   Δδ                 #
+       BB   Θθ
+    HH BB   Θθ   ξ
+    HH BB   Θθ   ξ
+##  ##############bbbbbbb##bbb##
+##  ##γ###γ###γ###       ##   ##
+##  #γ###γ###γ####       ##   ##
+#    PP                       ##
+#    PP                      P##
+#    PP                       ##
+#    PP                       ##
+#    PP                       ##
+#################bbbшшшшbbb#####
+#################          #####
+#################^^^^^^^^^^#####
+thing sentry 15 9 1
+thing shard 19 15
+thing shard 22 16
+thing shard 25 14
+thing grenades 4 8
+thing cell 26 18
+
+room echo
+name ECHO GALLERY
+exits left=- right=paydirt up=- down=-
+start 0 10
+colours red yellow white
+band 146 3 green/green
+beat 70 50
+map
+################################
+################################
+################################
+#####  L       L        L  #####
+#                              #
+#                              #
+#                              #
+#                              #
+              ΔδΔδ          ΔδΔδ
+              ΘθΘθ          ΘθΘθ
+              ΘθΘθ          ΘθΘθ
+#####bbшшшшшbb####         #####
+#####         ####         #####
+#####         ####         #####
+#####         ####xxxxxxxxx#####
+#####         ##################
+#####         ########γ#######γ#
+#####         #######γ#######γ##
+#####~~~~~~~~~######γ#######γ###
+#####wwwwwwwww#####γ#######γ####
+##γ##wwwwwwwww####γ#######γ#####
+#####wwwwwwwww##################
+thing drone 22 12 1
+
+room paydirt
+name LAST PAYDIRT
+exits left=- right=- up=- down=bore
+start 0 10
+colours magenta/blue cyan white
+band 146 3 green/green
+beat 40 40
+map
+################################
+#########γ########γ#############
+########γ########γ##############
+#      ΘθΘθ     L  ΘθΘθL   BB ##
+#      ΘθΨψ        ΨψΘθ    BB ##
+#      Ψψ            Ψψ    BB ##
+#                          BB ##
+#  PPP                        ##
+                              ##
+                              ##
+                              ##
+######шшшшшшшшшшшшшшшшшшшш##  ##
+######                    ##  ##
+###γ##                    ##  ##
+##γ###                    ##  ##
+#γ####                    ##  ##
+γ#####                    ##  ##
+######                    ##  ##
+###γ##~~~~~~~~~~~~~~~~~~~~##  ##
+##γ###wwwwwwwwwwwwwwwwwwww##  ##
+#γ####wwwwwwwwwwwwwwwwwwww##  ##
+######wwwwwwwwwwwwwwwwwwww##  ##
+thing lever 29 4 3
+thing cell 2 6
+thing grenades 4 6
+thing shard 12 5
+thing shard 20 6
+
+room bore
+name BORE NINE
+exits left=- right=- up=- down=s5end
+start 28 2
+colours red yellow white
+map
+########γ#########γ#########  ##
+#######γ#########γ##########  ##
+######γ#########γ#########γ#  ##
+#|      BB    L      BB   L   ##
+#|*     BB           BB       ##
+#|!     BB           BB       ##
+#|!     BB           BB       ##
+#|!     BB           BB       ##
+#|!     BB           BB       ##
+#|!     BB           BB       ##
+#|!     BB           BB       ##
+#|!     BB           BB       ##
+#|!     BB           BB       ##
+#|!     BB           BB       ##
+###     BB           BB       ##
+  P     BB           BB       ##
+  P     BB    HH     BB     HH##
+  P     BB    HH     BB     HH##
+ΩΩΩ#############################
+ΩΩΩ####γ#########γ#########γ####
+ΩΩΩ###γ#########γ#########γ#####
+ΩΩΩ##γ#########γ#########γ######
+thing sentry 3 16
+thing sentry 16 16
+thing exit 0 15
+thing shard 0 15
+thing shard 1 16
+thing shard 0 17
+
+room s5end
+name THE END, FOR NOW
+sector 5
 exits left=- right=- up=- down=-
 start 3 17
 colours magenta/blue cyan white
@@ -937,19 +1240,19 @@ map
 ################################
 ################################
 #     L        L        L      #
-#         |         |          #
-#         |         |          #
-#         |         |          #
-#         |         |          #
-#         |         |          #
-#         |         |          #
-#         |         |          #
-#         |         |          #
-#         |         |          #
-#         |         |          #
-#         |         |          #
-#         |         |          #
-#         |         |          #
+#                              #
+#                              #
+#                              #
+#                              #
+#                              #
+#                              #
+#                              #
+#                              #
+#                              #
+#                              #
+#                              #
+#                              #
+#                              #
 ________________________________
 HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
