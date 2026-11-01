@@ -1,11 +1,12 @@
 \ ***************************************************************************
 \ REDSHIFT for the BBC Micro - build file
 \
-\ !BOOT runs RSLOAD (rsload.6502), which puts RSDATA, the art and the
-\ text, and S1, the first sector's rooms, in a sideways RAM bank (decisions
-\ 12 and 42) and runs REDSHFT: it loads at &1900, copies the game down to
-\ &0E00 (over the DFS's workspace: sector.6502 puts it back for a load)
-\ and starts it. The cage loads each sector's rooms after.
+\ !BOOT runs RSLOAD (rsload.6502), which puts RSDATA, the shared art and
+\ the text, and S1, the first sector's rooms and looks, in a sideways RAM
+\ bank (decisions 12, 42 and 43) and runs REDSHFT: it loads at &1900,
+\ copies the game down to &0E00 (over the DFS's workspace: sector.6502
+\ puts it back for a load) and starts it. The cage loads each sector's
+\ file after.
 \ ***************************************************************************
 
 INCLUDE "defs.6502"
@@ -37,31 +38,43 @@ SECTION Boot, filename = "!BOOT", exec = &FFFFFFFF
     EQUS "*RUN RSLOAD", 13
 ENDSECTION
 
-\ The art and the text, read where they are in the sideways bank.
+\ The shared art and the text, read where they are in the sideways bank.
 SECTION Data, org = &8000, load = &FFFF3000, filename = "RSDATA", guard = &C000
     INCLUDE "../build/data/gfx.6502"
     INCLUDE "text.6502"
 .data_end
 ENDSECTION
 
-\ Then the room region: one sector's rooms at a time, read in place, sized
-\ for the largest sector's (decision 42). Each sector's file (S1, S2...)
-\ is assembled here. The first's loads at boot just after RSDATA, so
-\ RSLOAD copies both into the bank at once; the cage loads the next one's
-\ into screen memory and copies it in (sector.6502).
-ROOMS_AT   = data_end
-rooms_end  = ROOMS_AT + ROOMS_SIZE
-ROOMS_LOAD = &3000 + (ROOMS_AT - &8000)
+\ Then the sector region: one sector's file at a time, read in place, sized
+\ for the largest (decisions 42 and 43). Each sector's file (S1, S2...) is
+\ assembled here. The first's loads at boot just after RSDATA, so RSLOAD
+\ copies both into the bank at once; the cage loads the next one's into
+\ screen memory and copies it in (sector.6502).
+SECTOR_AT   = data_end
+sector_end  = SECTOR_AT + SECTOR_SIZE
+SECTOR_LOAD = &3000 + (SECTOR_AT - &8000)
 \ Copies into the bank go by whole pages, so past the region's end, into
 \ the bank's free space: nothing follows the region.
-ROOMS_PAGES = HI(ROOMS_SIZE + &FF)
-ASSERT ROOMS_AT + ROOMS_PAGES * &100 <= &C000, "the room region's copies run past the bank"
-room_lo = ROOMS_AT                  ; each room's record, by its number in the sector
-room_hi = ROOMS_AT + SECTOR_ROOMS
+SECTOR_PAGES = HI(SECTOR_SIZE + &FF)
+ASSERT SECTOR_AT + SECTOR_PAGES * &100 <= &C000, "the sector region's copies run past the bank"
+\ What every sector's file has in the same place (sector<n>.6502): each
+\ room's record, by its number in the sector; then the tables for every
+\ look, NTILES long, the shared looks' and the sector's own (looks<n>.6502
+\ and tools/mkgfx.py say what's in them). So a sector's load brings its
+\ looks with its rooms, and the game reads both where they are.
+room_lo    = SECTOR_AT
+room_hi    = room_lo + SECTOR_ROOMS
+tiles_red  = room_hi + SECTOR_ROOMS
+tiles_blue = tiles_red + 2 * NTILES
+tile_attr  = tiles_blue + 2 * NTILES
+attr_red   = tile_attr + NTILES
+attr_blue  = attr_red + NTILES
 ASSERT SECTOR_ROOMS <= MAX_ROOMS
-PRINT "data &8000-&", ~data_end, ", rooms &", ~ROOMS_AT, "-&", ~rooms_end, " (", &C000 - rooms_end, " bytes free)"
+ASSERT NTILES <= 128                ; (the rooms' packing has 7 bits a look)
+PRINT "data &8000-&", ~data_end, ", sector &", ~SECTOR_AT, "-&", ~sector_end, " (", &C000 - sector_end, " bytes free)"
+PRINT "  looks: ", NSHARED, " shared, so a sector can have ", 128 - NSHARED, " of its own"
 FOR s = 1..SECTORS
-    PRINT "  S", s, ": ", SECTOR_NROOMS[s - 1], " rooms, ", SECTOR_BYTES[s - 1], " bytes"
+    PRINT "  S", s, ": ", SECTOR_NROOMS[s - 1], " rooms, ", SECTOR_LOOKS[s - 1], " looks, ", SECTOR_BYTES[s - 1], " bytes"
 NEXT
 INCLUDE "../build/data/sectors.6502"
 
@@ -76,7 +89,7 @@ SECTION RsLoad, org = RSLOAD_AT, load = &FFFF0000 + RSLOAD_AT, exec = &FFFF0000 
 ENDSECTION
 \ (A DFS can write the whole of a file's last sector, so S1's load is
 \ checked to the end of its last.)
-ASSERT ROOMS_LOAD + ROOMS_PAGES * &100 <= RSLOAD_AT, "RSDATA and S1 load over RSLOAD"
+ASSERT SECTOR_LOAD + SECTOR_PAGES * &100 <= RSLOAD_AT, "RSDATA and S1 load over RSLOAD"
 
 SECTION Loader, org = &1900, load = &FFFF1900, exec = &FFFF0000 + loader, filename = "REDSHFT"
 .payload

@@ -78,7 +78,7 @@ const frameRate = async () => {
 
 try {
     const work = [sym("DFS_WORK"), sym("DFS_WORK_END")], page8 = [sym("OS_SOUND"), sym("OS_SOUND") + 256];
-    const file = sym("SE_FILE"), fileEnd = file + sym("ROOMS_PAGES") * 256;
+    const file = sym("SE_FILE"), fileEnd = file + sym("SECTOR_PAGES") * 256;
     await b.frames(170);                                    // (Sector 1's card)
 
     // --- The cage, and the load -------------------------------------------------------------

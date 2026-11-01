@@ -5,7 +5,7 @@
 .game_start
 {
     LDX #&FF : TXS
-    \ The starting sector's rooms, back from the disc if a game that ended
+    \ The starting sector's file, back from the disc if a game that ended
     \ in a later sector loaded that one's over them.
     LDA #START_SECTOR : CMP loaded_sector : BEQ loaded
     JSR sector_load

@@ -38,9 +38,9 @@ all: $(TARGET)
 
 $(TARGET): $(SOURCES) $(DATA) FORCE | build
 	$(ASM) -D 'BUILD="$(BUILD)"' $(ROOMDEF) -o $@ --title REDSHIFT --opt 3 --warn 2 --symbols $(@:.ssd=.json) -v -log0 build/listing.txt src/main.6502
-	@grep -E '^(code|data|rsload|  S[0-9])' build/listing.txt || true
+	@grep -E '^(code|data|rsload|  S[0-9]|  looks)' build/listing.txt || true
 
-build/data/gfx.6502: gfx/tiles.txt gfx/sprites.txt tools/mkgfx.py tools/gfxlib.py
+build/data/gfx.6502: gfx/tiles.txt gfx/sprites.txt rooms/rooms.txt tools/mkgfx.py tools/gfxlib.py
 	python3 tools/mkgfx.py $@ --preview build/preview
 
 # (Beside it: sectors.6502, and sector<n>.6502 for each sector's file.)

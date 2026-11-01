@@ -24,7 +24,7 @@
 # Flags: solid (stands you up and stops you), hazard (kills), breakable
 # (a grenade clears it, and the breakable tiles above and below it), red /
 # blue (only there in that phase: out of phase it's drawn as a dotted
-# outline, and it's neither solid nor a hazard).
+# outline, and it's neither solid nor a hazard), and shared (below).
 #
 # A tile's variants are its looks for where it is, chosen when the rooms
 # are built (gfxlib.resolve), so a room is drawn with just the keys:
@@ -38,13 +38,24 @@
 # The first variant that holds is used, or else the tile as written. An
 # alt is used instead now and then, at cells picked by a hash of where
 # they are ("alt <key> base" for the tile as written).
+#
+# Every look (a tile as written, a variant or an alt) has a number, and a
+# sector has at most 128, the rooms' packing having 7 bits for one. So a
+# tile's looks are shared, in RSDATA for every sector, or one sector's own,
+# in its file on the disc and in the bank only while it's loaded (decision
+# 43). They're that sector's own when only its rooms use the tile; a tile
+# used in several sectors, or in none, is shared. The flag shared makes a
+# tile shared whatever the rooms use: the building blocks every sector
+# needs, which is everything above the set pieces. Nobody numbers anything
+# by hand: tools/gfxlib.py's Looks does, and the build fails if a sector
+# has more than 128.
 # A comment is a whole line starting with '#'.
 
 # --- Air. The back wall: faint panel seams on a two-tile grid, the shade
 # --- under a ceiling, and chevrons in a room's way out. (tl, tr, bl and br
 # --- must stay together and in that order: a blast puts them back.)
 
-tile space empty
+tile space empty shared
 ........
 ........
 ........
@@ -149,7 +160,7 @@ variant space br
 # --- Facing air it's lit along that side, and its top is a lip. (Floors'
 # --- plating stays shaded, so the floor sits back under the lip.)
 
-tile # stone solid
+tile # stone solid shared
 1111111.
 1111111.
 1111111.
@@ -222,7 +233,7 @@ variant # right
 
 # Plating: the machines, floors and crates. The same: shaded inside, solid
 # at the edges.
-tile H panel solid
+tile H panel solid shared
 1.1.1.1.
 .1.1.1..
 1.1.1.1.
@@ -316,7 +327,7 @@ alt H base
 # A girder: a solid beam to stand on, its underside in shadow. (No
 # lattice: hatching means a block that's out of phase.) Where it ends in
 # the open, an end plate and a knee bracket under it.
-tile = girder solid
+tile = girder solid shared
 22222222
 11111111
 11211121
@@ -347,7 +358,7 @@ variant = right
 ........
 
 # The floor's walking surface, over plating.
-tile _ floor solid
+tile _ floor solid shared
 22222222
 21212121
 11111111
@@ -359,7 +370,7 @@ tile _ floor solid
 
 # Cracked: one grenade brings down the whole wall of it. A solid block
 # split by black cracks, with no mortar and no lit edge.
-tile % cracked solid breakable
+tile % cracked solid breakable shared
 11111.1.
 1111.11.
 111.111.
@@ -370,7 +381,7 @@ tile % cracked solid breakable
 ........
 
 # Blocks that are there in one phase only.
-tile R redblock solid red
+tile R redblock solid red shared
 2222222.
 2111112.
 2121212.
@@ -380,7 +391,7 @@ tile R redblock solid red
 2222222.
 ........
 
-tile B blueblock solid blue
+tile B blueblock solid blue shared
 2222222.
 2..1..2.
 2.111.2.
@@ -391,7 +402,7 @@ tile B blueblock solid blue
 ........
 
 # --- What kills.
-tile ^ spikes hazard
+tile ^ spikes hazard shared
 ........
 ..3...3.
 ..3...3.
@@ -403,7 +414,7 @@ tile ^ spikes hazard
 
 # Acid, the colour of the band its room gives it (colour 3): a bright
 # surface over a darker body.
-tile ~ acidtop hazard
+tile ~ acidtop hazard shared
 ........
 ........
 .3....3.
@@ -413,7 +424,7 @@ tile ~ acidtop hazard
 .3.3.3.3
 3.3.3.3.
 
-tile w acid hazard
+tile w acid hazard shared
 3.333.33
 33.333.3
 .333.333
@@ -449,7 +460,7 @@ alt w base
 # A round pipe: lit on the left, the body, and its right side in shadow. A
 # flange where it ends, and now and then on the way, is a ring wider than
 # the pipe, shaded the same way, with the pipe darker in its shadow.
-tile | pipe
+tile | pipe shared
 .22111..
 .2211.1.
 .22111..
@@ -489,7 +500,7 @@ alt | base
 .1.1.1..
 .2211.1.
 
-tile - hpipe
+tile - hpipe shared
 ........
 ........
 11111111
@@ -523,7 +534,7 @@ variant - right
 ........
 
 # Old scenery, kept so the rooms still read: dots are now just air.
-tile : dots
+tile : dots shared
 ........
 ........
 ........
@@ -533,7 +544,7 @@ tile : dots
 ........
 ........
 
-tile v weed
+tile v weed shared
 ........
 ........
 .1...1..
@@ -545,7 +556,7 @@ tile v weed
 
 # Swarm crystal, the Blue Phase's: a span to walk on (its underside in
 # shadow, as a girder's), and spikes.
-tile b span solid blue
+tile b span solid blue shared
 22222222
 21122112
 11111111
@@ -555,7 +566,7 @@ tile b span solid blue
 ........
 ........
 
-tile x crystalspikes hazard blue
+tile x crystalspikes hazard blue shared
 ........
 ..3...3.
 ..3...3.
@@ -567,7 +578,7 @@ tile x crystalspikes hazard blue
 
 # Boiling water, the Red Phase's hazard (the Sump boils only in the Red),
 # in its band's liquid colour.
-tile o boiling hazard red
+tile o boiling hazard red shared
 ........
 .3...3..
 3.3.....
@@ -578,7 +589,7 @@ tile o boiling hazard red
 .3.3.3.3
 
 # A lamp hung from the rock: its light is colour 2.
-tile L lamp
+tile L lamp shared
 ...11...
 ...11...
 ..1111..
@@ -589,7 +600,7 @@ tile L lamp
 ........
 
 # Welded plate, the Red Phase's.
-tile P plate solid red
+tile P plate solid red shared
 2222222.
 2111112.
 2121212.
@@ -602,6 +613,7 @@ tile P plate solid red
 # --- Set pieces: each room's landmark, from a small kit. Scenery unless it
 # --- says solid; drawn in colours 1 and 2 only, mostly line, so they sit
 # --- behind the play, and shaded from the top left like everything else.
+# --- None is flagged shared: a piece only one sector uses is its own.
 # --- The small wheel is two by two: ( ) over [ ]. The big rim (an octagon,
 # --- for the Pump House's flywheel and the Settling Tanks' gauge) is
 # --- { N } along the top, W and E down the sides, and < S > along the

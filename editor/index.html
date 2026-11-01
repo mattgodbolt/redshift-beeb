@@ -458,9 +458,11 @@ function parseGfx(text, fname) {
     } else if (words[0] === 'tile') {
       const key = words[1] === 'space' ? ' ' : words[1];
       if (key.length !== 1) fail(where, "a tile's key is one character");
-      const flags = words.slice(3), bad = flags.filter(f => !TILE_FLAGS.includes(f));
+      // (shared says which file the game keeps a tile's looks in, not what the tile is: lookCounts.)
+      const flags = words.slice(3).filter(f => f !== 'shared'), bad = flags.filter(f => !TILE_FLAGS.includes(f));
       if (bad.length) fail(where, `unknown flags ${bad.join(' ')}`);
-      tiles.push({key, name: words[2], flags, pixels, hollow: ghostTile(pixels), variants: [], alts: {}});
+      tiles.push({key, name: words[2], flags, shared: words.slice(3).includes('shared'), pixels,
+        hollow: ghostTile(pixels), variants: [], alts: {}});
     } else {
       const flags = words.slice(4), bad = flags.filter(f => !SPRITE_FLAGS.includes(f));
       if (bad.length) fail(where, `unknown sprite flags ${bad.join(' ')}`);
@@ -782,6 +784,33 @@ function sectors(doc) {
   return doc.rooms.map(r => (s = r.sector == null ? s : r.sector));
 }
 
+// gfxlib's Looks, counted (decision 43). A look is a tile as written, or one of its variants or alts.
+// A tile's looks are a sector's own when only that sector's rooms use it and it isn't flagged shared;
+// the rest, and always the empty tile's, are shared. The game has 7 bits for a look in a room, so a
+// sector's shared and own looks are at most MAX_LOOKS. {shared, own: Map(sector -> its own)}, with
+// every sector that has rooms in own.
+const MAX_LOOKS = 128;
+function lookCounts(doc, tiles) {
+  const sector = sectors(doc), used = new Map(), own = new Map();
+  doc.rooms.forEach((r, k) => {
+    own.set(sector[k], 0);
+    for (const row of r.map || []) {
+      for (const c of row) {
+        if (!used.has(c)) used.set(c, new Set());
+        used.get(c).add(sector[k]);
+      }
+    }
+  });
+  let shared = 0;
+  tiles.forEach((t, i) => {
+    const n = 1 + t.variants.length + Object.values(t.alts).reduce((sum, list) => sum + list.length, 0);
+    const s = [...(used.get(t.key) || [])];
+    if (i === 0 || t.shared || s.length !== 1) shared += n;
+    else own.set(s[0], own.get(s[0]) + n);
+  });
+  return {shared, own};
+}
+
 function idProblem(id) {
   if (!id) return 'An id needs at least one character.';
   if (!/^[^\s#]+$/.test(id)) return "An id is one word, without '#'.";
@@ -864,6 +893,13 @@ function validate(doc, tiles, thingTypes = THING_TYPES, thingBox = THING_BOX) {
       else if (down && !down.start) add('warning', k, `The cage goes down to ${down.id}, which has no start for Ash to arrive at.`);
     }
   });
+  const looks = lookCounts(doc, tiles);
+  for (const [s, n] of looks.own) {
+    if (looks.shared + n > MAX_LOOKS) {
+      add('error', null, `Sector ${s} draws with ${looks.shared} shared looks and ${n} of its own: at most ${MAX_LOOKS} ` +
+        'fit. A tile only one sector uses is its own; a tile two sectors use is shared by both.');
+    }
+  }
   return out;
 }
 
@@ -872,7 +908,7 @@ G.RS = {
   OPPOSITE, ParseError, fits,
   parseTiles, parseSprites, parseRooms, serializeRooms, roomLines, newRoom, hollow, blueOf, phaseColour,
   colourText, sortedBands, paletteRows, renderRoom, resolveRoom, lookHash, drawSprite, sectors, validate,
-  idProblem,
+  idProblem, lookCounts, MAX_LOOKS,
 };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
