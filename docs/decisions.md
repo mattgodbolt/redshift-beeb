@@ -941,4 +941,91 @@ Matt was away is marked *provisional* until reviewed.
     - The playthrough takes the Red's road through the Sorting Table, rides
       the chandelier, weaves Echo Gallery in the Blue, and checks the Mother
       Lode's and the Chandelier's cells are taken.
+57. **2026-11-01: the Spar Seams' third pass: a door, a face that holds back
+    a Gadfly, a furnace that fires, a lever that has to be meant, and a
+    mite's ghost with eyes** (*provisional*). A level and art pass from the
+    Spar Seams' second newcomer playtest, which found nothing broken and
+    finished with no deaths. What it liked stays: the Sorting Table's two
+    rhythms, the chandelier's ride, Split Seam's two roads and the shift at
+    the top of the lower road's climb, Echo Gallery's weave, and Bore Nine.
+    No engine change.
+    - **The Mother Lode's first move doesn't kill.** The welded plate at the
+      ledge's end was three plates high: a newcomer jumped it like crates,
+      onto the span's ghost and into the acid. The way in is a tunnel now,
+      with the plates as its door, floor to roof, so the Red stops there and
+      the Blue walks through.
+    - **Spar Face: the face holds back a Gadfly.** The face hangs from the
+      roof to two rows short of the floor. The Gadfly patrols behind it at
+      head height and turns at it, so it can't come at Ash, and a standing
+      bolt from the way in, under the face, meets it through most of its
+      bob. Then a grenade brings the face down. Beyond, the Blue's crystal
+      covers the floor, so the Red walks it, and only the Blue's span crosses
+      the acid to the shaft, too wide to jump in the Red. The gallery, its
+      span with the gap on the beat, and the welded hatch are gone.
+    - **The Assay Room: the furnace is the room.** It stands alone over the
+      acid between the landing Ash falls onto and the far one, the only
+      footing between them. In the Red it fires on the beat, flame roaring
+      off its top after the machinery's flicker; in the Blue it's cold. It
+      stops the sergeant's fire, so its top and the near landing are out of
+      it, and a lob from anywhere on its top kills the sergeant; so does a
+      roll on the far landing. The far landing is the Blue's crystal, so Ash
+      lands there in the Red, and the furnace is where to shift, refused
+      while it fires. Its cell lies on the furnace. The crystal that sank and
+      pushed up, and the tall column of the Blue's, which never mattered, are
+      gone.
+    - **The chandelier doesn't strand its rider.** It comes down to the mouth
+      of a low corridor, and Ash steps off it onto rock, a walk well inside
+      its time down, where it was a jump over the Red's plates. A wall down
+      to the corridor keeps Ash from walking off the raised chandelier
+      straight onto it. The corridor's floor is the Red's plates, too low a
+      corridor to jump them in the Blue.
+    - **Last Paydirt's lever has to be meant.** It hangs high on the far
+      wall, level with the welded ledge over the way in, so a bolt from the
+      floor, standing or crouched, where the Slivers are fought, passes under
+      it: climb to the ledge to shoot it. The ledge has a cell again.
+    - **Echo Gallery's Blue pays.** The Blue's crystal holds its door, so a
+      Blue arrival weaves the walkways and shifts to leave; the Red's weave
+      is free as before. Last Paydirt is entered in the Red.
+    - **Two bridges with a gap on the beat, not four.** The Mother Lode keeps
+      its span, the lesson, and Last Paydirt its bridge, the lever's. Spar
+      Face's is gone, and Split Seam's lower road crosses on a span that
+      stays, under a seam of the swarm's crystal that grows shut across the
+      road on the beat, a wall of the Blue's blocks while it's shut: wait for
+      it to open. Its Slivers start clear of it.
+    - **What misled.**
+      - A dormant Sliver's ghost, its shape dithered whole, read as a dart:
+        the checkerboard broke its horns and legs into diagonals. A small
+        enemy's ghost is its whole outline, its dark marks (the eyes) and the
+        sparse fill, as a big enemy's is outline and fill, and it reads as
+        the mite. Decision 40 dithered it when the Sliver was an X that read
+        as a gem. It's the same in every sector. The level editor draws it
+        so, and its check now holds the editor's ghost to `ghost_sprite`, as
+        it held the outline to `hollow`.
+      - The Assay Room's flasks were lit, and a row of them read as spikes or
+        ledges: they're drawn in the body colour alone, with no shelf top.
+      - Split Seam's stub behind the sergeant was spar, which looks cracked
+        and didn't break: it's rock.
+      - The Sorting Table's ore was drawn as two lit edges down the stream,
+        and read as a pillar of crystal: it's lumps, white-hot, one side of
+        the middle then the other, with black between.
+    - **The Sorting Table's way in** is a row taller, so a jump there does
+      something; the Assay Room's way out matches it.
+    - **Cells.** A player who comes into the Mother Lode with two cells and
+      takes the cells on the way comes to Bore Nine with more than two, by
+      either of Split Seam's roads; Echo Gallery's door and the Paydirt's
+      second shift are what the ledge's cell pays for.
+
+    Calls made in building it (*provisional*):
+    - Spar Face has one road, where it had two, and the Sorting Table and
+      Split Seam keep theirs: three rooms of two roads was a repeat too.
+    - The furnace's flame is two looks, the sector's own (its body and its
+      ragged top); the seam is drawn as the Blue's blocks, and costs none.
+    - No spot a whole tile from Ash's floor puts a Gadfly's whole bob in a
+      bolt's line, and Spar Face's was already the best of them, a standing
+      bolt meeting it through most of its bob; it was fought in its path.
+      Now it's fought from where it can't reach.
+    - The playthrough shoots Spar Face's Gadfly under the face, takes the
+      Assay Room's cell on the furnace and shifts there as it cools, steps
+      off the chandelier, leaves Echo Gallery in the Red, and climbs to the
+      Paydirt's ledge for the lever and the cell.
 

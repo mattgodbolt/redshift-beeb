@@ -2595,16 +2595,18 @@ variant ϒ br
 ........
 ..1.....
 
-# The assay room's glassware: a flask on a shelf, lit down its left, the
-# shelf's top dithered, as a shelf that's scenery is. Scenery.
+# The assay room's glassware: a flask in a rack on the back wall, drawn
+# in the body colour alone, with nothing lit and the rack under it a
+# dither, so it sits back (decision 57): lit, over a shelf top, a row of
+# them read as spikes or ledges. Scenery.
 tile ϑ flask
-...22...
-...21...
-...21...
-..2..1..
-.2....1.
-.2111.1.
-21212121
+...1.1..
+...1.1..
+..1...1.
+.1.....1
+.1.....1
+..11111.
+........
 1.1.1.1.
 
 # The Prism's face, at the foot of Bore Nine: white, faceted, true-angled,
@@ -2689,28 +2691,30 @@ tile ц crystalprisms hazard blue
 22211221
 
 # Ore pouring from a picking belt's hopper: hot lumps, white where they'd
-# hurt, falling from the spout between the hopper's two halves. The Red's,
-# and it kills. Two columns wide, the stream down the middle: the left one
-# as written, the right one its variant.
+# hurt, falling from the spout between the hopper's two halves, with black
+# between them and an ember or two. The Red's, and it kills. Two columns
+# wide, the lumps one either side of the middle in turn, so no line of it
+# runs down the stream: a stream drawn as two lit edges read as a pillar
+# of crystal. The left one as written, the right one its variant.
 tile п ore hazard red
-...2321.
-...333..
-....232.
-...2.32.
-...232..
-....3.2.
-...2321.
-....33..
+......22
+.....233
+....2333
+.....233
+......2.
+........
+..1.....
+........
 
 variant п right
-.1232...
-..333...
-.232....
-.23.2...
-..232...
-.2.3....
-.1232...
-..33....
+........
+2...1...
+2.......
+2.......
+.222....
+23332...
+233332..
+.2332...
 
 # The way down, in the bottom row of a shaft that's a room's exit down:
 # an arrow, where the other sectors have chevrons, which at the foot of a
@@ -2739,6 +2743,37 @@ tile з spikescome beat=ц as=space
 # (ъ) and ore that starts (ф).
 tile ъ orestops hazard red beat=space as=п
 tile ф orestarts beat=п as=space
+
+# The assay furnace firing (the Red's machinery, decision 57): flame roars
+# up off its top on the beat, white where it burns, its tongues ragged
+# where it ends (up). In the Blue the furnace is cold. The flame (ѳ) is
+# what the cells over the furnace become on the beat (ѵ).
+tile ѳ flame hazard red
+23323323
+32332332
+23233232
+33323332
+23332323
+32333233
+23233332
+32323232
+
+variant ѳ up
+........
+...2....
+...2..2.
+..23..2.
+2.232.32
+2.332232
+23323323
+32332332
+
+tile ѵ flamecomes beat=ѳ as=space
+
+# The seam closing (the Blue's machinery, decision 57): the swarm's crystal
+# grows shut across SPLIT SEAM's lower road on the beat, and draws back, a
+# wall of the Blue's blocks while it's shut. It kills what it closes on.
+tile ѻ seamcloses beat=B as=space
 
 # The Company's winch chain, that THE CHANDELIER hangs from: a link face on,
 # lit down its left, then one edge on. Scenery.

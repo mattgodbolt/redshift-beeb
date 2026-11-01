@@ -710,3 +710,42 @@ meets the swarm coming across the room.
   checks the new cells are taken; its frame-rate checks take in the
   chandelier lowering and the hoppers pouring as well.
 
+## 2026-11-01: the Spar Seams' third pass
+
+A second newcomer played the Spar Seams through with no deaths and found
+nothing broken. Five rooms each felt like their own idea: the Sorting
+Table's two dangers on one beat, the chandelier, Split Seam's two roads,
+Echo Gallery's weave and Bore Nine. What was left was what misled and what
+repeated (decision 57). The first room's first move killed: three welded
+plates at a ledge's end looked like crates to jump, and beyond them was
+the span's ghost. The paydirt's lever hung in the line Ash fires along at
+its Slivers, so the puzzle solved itself unseen. The chandelier carried
+Ash down like a lift and then left them in the air. Four rooms had the
+same bridge with a gap on the beat, and the Assay Room had no idea of its
+own.
+
+So the Mother Lode's way in is a tunnel with a welded door. Spar Face's
+face hangs over a gap that a bolt goes under and a Gadfly can't, so the
+Gadfly is shot from the way in before the face comes down. The Assay Room
+is its furnace, alone over the acid, cold in the Blue and firing on the
+beat in the Red. The chandelier comes down to a low corridor's mouth, the
+lever hangs high where only the welded ledge is level with it, Echo
+Gallery's door is the Blue's crystal, and Split Seam's lower road waits on
+a seam that grows shut. Out of phase a Sliver is its outline and its eyes,
+in every sector: dithered whole, it read as a dart.
+
+- The searches over Ash's movement caught two drafts before anyone played
+  them: Spar Face's acid was narrow enough to jump in the Red, straight into
+  the shaft and past the Blue, and the Assay Room's jump onto the furnace
+  only worked from the landing's last two tiles. The acid is wider and that
+  gap narrower.
+- A wall down to the chandelier's corridor keeps the ride: without it,
+  walking off the raised chandelier would have dropped Ash onto the
+  corridor's floor.
+- No spot for a Gadfly a whole tile from Ash's floor puts all of its bob in
+  one bolt's line, and Spar Face's was already the best of them. It had
+  been fought in its path; what changed is where it's fought from.
+- The playthrough shoots that Gadfly under the face, shifts on the furnace
+  as it cools, steps off the chandelier, leaves Echo Gallery in the Red and
+  climbs to the paydirt's ledge, and checks the new cells are taken.
+

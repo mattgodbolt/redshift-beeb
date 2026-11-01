@@ -4,7 +4,8 @@
 #
 # Flags: "mirror" if it faces a way (it's stored flipped too); "phase" if
 # it belongs to a phase (it gets two ghosts: its whole outline with a sparse
-# diagonal fill inside, the fill moved between the two, shown in turn out of
+# diagonal fill inside, and a sprite 8 wide or less its dark marks, its eyes,
+# too; the fill moved between the two, shown in turn out of
 # phase so the ghost shimmers: they're the next two sprites, SPR_<NAME> + 4
 # and + 8. A ghost is never white: its colour 3 is drawn as 2, since white
 # marks what can hurt or be taken). Widths are multiples of 4

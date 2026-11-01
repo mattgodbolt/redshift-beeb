@@ -672,13 +672,13 @@ try {
     };
 
     // 1 THE MOTHER LODE, the lesson: the Blue's crystal grows and draws back
-    // here. A welded plate stops the Red at the ledge's end; into the Blue
+    // here. A welded door at the tunnel's end stops the Red; into the Blue
     // there, where two Slivers wake and come over the pit; over the span
     // while its middle is out, taking the cell on it; back to the Red on the
     // landing, where crystal holds the way out, for the Trundler on the step.
     await expectRoom(0, "THE MOTHER LODE");
     if ((await beeb.peek("room_sector")) !== 4) throw new Error("the Mother Lode isn't in Sector 4");
-    await g.walkTo(20);
+    await g.walkTo(14);
     await g.gf(4); await mark("mother_red");
     await shift();
     await face("R");
@@ -695,36 +695,37 @@ try {
     await g.walkTo(88);
     await g.jump("R", 10);
     await cross("R", 1); await settle();
-    // 2 SPAR FACE: a pack of charges on the ledge; down into the gallery,
-    // where a Gadfly hunts in the Red (the Blue's road is the span above it,
-    // over the crystal on the floor); a charge brings the face down whole;
-    // through the Blue's blocks to the welded hatch, into the Blue there, down.
+    // 2 SPAR FACE: the face holds back a Gadfly. A pack of charges on the way
+    // in; the Gadfly shot through the gap under the face, where it can't
+    // come; a charge brings the face down whole; over the Blue's crystal on
+    // the floor beyond, which keeps the Blue out; into the Blue at the acid,
+    // over its span, and down the shaft.
     await expectRoom(1, "SPAR FACE");
-    await g.walkTo(14);
-    await until(async () => (await thing(5)).x > 60, 300);
-    await g.walkTo(30);
-    await g.land();
+    await g.walkTo(20);
     await face("R");
-    if (!(await fireUntilDead(5, 200))) throw new Error("the Spar Face's Gadfly lived");
-    await g.walkTo(78);
     await mark("face");
+    if (!(await fireUntilDead(5, 300))) throw new Error("the Spar Face's Gadfly lived");
     await g.tap("G", 2); await g.gf(30);
-    await g.walkTo(108);
+    await g.walkTo(66);
     await shift();
-    await g.walkUntilRoom("R", 2, 100); await settle(); await g.land();
-    // 3 THE ASSAY ROOM: in through the welded hatch in the Blue; over the
-    // lab's crystal as it sinks, up onto the assay furnace, back to the Red
-    // there, out of the sergeant's fire, and a charge lobbed over the
-    // Blue's wall at it; out past it.
+    await g.walkUntilRoom("R", 2, 150); await settle(); await g.land();
+    // 3 THE ASSAY ROOM: the furnace is the only footing over the acid, and
+    // it fires on the beat in the Red; in the Blue it's cold. Onto it in the
+    // Blue, for the cell; back to the Red there as it cools, out of the
+    // sergeant's fire, which it stops, and a charge lobbed at it; down onto
+    // the far landing over the Blue's crystal before it fires, and out.
     await expectRoom(2, "THE ASSAY ROOM");
-    await frameRate("the spikes sinking and pushing up");
-    await beatTurns(1);
-    await g.walkTo(74);
-    await g.jump("L", 10);
+    await g.walkTo(76);
+    await g.jump("L", 24);
+    if (await alive(5)) throw new Error("the Assay Room's cell wasn't taken");
+    await frameRate("the furnace firing");
+    await beatTurns(0);
     await shift();
     await face("L");
     await mark("assay");
-    await g.tap("G", 2); await g.gf(40);
+    await g.tap("G", 2); await g.gf(6);
+    await g.jump("L", 24);
+    await g.gf(30);
     await dead(4, "the Assay Room");
     await g.walkUntilRoom("L", 3, 300); await settle();
     // 4 SORTING TABLE, the Red's road: two rhythms on the picking belt, the
@@ -752,8 +753,9 @@ try {
     await g.walkUntilRoom("L", 4, 100); await settle(); await g.land();
     // 5 THE CHANDELIER: the Company's winch lowers it on the beat, and draws
     // it up again. In the Blue, over the span onto its boss; ride it down,
-    // onto the cell that hangs where the boss comes to; back to the Red
-    // there, and over the welded plates before it goes up.
+    // onto the cell that hangs where the boss comes to; off it onto the rock
+    // at the low corridor's mouth, back to the Red there, and over the
+    // welded plates.
     await expectRoom(4, "THE CHANDELIER");
     await until(async () => (await beat()) === 0, 300);
     await g.walkTo(56);
@@ -764,9 +766,8 @@ try {
     if ((await g.st()).y !== 64) throw new Error("Ash didn't ride the Chandelier down");
     if (await alive(4)) throw new Error("the Chandelier's cell wasn't taken");
     await mark("chandelier");
+    await g.walkTo(74);
     await shift();
-    await g.walkTo(64);
-    await g.jump("R", 20);
     await cross("R", 5); await settle();
     // 6 SPLIT SEAM, the upper road (the sergeant's): along the way in to the
     // crate, up onto it for its charges, one lobbed at the sergeant against
@@ -789,7 +790,8 @@ try {
     // 7 ECHO GALLERY: two walkways, one over the other, each the other's
     // echo: where the lower is the Blue's crystal, the upper is the Red's
     // plates, and the other way round. In the Blue, down onto the crystal,
-    // up onto the next, down and up again, and out.
+    // up onto the next, down and up again; the Blue's crystal holds the door,
+    // so back to the Red there, and out.
     await expectRoom(6, "ECHO GALLERY");
     await g.walkTo(24);
     await g.land();
@@ -799,18 +801,28 @@ try {
     await g.land();
     await g.walkTo(72);
     await g.jump("R", 22);
+    await g.walkTo(112);
+    await shift();
     await cross("R", 7); await settle();
     // 8 LAST PAYDIRT: the bridge comes and goes too fast to cross, and the
-    // Company's lever across the drop, at the height of the way in, stops it.
-    // The Slivers over the bridge, awake in the Blue; the lever; over the
-    // bridge onto the crystal grown over the shaft; into the Red, and down.
+    // Company's lever, high on the far wall, stops it: shot from the welded
+    // ledge over the way in, at its height, and from nowhere on the floor,
+    // where the Slivers are fought. Up onto the ledge for its charges and its
+    // cell; the lever; down; into the Blue, the Slivers over the bridge; over
+    // it onto the crystal grown over the shaft; into the Red, and down.
     await expectRoom(7, "LAST PAYDIRT");
-    await face("R");
-    await fight("the Last Paydirt's Slivers", 6, 7);
+    await g.walkTo(3, 20);
+    await g.jump("R", 16);
+    if (await alive(8)) throw new Error("the Last Paydirt's cell wasn't taken");
     await face("R");
     await g.down("F"); await until(async () => (await beeb.peek("sw_thrown")) !== 0, 60); await g.up("F");
     await thrown("the Last Paydirt");
     await mark("paydirt");
+    await g.walkTo(0, 30);
+    await g.land();
+    await shift();
+    await face("R");
+    await fight("the Last Paydirt's Slivers", 6, 7);
     await g.walkTo(112);
     await shift();
     await g.walkUntilRoom("R", 8, 300); await settle(); await g.land();
