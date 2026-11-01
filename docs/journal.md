@@ -465,3 +465,51 @@ What was done, in order, with what worked and what didn't.
   runaway truck, crosses the turntable straight from the way in and lobs at
   the carts; its frame check now spans the Crusher's warning as well as its
   turn. It passes on the B and the Master.
+
+## 2026-11-01: the Sump
+
+- Sector 3 is built (decision 50): nine rooms from the OUTFALL, where the
+  cage from the Marshalling Yard brings Ash in, down THE PLUGHOLE to a cage
+  into a one-room Sector 4. Its kit is the sump's plumbing: boiling water's
+  body and a dry bed, a big pipe and its flanges, the outfall's pour, a
+  cistern's seams, boilers on their firebrick settings, steam and its
+  vents, an office's desks, shelves, cabinets, windows and clock, a sluice
+  gate and its racks, depth posts, and the plughole's plug, chain and
+  collar. The water and the steam move as tiles drawn as others (`as=`), so
+  they cost no looks.
+- The sump's water is the Red Phase's and drawn in the body colour, which
+  a room makes red from the surface down. Drawn in 3, as acid is, its ghost
+  in the Blue was a block of white dots, and a band of 3 would have turned
+  Ash red wherever the water rises or drains.
+- Each room was checked with a search over Ash's movement (every input
+  each frame, the beat turning whenever Ash waits for it, a shift costing a
+  cell): which way out each entry phase reaches, with how few shifts, and
+  where Ash could end up with no way out. The lobs and rolls for each
+  sergeant were checked against the grenade's arc.
+- Things met on the way:
+  - Scenery standing in the water left cells that weren't hot: a shift at
+    just the right spot in the cistern's bed, beside a leg, survived and was
+    stuck. Nothing but water stands in water now, unless it's solid.
+  - A corridor four rows high is too low to jump a gap of three: the steam
+    main ends short of it, so Ash has the height there.
+  - The U-BEND's Slivers, in the bend, homed up the near leg and waited
+    under the ledge Ash had to drop from; and jumping up onto a step in the
+    far leg met them coming down. They start up the far leg now, held by the
+    core, and come along the bend at Ash's height; its ledges moved off the
+    core's face so nothing traps them on the way down.
+  - The U-BEND's way out was over Ash's head on the ledge below it: the
+    shelf is narrower, and the plate sits beside the ledge, not over it.
+  - THE PLUGHOLE's first design, a basin that flooded as the plug dropped,
+    redrew most of the room on every frame of the warning, more than
+    a frame holds. Standing water, and the plug as a press over the
+    way down, is a different room from the OVERFLOW, and cheap.
+  - A sergeant's lob from a crate comes down about ten cells off, so the
+    dome, the cabinet and the crate went where the arc meets the sergeant.
+  - OUTFALL's Gadfly was to be held on the far bank by a bollard a row high.
+    A scripted death showed it flying the whole room to the respawn: it bobs
+    up as well as down, over more than two rows, and slipped over the
+    bollard. A welded barricade holds it, which Ash climbs through in the
+    Blue.
+- The playthrough plays on through the Sump and the cage into Sector 4,
+  checking the frame rate as the vents, the flood and the plug move and as
+  the sluice drains; the README has its tour.

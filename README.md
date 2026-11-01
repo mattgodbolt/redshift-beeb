@@ -12,15 +12,16 @@ assembly.
 
 ### ▶ [Play it in your browser](https://bbc.xania.org/?disc=github:mattgodbolt/redshift-beeb/redshift.ssd&autoboot)
 
-A teletext title page, then two sectors of nine rooms each: THE LEACH
-WORKS, from the LANDING ZONE down to the cage in the SKIP SHAFT, and THE
-MARSHALLING YARD, from the ENGINE SHED to the CRUSHER'S MOUTH. The cage
-loads each sector from the disc as it takes Ash down. Each **SHIFT** costs a
-phase cell. Blocks and enemies of the
-other phase are dotted ghosts: you walk through them, and they can't touch
-you. Green is always acid. A Drill Sergeant is armoured and dies only to a
-grenade: lob one from a crate, or crouch under its fire and roll one at it.
-The music follows the phase: listen to it change when you shift.
+A teletext title page, then three sectors of nine rooms each: THE LEACH
+WORKS, from the LANDING ZONE down to the cage in the SKIP SHAFT; THE
+MARSHALLING YARD, from the ENGINE SHED to the CRUSHER'S MOUTH; and THE
+SUMP, from the OUTFALL down THE PLUGHOLE. The cage loads each sector from
+the disc as it takes Ash down. Each **SHIFT** costs a phase cell. Blocks
+and enemies of the other phase are dotted ghosts: you walk through them,
+and they can't touch you. Green is always acid, and the Sump's red water
+boils only in the Red Phase. A Drill Sergeant is armoured and dies only to
+a grenade: lob one from a crate, or crouch under its fire and roll one at
+it. The music follows the phase: listen to it change when you shift.
 
 | Key | Does |
 |---|---|
@@ -110,7 +111,50 @@ beat, flickering just before it does, or when Ash throws a switch:
    the way down. Shoot the handle and it stops.
 9. **CRUSHER'S MOUTH.** A beam under the jaw, which needs both phases and
    good timing, a press that opens only while the jaw is shut, and the cage
-   down to Sector 3, which is as far as the game goes for now.
+   down to Sector 3.
+
+## Sector 3, the Sump
+
+<table>
+<tr><td><img src="docs/media/outfall_red.png" alt="The Outfall, its sump boiling in the Red Phase"></td>
+<td><img src="docs/media/outfall_blue.png" alt="The Outfall in the Blue Phase: on the dry bed"></td></tr>
+<tr><td><img src="docs/media/cistern.png" alt="The Cistern: on its lid"></td>
+<td><img src="docs/media/boiler.png" alt="Boiler Walk: on the steam dome"></td></tr>
+<tr><td><img src="docs/media/steam.png" alt="The Steam Trap: between the vents"></td>
+<td><img src="docs/media/office.png" alt="The Drowned Office: on the filing cabinet"></td></tr>
+<tr><td><img src="docs/media/sluice.png" alt="The Sluice Gate, the gate lifted and the sump drained"></td>
+<td><img src="docs/media/plughole.png" alt="The Plughole: on the crate under it"></td></tr>
+</table>
+
+Every mine leaks, and the leaks all run here. In the Red Phase the sump
+boils; in the Blue the swarm has drunk it, and its dry bed is the road, while
+the cells last. Shift back in the bed and you're in the soup: the Blue draws
+the water's level as a dotted line.
+
+1. **OUTFALL.** The boiling sump across the room, its dry bed in the Blue
+   (above, in each phase), and crystal in the way out: back to the
+   Red on the far bank, not in the bed, where a Gadfly patrols.
+2. **THE CISTERN.** Over the cistern in the Red, past the Trundler on its
+   lid, or along the bed under it in the Blue, past Slivers.
+3. **BOILER WALK.** Boiler to boiler over the boiling gaps, a Trundler, and
+   a Drill Sergeant at the way out: lob from the steam dome, or roll.
+4. **STEAM TRAP.** Vents that steam in turn on the beat, flickering just
+   before they change. In the Blue the steam's gone, but crystal sends Ash
+   down through the welded plates into the bed with the Slivers.
+5. **DROWNED OFFICE.** Along the shelves over the flooded office, a filing
+   cabinet to lob from, and a sergeant on the far landing; or the dry floor
+   under them in the Blue, and a trauma kit by the desks.
+6. **SLUICE GATE.** The gate's handle is at its foot, under the water in the
+   Red. Throw it in the Blue and the gate lifts and the sump drains, in both
+   phases, so the bed is safe to shift back in.
+7. **THE U-BEND.** The bend holds boiling water to the same level in both
+   legs: through it in the Blue, and back to the Red above the waterline for
+   the welded plate up to the way out.
+8. **OVERFLOW.** The sump floods the walkway on the beat: wait it out on the
+   depth posts, or take the bed in the Blue.
+9. **THE PLUGHOLE.** Down the plughole in the Blue while the plug's drawn
+   up; back to the Red on the crate under it, out of a sergeant's fire; and
+   the cage down to Sector 4, which is as far as the game goes for now.
 
 ## The idea
 
