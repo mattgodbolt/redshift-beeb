@@ -370,3 +370,53 @@ What was done, in order, with what worked and what didn't.
   rides down into Sector 3's placeholder without losing a life, on the B
   and the Master.
 
+
+## 2026-11-01: machines that move
+
+- A newcomer's playtest of Sector 2 found five rooms named for machines
+  that did nothing, a Blue Phase that was a safe way through three rooms,
+  breakables that looked like scenery, test discs that started Ash in
+  brickwork, and a sergeant that fired the moment Ash landed by it.
+- Machinery (decision 46): tiles that become other tiles on the room's
+  beat, and switches, a lever or a weigh plate, that change others once.
+  The art says what each becomes, so the game knows nothing of rams or
+  gates: `tools/mkrooms.py` draws each room every way its machinery goes,
+  and every look that changes, a ram's own and the neighbours drawn
+  against it, goes in the room's record as parts. The game copies a part
+  into the map and draws it as it draws a moving thing, so nothing
+  flickers, and the tiles' flags do the rest. Machinery that closes on Ash
+  kills them.
+- The rooms (decision 47): the turntable's deck turns away from the line,
+  the weighbridge's plate opens a shutter, the dead man's handle stops a
+  press, and the crusher's jaw comes down over a beam that needs both
+  phases, with a press before the cage that opens only while the jaw is
+  shut. Crystal and Slivers make the Blue dangerous where it was safe.
+  The jammed carts are drawn in the cracked wall's look. Every room has a
+  start. A sergeant warns before it fires at someone who's just come into
+  its sights.
+- Things met on the way:
+  - A Sliver placed inside the rock can't move, and the playthrough didn't
+    notice at first, since nothing came near it. A scratch check of every
+    thing against the tiles it's on found it.
+  - A Red jump cleared a three-cell Blue span under the jaw, so the shift
+    wasn't needed: the spans are four cells now, and the jaw's housing
+    lower. A Blue jump past the Red plates landed on the truck below: the
+    beam runs on over the truck now, so a fall from the plates drops into
+    the teeth.
+  - No crate in the crusher's room can be far enough from a sergeant for a
+    lob to come down on it (about ten cells), so the room has none, and the
+    press guards the cage.
+  - JavaScript lists integer-like keys first ("10" before "00"), so the
+    editor's check takes its states from `mkrooms.py` as a list.
+  - A reviewer caught the sergeant's clock held still out of its sights
+    freezing its ghost's shimmer, which runs by the same clock: it goes
+    round short of its warning instead. And a sergeant late in a room's
+    list started inside its warning; its clock starts short of it now.
+  - A switch thrown from inside `things_update` tested Ash against the
+    switch's own phase's tiles: the crush test sets this phase's first.
+- The editor shows a room on the beat (B) and thrown (W), dashes the parts
+  that change, edits the beat, and refuses what `mkrooms.py` refuses; its
+  check draws every room every way its machinery goes. The playthrough
+  rides the turntable, steps on the plate, shoots the handle, crosses
+  under the jaw and through the press, checks the frame rate as both move,
+  and fails if a switch isn't thrown.

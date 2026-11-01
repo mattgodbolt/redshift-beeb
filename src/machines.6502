@@ -1,0 +1,157 @@
+\ ***************************************************************************
+\ Machinery and switches (decision 46).
+\
+\ A room's machinery is tiles that change: on its beat (a ram that comes
+\ down and goes back, a turntable's deck that turns away and back), or once
+\ its switch is thrown (a gate that opens). Which tiles, and what each
+\ becomes, is the art's (gfx/tiles.txt's beat= and switch=); the room says
+\ how long its beat holds each way. tools/mkrooms.py works out every look
+\ that changes, the machine's own and its neighbours' that are drawn
+\ against it, and puts them in the room's record after the map as parts:
+\ rectangles of cells, each with its looks the other way and as drawn. So
+\ the game only copies looks into the map and has the parts drawn again,
+\ composed with whatever's in them as a moving thing is (render.6502), and
+\ the tiles' flags do the rest: a closed ram is solid and kills.
+\
+\ A switch is a thing (a lever, a weigh plate), thrown by a shot or a
+\ touch. Every switch in a room throws the same tiles, and its things' arg
+\ can say that it stops the beat too (bit 1), the machinery as drawn.
+\
+\ It all goes back when the room is read again (load_room), as everything
+\ does on a death (decision 30).
+\ ***************************************************************************
+
+PART_BEAT = 0 : PART_SWITCH = 1     ; what moves a part (its record's first byte)
+SW_STOPS = 2                        ; in a switch's arg: it stops the beat
+\ (mkrooms.py cuts the parts to fit the compose buffer, 16 bytes a cell.)
+ASSERT PART_CELLS * 16 <= CBUF_SIZE AND PART_W * 16 < 256
+
+\ The room's record read to the end of its map: the machinery's there, and
+\ it's as drawn.
+.mach_load
+{
+    LDA rd_ptr : STA mach_ptr
+    LDA rd_ptr+1 : STA mach_ptr+1
+    JSR rd_byte : STA beat_len : STA beat_t
+    JSR rd_byte : STA beat_len+1
+    LDA #0 : STA beat_on : STA beat_stop : STA sw_thrown : STA sw_stops : STA parts_n
+    RTS
+}
+
+\ Each frame, after the things (which throw switches): the beat, while the
+\ room has one and no switch has stopped it.
+.mach_update
+{
+    LDA beat_len : BEQ done         ; (no beat)
+    LDA beat_stop : BNE done
+    DEC beat_t : BNE done
+    LDA beat_on : EOR #1 : STA beat_on
+    TAX : LDA beat_len,X : STA beat_t
+    LDA #PART_BEAT : JSR mach_apply
+    JSR sound_clank
+    JMP crushed
+.done
+    RTS
+}
+
+\ The room's switch thrown by thing X (X kept): its tiles change for as long
+\ as Ash is here, and if its switches say so, the beat stops as drawn.
+.sw_throw
+{
+    LDA sw_thrown : BNE done
+    INC sw_thrown
+    STX sw_x
+    LDA #PART_SWITCH : JSR mach_apply
+    LDA sw_stops : BEQ going
+    STA beat_stop
+    LDA beat_on : BEQ going
+    LDA #0 : STA beat_on
+    ASSERT PART_BEAT = 0
+    JSR mach_apply
+.going
+    JSR sound_clank
+    JSR crushed
+    LDX sw_x
+.done
+    RTS
+.sw_x EQUB 0
+}
+
+\ Machinery that closes on Ash kills them, whatever it is. (Nothing else
+\ ever puts them inside something solid.)
+.crushed
+{
+    LDA pl_dead : BNE done
+    \ This phase's tiles: things_update, which throws switches, has a thing's
+    \ own phase's in attr_ptr.
+    JSR set_tile_ptrs
+    LDA #0 : STA ta_dy : LDA #PL_H - 1 : STA ta_h
+    LDA obj_x + PL : JSR box_at
+    LDA #TF_SOLID OR TF_HAZARD : JSR test_area : BEQ done
+    JMP player_die
+.done
+    RTS
+}
+
+\ The parts A moves (PART_*) put in the map, the beat's as beat_on has it
+\ and the switch's thrown, and each one's rectangle listed for render.
+.mach_apply
+{
+    ZA_AUTO2 ma_map
+    STA ma_what
+    LDA mach_ptr : STA rd_ptr
+    LDA mach_ptr+1 : STA rd_ptr+1
+    JSR rd_byte : JSR rd_byte       ; (past the beat)
+    JSR rd_byte : JEQ done
+    STA ma_n
+.part
+    JSR rd_byte : STA ma_this
+    JSR rd_byte : STA ma_x
+    JSR rd_byte : STA ma_y
+    JSR rd_byte : STA ma_w
+    JSR rd_byte : STA ma_rows
+    LDA ma_this : CMP ma_what : BNE listed
+    \ Its rectangle, in byte columns and character rows, ends exclusive.
+    LDX parts_n : CPX #MAX_PARTS : BCS listed
+    INC parts_n
+    LDA ma_x : ASL A : STA parts_c0,X
+    ADC ma_w : ADC ma_w : STA parts_c1,X
+    LDA ma_y : STA parts_r0,X
+    CLC : ADC ma_rows : STA parts_r1,X
+.listed
+    LDX ma_y
+.row
+    LDA maprow_lo,X : CLC : ADC ma_x : STA ma_map
+    LDA maprow_hi,X : ADC #0 : STA ma_map+1
+    LDA #0 : STA ma_col
+.cell
+    \ A switch's part has a look a cell; the beat's, two: on the beat, then
+    \ as drawn.
+    JSR rd_byte : STA ma_look
+    LDA ma_this : BNE got
+    ASSERT PART_BEAT = 0
+    JSR rd_byte
+    LDY beat_on : BNE got
+    STA ma_look
+.got
+    LDA ma_this : CMP ma_what : BNE next
+    LDA ma_look : CMP #&FF : BEQ next   ; (a cell that doesn't change)
+    LDY ma_col : STA (ma_map),Y
+.next
+    INC ma_col
+    LDA ma_col : CMP ma_w : BNE cell
+    INX
+    DEC ma_rows : BNE row
+    DEC ma_n : JNE part
+.done
+    RTS
+.ma_what EQUB 0
+.ma_this EQUB 0
+.ma_n    EQUB 0
+.ma_x    EQUB 0
+.ma_y    EQUB 0
+.ma_w    EQUB 0
+.ma_rows EQUB 0
+.ma_col  EQUB 0
+.ma_look EQUB 0
+}

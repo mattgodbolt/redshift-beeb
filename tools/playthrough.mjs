@@ -5,13 +5,14 @@
 // without losing a life, and with --shots, the README's screenshots.
 //
 //   node tools/playthrough.mjs               play it, and fail if a room isn't reached,
-//                                            a life is lost or a sergeant lives
+//                                            a life is lost, a sergeant lives or a switch
+//                                            isn't thrown
 //   node tools/playthrough.mjs --shots DIR   also save a screenshot at each moment the
 //                                            route marks, as DIR/<name>.png
 //
 // The route is a player's, read off the screen: it waits for enemies to turn
-// or move off as a player would, and reads where things are from memory only
-// to time that.
+// or move off, and for machinery to move, as a player would, and reads where
+// things are and how the machinery stands from memory only to time that.
 import { execFileSync } from "child_process";
 import { mkdirSync } from "fs";
 import { startBeeb } from "./beeb.mjs";
@@ -117,6 +118,13 @@ const cross = async (dir, room) => { await g.walkUntilRoom(dir, room); await g.g
 // Into a room, and on once it's drawn and its things are out.
 const settle = async () => { await until(async () => (await beeb.peek("blackout")) === 0, 100); await g.gf(2); };
 const until = async (test, limit = 400) => { for (let i = 0; i < limit; i++) { if (await test()) return; await g.gf(1); } };
+// The machinery just turning: 0 back as drawn, 1 the other way (src/machines.6502).
+const beatTurns = async (on) => {
+    await until(async () => (await beeb.peek("beat_on")) !== on, 300);
+    await until(async () => (await beeb.peek("beat_on")) === on, 300);
+};
+// The room's switch, which should have been thrown.
+const thrown = async (where) => { if (!(await beeb.peek("sw_thrown"))) throw new Error(`${where}'s switch wasn't thrown`); };
 
 // --- The title page, then the route ---------------------------------------
 
@@ -274,25 +282,28 @@ try {
     await g.jump("R", 12);
     await g.walkTo(118, 300);
     await cross("R", 2); await settle();
-    // 3 TURNTABLE: the deck's Trundler, the barricade, and down through the
-    // welded hatch in the Blue.
+    // 3 TURNTABLE: over the deck while it's in line with the track (it turns
+    // away on the beat), then the Slivers beyond the barricade in the Blue,
+    // and down through the welded hatch.
     await expectRoom(2, "TURNTABLE");
     await g.walkTo(20);
-    if (!(await fireUntilDead(4, 150, true))) throw new Error("the turntable's Trundler lived");
-    await g.jump("R", 14);
-    await g.walkTo(70); await g.jump("R", 14);
+    await beatTurns(0);
+    await g.walkTo(84);
     await g.tap("S", 2); await g.gf(2);
-    await g.down("L"); await g.gf(1); await g.up("L");
-    await g.gf(10); await mark("turntable");
+    await g.gf(4); await mark("turntable");
     await g.down("F");
-    await until(async () => !(await thing(5)).alive && !(await thing(6)).alive, 150);
+    await until(async () => !(await thing(4)).alive && !(await thing(5)).alive, 150);
     await g.up("F");
+    if ((await thing(4)).alive || (await thing(5)).alive) throw new Error("the turntable's Slivers lived");
     await g.walkUntilRoom("R", 3, 200); await settle();
     await g.gf(30);
-    // 4 WEIGHBRIDGE: up the truck to the siding, back to the Red where the
+    // 4 WEIGHBRIDGE: over the crystals onto the weigh plate, which opens the
+    // gate to the truck, up the truck to the siding, back to the Red where the
     // crystal grows, and a charge for the jammed carts.
     await expectRoom(3, "WEIGHBRIDGE");
-    await g.walkTo(92); await g.jump("L", 12); await g.jump("L", 22);
+    await g.walkTo(108); await g.jump("L", 16);
+    await thrown("the Weighbridge");
+    await g.jump("L", 12); await g.jump("L", 22);
     // (The siding's Trundler is a ghost in the Blue: back to the Red with it
     // off at the far end, and shoot it.)
     await until(async () => { const t = await thing(4); return t.x < 54 && t.f === 2; }, 300);
@@ -305,8 +316,9 @@ try {
     await g.down("D"); await g.gf(2); await g.tap("G", 2); await g.up("D");
     if (!(await fireUntilDead(5, 150, true))) throw new Error("the Trundler behind the carts lived");
     await cross("L", 4); await settle();
-    // 5 SIDING FOUR: truck to truck, a Trundler on each, then the Gadfly
-    // under the barricade, and through it in the Blue.
+    // 5 SIDING FOUR: truck to truck in the Red (crystal grows on the middle
+    // one), a Trundler on each, then the Gadfly under the barricade, and
+    // through it in the Blue, where Slivers wake.
     await expectRoom(4, "SIDING FOUR");
     await g.walkTo(102); await g.jump("L", 12);
     if (!(await fireUntilDead(4, 150, true))) throw new Error("Siding Four's first Trundler lived");
@@ -316,6 +328,11 @@ try {
     await g.walkTo(20);
     if (!(await fireUntilDead(6, 150))) throw new Error("Siding Four's Gadfly lived");
     await g.tap("S", 2); await g.gf(2);
+    await g.down("F");
+    await until(async () => !(await thing(8)).alive && !(await thing(9)).alive, 150);
+    await g.up("F");
+    if ((await thing(8)).alive || (await thing(9)).alive) throw new Error("Siding Four's Slivers lived");
+    await mark("siding");
     await g.walkUntilRoom("L", 5, 200); await settle();
     // 6 CRANE GANTRY: back to the Red through the crystal, and a Gadfly under
     // each of the crane's loads.
@@ -345,11 +362,15 @@ try {
     if (!(await fireUntilDead(6, 200, true))) throw new Error("the Buffer Stops' Trundler lived");
     await g.walkTo(104); await g.jump("R", 10);
     await g.walkUntilRoom("R", 7, 200); await settle();
-    // 8 DEAD MAN'S HANDLE: down onto the truck between two sergeants, and a
-    // charge lobbed at each.
+    // 8 DEAD MAN'S HANDLE: the handle shot from the ledge, which stops the
+    // press over the way down; down onto the truck between two sergeants, a
+    // charge lobbed at each, and down past the press.
     await g.land();
     await expectRoom(7, "DEAD MAN'S HANDLE");
-    await g.walkTo(86);
+    await g.walkTo(68);
+    await g.down("L"); await g.gf(1); await g.up("L");
+    await g.down("F"); await until(async () => (await beeb.peek("sw_thrown")) !== 0, 40); await g.up("F");
+    await thrown("the Dead Man's Handle");
     await g.walkTo(60); await g.land();
     await mark("handle");
     await g.walkTo(66);
@@ -361,22 +382,34 @@ try {
     await g.tap("G", 2); await g.gf(40);
     await dead(4, "the Dead Man's Handle's left");
     await g.walkUntilRoom("L", 8, 300); await settle();
-    // 9 CRUSHER'S MOUTH: along the beam between the jaws, never jumping, a
-    // charge from the truck at the sergeant, and the cage.
+    // 9 CRUSHER'S MOUTH: into the Blue on the ledge, where Slivers wake;
+    // along the beam under the jaw while it's open, the Blue's span, a shift
+    // on the girder between, the Red's plates, down onto the truck; then
+    // through the press, which opens while the jaw shuts, to the cage.
     await g.land();
     await expectRoom(8, "CRUSHER'S MOUTH");
     await mark("crusher");
-    await until(async () => { const t = await thing(4); return t.x > 52 && t.f === 0; }, 300);
-    await g.walkTo(24);
-    if (!(await fireUntilDead(4, 150, true))) throw new Error("the beam's Trundler lived");
-    await g.walkTo(72); await g.land();
-    await g.walkTo(70);
+    await g.tap("S", 2); await g.gf(2);
     await g.down("R"); await g.gf(1); await g.up("R");
-    await g.tap("G", 2); await g.gf(40);
-    await dead(6, "the Crusher's Mouth");
-    await until(async () => { const t = await thing(5); return t.x > 104 && t.f === 0; }, 300);
-    await g.walkTo(80);
-    if (!(await fireUntilDead(5, 150, true))) throw new Error("the Crusher's Mouth's floor Trundler lived");
+    await g.down("F");
+    await until(async () => !(await thing(5)).alive && !(await thing(6)).alive, 250);
+    await g.up("F");
+    if ((await thing(5)).alive || (await thing(6)).alive) throw new Error("the Crusher's Mouth's Slivers lived");
+    await g.walkTo(20);
+    await beatTurns(0);
+    await g.walkTo(48);
+    await mark("jaw");
+    await g.tap("S", 1);
+    await g.walkTo(84); await g.land();
+    // (The frame rate across the machinery's next turn, when the jaw and the
+    // press both move: in game frames and VSyncs, which wrap at 256.)
+    const b0 = await beeb.peek("beat_on"), f0 = await beeb.peek("frame"), v0 = await beeb.peek("vsyncs");
+    await until(async () => (await beeb.peek("beat_on")) !== b0, 100);
+    await g.gf(5);
+    const frames = ((await beeb.peek("frame")) - f0) & 255, vsyncs = ((await beeb.peek("vsyncs")) - v0) & 255;
+    console.log(`${"(frame rate)".padEnd(16)} ${frames} game frames in ${vsyncs} VSyncs, the jaw and the press moving`);
+    if (frames * 2 < vsyncs - 2) throw new Error(`the Crusher's Mouth dropped frames: ${frames} in ${vsyncs} VSyncs`);
+    await beatTurns(1);
     await g.down("R");
     await rideCage(3);
     await g.up("R");
@@ -386,6 +419,7 @@ try {
     await g.gf(25);
 } catch (e) {
     console.log(`FAIL: ${e.message}`);
+    console.log(`  (Ash: ${JSON.stringify(await g.st())})`);
     await beeb.close();
     process.exit(1);
 }

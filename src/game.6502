@@ -60,6 +60,9 @@ ENDIF
     JSR grenade_update
     JSR things_update
     JSR ebolts_update
+    \ (The beat after the things, which throw switches: one that stops it
+    \ leaves it nothing to do, so a frame lists each part once at most.)
+    JSR mach_update
     JSR render
     JSR sound_update
     LDA shift_flash : BEQ no_flash

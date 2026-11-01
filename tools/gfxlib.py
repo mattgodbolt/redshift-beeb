@@ -53,12 +53,21 @@ def _pixels(art, w, where):
 
 
 class Tile:
-    def __init__(self, key, name, flags, pixels, shared=False):
+    def __init__(self, key, name, flags, pixels, shared=False, partners=None):
         self.key, self.name, self.flags, self.pixels = key, name, flags, pixels
         self.shared = shared    # its looks are in every sector, whatever the rooms use (Looks)
         self.variants = []      # (when, pixels), in file order: the first that holds is used
         self.alts = {}          # when -> [pixels]: looks used now and then instead
+        # The tile it becomes on the room's beat, or once the room's switch is
+        # thrown: a key, or None (MACHINES).
+        partners = partners or {}
+        self.beat, self.switch = partners.get("beat"), partners.get("switch")
 
+
+# What makes a tile machinery (decision 46): beat=<key> becomes that tile on
+# the room's beat and back again, and switch=<key> becomes it once the
+# room's switch is thrown.
+MACHINES = ("beat", "switch")
 
 # What a variant's <when> may say (see gfx/tiles.txt). Sides join with '+'.
 SIDES = ("up", "down", "left", "right")
@@ -104,16 +113,38 @@ def read_tiles(path=ROOT / "gfx/tiles.txt"):
         if len(key) != 1:
             raise SystemExit(f"{path}:{line}: a tile's key is one character")
         # (shared says which file a look travels in, not what the tile is.)
-        flags = set(words[3:]) - {"shared"}
+        plain = [w for w in words[3:] if "=" not in w]
+        flags = set(plain) - {"shared"}
         bad = flags - set(TILE_FLAGS)
         if bad:
             raise SystemExit(f"{path}:{line}: unknown flags {bad}")
-        tiles.append(Tile(key, words[2], flags, _pixels(art, 8, f"{path}:{line}"), "shared" in words[3:]))
+        partners = {}
+        for w in words[3:]:
+            what, eq, other = w.partition("=")
+            if not eq:
+                continue
+            other = " " if other == "space" else other
+            if what not in MACHINES or len(other) != 1 or partners:
+                raise SystemExit(f"{path}:{line}: a tile may say beat=<key> or switch=<key>, once: got {w!r}")
+            partners[what] = other
+        tiles.append(Tile(key, words[2], flags, _pixels(art, 8, f"{path}:{line}"), "shared" in plain, partners))
     if not tiles or tiles[0].key != " ":
         raise SystemExit(f"{path}: the first tile must be 'space'")
     keys = [t.key for t in tiles]
     if len(set(keys)) != len(keys):
         raise SystemExit(f"{path}: duplicate tile keys")
+    by = {t.key: t for t in tiles}
+    for t in tiles:
+        for what in MACHINES:
+            other = getattr(t, what)
+            if other is None:
+                continue
+            if other not in by:
+                raise SystemExit(f"{path}: tile {t.name}: {what}={other!r} isn't a tile")
+            # (A blast clears a breakable tile for good, and the machinery
+            # would put it back.)
+            if "breakable" in t.flags or "breakable" in by[other].flags:
+                raise SystemExit(f"{path}: tile {t.name}: machinery can't be breakable, nor become it")
     return tiles
 
 
@@ -275,10 +306,15 @@ class Looks:
                  room for the most any sector has of its own"""
     def __init__(self, tiles, rooms):
         used = {}
+        by = {t.key: t for t in tiles}
         for r in rooms:
             for line in r.map:
                 for c in line:
                     used.setdefault(c, set()).add(r.sector)
+                    # (and what it becomes, as machinery: machine_map)
+                    for other in (by[c].beat, by[c].switch) if c in by else ():
+                        if other is not None:
+                            used.setdefault(other, set()).add(r.sector)
 
         UNUSED = "unused"
 
@@ -330,7 +366,7 @@ def look_hash(c, r, salt):
     return ((((c + 1) * 40503) ^ ((r + 1 + salt) * 32587)) >> 5) & 7
 
 
-def resolve(room, tiles, all_looks=None):
+def resolve(room, tiles, all_looks=None, state=(0, 0)):
     """The room's map as looks: each cell's tile, as its surroundings choose.
 
     A side of a solid tile is open when the tile there isn't solid in both
@@ -339,11 +375,13 @@ def resolve(room, tiles, all_looks=None):
     variant whose <when> holds, or else its own look; then, where the cell's
     look_hash falls below the number of alts for that <when>, that alt.
     The looks are all_looks, for the game's numbers the room's sector's
-    (Looks.of), or else every look numbered in file order."""
+    (Looks.of), or else every look numbered in file order. The map is the
+    room's machinery in the state given (machine_map)."""
     all_looks = all_looks or looks(tiles)
     keys = {t.key: t for t in tiles}
     by = {(lk.key, lk.when, lk.alt): lk for lk in all_looks}
     salt = sum(map(ord, room.ident)) & 0xFF
+    rows = machine_map(room, tiles, *state)
 
     def solid_both(k):
         f = keys[k].flags
@@ -353,13 +391,13 @@ def resolve(room, tiles, all_looks=None):
     for r in range(MAP_H):
         row = []
         for c in range(MAP_W):
-            k = room.map[r][c]
+            k = rows[r][c]
             t = keys[k]
             opened = set()
             for side, (dc, dr) in zip(SIDES, ((0, -1), (0, 1), (-1, 0), (1, 0))):
                 nc, nr = c + dc, r + dr
                 if 0 <= nc < MAP_W and 0 <= nr < MAP_H:
-                    n = room.map[nr][nc]
+                    n = rows[nr][nc]
                     if (not solid_both(n)) if "solid" in t.flags else n != k:
                         opened.add(side)
 
@@ -367,7 +405,7 @@ def resolve(room, tiles, all_looks=None):
                 if when == "deep":
                     return not opened
                 if when == "ceiling":
-                    return r > 0 and solid_both(room.map[r - 1][c])
+                    return r > 0 and solid_both(rows[r - 1][c])
                 if when in ("tl", "tr", "bl", "br"):
                     return when == "tb"[r & 1] + "lr"[c & 1]
                 if when.startswith("exit_"):
@@ -384,6 +422,100 @@ def resolve(room, tiles, all_looks=None):
     return grid
 
 
+# --- Machinery (decision 46) ---------------------------------------------------
+
+def machine_map(room, tiles, beat=0, thrown=0):
+    """The room's map with its machinery in a state: on the beat, each tile
+    that says beat=<key> is that tile instead; once the switch is thrown,
+    each that says switch=<key>. (A key that isn't a tile stays.)"""
+    keys = {t.key: t for t in tiles}
+
+    def cell(c):
+        t = keys.get(c)
+        if t is None:
+            return c
+        if beat and t.beat is not None:
+            return t.beat
+        if thrown and t.switch is not None:
+            return t.switch
+        return c
+    return ["".join(cell(c) for c in line) for line in room.map]
+
+
+# The game redraws machinery a part at a time, each a rectangle of cells that
+# render.6502 composes as it does a moving thing's, so a part fits its compose
+# buffer: under 256 bytes a row, and CBUF_SIZE in all, at 16 bytes a cell. A
+# room has at most MAX_PARTS, as many as the game's list of the parts a frame
+# must draw holds.
+PART_W = 15
+PART_CELLS = 48
+MAX_PARTS = 8
+# The states that come about: as drawn, on the beat, the switch thrown, both.
+STATES = ((0, 0), (1, 0), (0, 1), (1, 1))
+
+
+def _rects(cells):
+    """Cells as rectangles: each 4-connected group's, found in reading order,
+    cut into columns at most PART_W wide and those into bands of rows of at
+    most PART_CELLS cells, leaving out any with none of the group in it."""
+    left, out = set(cells), []
+    for r in range(MAP_H):
+        for c in range(MAP_W):
+            if (c, r) not in left:
+                continue
+            group, todo = set(), [(c, r)]
+            while todo:
+                p = todo.pop()
+                if p in left:
+                    left.discard(p)
+                    group.add(p)
+                    todo += [(p[0] + dc, p[1] + dr) for dc, dr in ((1, 0), (-1, 0), (0, 1), (0, -1))]
+            x0, x1 = min(x for x, _ in group), max(x for x, _ in group)
+            y0, y1 = min(y for _, y in group), max(y for _, y in group)
+            for x in range(x0, x1 + 1, PART_W):
+                w = min(PART_W, x1 + 1 - x)
+                band = PART_CELLS // w
+                for y in range(y0, y1 + 1, band):
+                    h = min(band, y1 + 1 - y)
+                    if any((c, r) in group for r in range(y, y + h) for c in range(x, x + w)):
+                        out.append((x, y, w, h))
+    return out
+
+
+def machinery(room, tiles, all_looks=None):
+    """The room's machinery as parts the game redraws: for the beat, then the
+    switch, each part (what, x, y, w, h, cells), where cells has each cell
+    of its rectangle that changes, (c, r) -> (its look the other way, its
+    look as drawn). A cell changes when its look does: a machine's own, or a
+    neighbour's that it shows against. The game can't do two things to one
+    cell, nor undo a blast, so it fails if the beat and the switch change a
+    cell between them, or if a breakable tile changes."""
+    where = f"room {room.ident}"
+    keys = {t.key: t for t in tiles}
+    grids = {s: resolve(room, tiles, all_looks, s) for s in STATES}
+    ident = {s: [[(lk.key, lk.when, lk.alt) for lk in line] for line in grid] for s, grid in grids.items()}
+    drawn = ident[0, 0]
+    beat = {(c, r) for r in range(MAP_H) for c in range(MAP_W) if ident[1, 0][r][c] != drawn[r][c]}
+    thrown = {(c, r) for r in range(MAP_H) for c in range(MAP_W) if ident[0, 1][r][c] != drawn[r][c]}
+    for r in range(MAP_H):
+        for c in range(MAP_W):
+            want = ident[1, 0] if (c, r) in beat else ident[0, 1] if (c, r) in thrown else drawn
+            if ((c, r) in beat and (c, r) in thrown) or ident[1, 1][r][c] != want[r][c]:
+                raise SystemExit(f"{where}: the cell at {c},{r} changes with the beat and with the switch: "
+                                 "keep the two apart")
+            if ((c, r) in beat or (c, r) in thrown) and "breakable" in keys[room.map[r][c]].flags:
+                raise SystemExit(f"{where}: the breakable tile at {c},{r} changes with the machinery, "
+                                 "which would undo a blast")
+    parts = []
+    for what, cells, s in (("beat", beat, (1, 0)), ("switch", thrown, (0, 1))):
+        for x, y, w, h in _rects(cells):
+            parts.append((what, x, y, w, h, {(c, r): (grids[s][r][c], grids[0, 0][r][c])
+                                               for r in range(y, y + h) for c in range(x, x + w) if (c, r) in cells}))
+    if len(parts) > MAX_PARTS:
+        raise SystemExit(f"{where}: its machinery is {len(parts)} parts: at most {MAX_PARTS}")
+    return parts
+
+
 # --- Rooms -------------------------------------------------------------------
 
 class Room:
@@ -397,6 +529,7 @@ class Room:
         self.things = []               # (type, x, y, args)
         self.start = None
         self.sector = None
+        self.beat = None               # (frames as drawn, frames the other way): its machinery's beat
 
 
 def _colour(word, where):
@@ -469,6 +602,15 @@ def read_rooms(path=ROOT / "rooms/rooms.txt"):
         elif key == "start":
             _words(words, 3, where, "start <x> <y>")
             room.start = (_int(words[1], where), _int(words[2], where))
+        elif key == "beat":
+            # The machinery as drawn for the first, the other way for the
+            # second (the first again if there's none), in game frames.
+            if len(words) not in (2, 3):
+                raise SystemExit(f"{where}: beat <frames> [<frames>]")
+            frames = [_int(w, where) for w in words[1:]]
+            if not all(1 <= f <= 255 for f in frames):
+                raise SystemExit(f"{where}: a beat is 1-255 frames each way")
+            room.beat = (frames[0], frames[-1])
         elif key == "map":
             # The map's lines are taken whole (spaces matter), and padded.
             rows = []

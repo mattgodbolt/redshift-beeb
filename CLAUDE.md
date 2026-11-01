@@ -37,6 +37,7 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 - The screen is MODE 1 narrowed to 256x192 at `&5000`. The status bar is rows 0-1, in logical colours 0 and 1 only; the playfield is rows 2-23.
 - `irq.6502` plays the palette program: the status split, then up to 8 bands per room, each changing one logical colour on a scan line. Its timing is chuckie-egg-2-beeb's, measured there, and the instructions before each write must stay as they are.
 - `render.6502` draws moving things flicker-free. Each thing's old and new rectangles are composed in `cbuf` (tiles, then sprites masked), then copied out.
+- `machines.6502` moves a room's machinery (decision 46): tiles that say `beat=` or `switch=` in `gfx/tiles.txt` become other tiles on the room's `beat`, or when a lever or plate is thrown. `mkrooms.py` puts every look that changes in the record as parts, which the game copies into the map and `render` composes.
 - The art and the rooms are text. `tools/mkgfx.py` and `tools/mkrooms.py` turn them into `build/data/*.6502`, and `tools/gfxlib.py` is the shared reader. The level editor in `editor/` reads the same files.
 - The music is text too (`music/`; `music/instruments.txt` says how), made into data by `tools/mkmusic.py`. One player, `musicplay.6502`, is included twice, each in its own scope with its own data: in the game, where the VSync interrupt steps it (`music.6502`), and in RSLOAD for the title theme. The game's effects take a channel from it whenever they want one.
 - Each colour has a job (`gfx/tiles.txt`'s header, decision 20); keep new art to it. A tile's variants are picked from its surroundings when the rooms are built (`gfxlib.resolve`); the editor has a copy of that in its core script, which `editor/check.mjs` holds to the build pixel for pixel. Air is drawn by position at run time (`back_look`), not stored.
@@ -52,6 +53,12 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 - **A `make ROOM=n` build starts Ash at that room's `start`, or the first room's**, not where they'd come in; and after a room change its things spawn only once it's drawn, so a script waits for `blackout` to clear.
 - **A Gadfly bobs over walls that don't cover the row it fills**: bound its beat with walls the height of its bob.
 - **The interrupt runs with D as the game left it**: `add_score` uses decimal mode, so the VSync path does `CLD` before anything that adds.
+- **Inside `things_update`, `attr_ptr` is the thing's own phase's tiles**, not Ash's. Anything it calls that tests Ash against the map (a switch's `crushed`) sets it back first (`set_tile_ptrs`).
+- **A thing's clock (`th_t`) drives its looks too**: a ghost's shimmer, a pickup's glint. Don't hold it still to time something; let it go round.
+- **A thing placed in solid rock can't move**, and nothing may notice: a Sliver in a wall just hangs there. Check every thing against the tiles under it after moving rooms about.
+- **Prove a room needs what it's meant to need** with a simulation of Ash's jumps (as `player_update` moves), in each phase and each state of its machinery: a low ceiling shortens a jump, but a fall off a ledge lengthens one.
+- **A lob comes down about ten cells off** (`arc_tab`, thrown at two steps a frame). A crate nearer a sergeant than that can't kill it, which breaks decision 41.
+- **JavaScript lists integer-like object keys first** ("10" before "00"): pass ordered things from Python to the editor's check as lists.
 - **The interrupt writes the sound chip.** Main-loop code that writes a tone (two bytes) holds `mu_busy` across them, as `sound_update` does. A loop that doesn't call `sound_update` (a card, game over) leaves an effect holding its channel: stop the effects first (`sound_quiet`).
 - **The game's frame is 312 lines, 39936 cycles, not 40000** (MODE 7's interlaced one is). A tool counting frames from cycles drifts a frame every 150 or so.
 - **Until the game runs, the low pages are the OS's.** A harness poke at a game variable there (`pl_safe`) on the title page writes into the OS's workspace.

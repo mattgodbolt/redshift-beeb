@@ -24,13 +24,15 @@ ASSERT EB0 + NEB = NOBJ
 \ By type (TH_*): sprite, phase, bolts it takes (0: only a grenade kills
 \ it), and score in hundreds (BCD).
 .type_spr   EQUB SPR_SENTRY, SPR_DRONE0, SPR_CRAWLER0, SPR_SHARD0
-            EQUB SPR_CELL0, SPR_GRENADES0, SPR_LIFE0, SPR_CAGE
-.type_phase EQUB 1, 1, 1, 2, 0, 0, 0, 0
-.type_hp    EQUB 0, 1, 2, 1, 0, 0, 0, 0
-.type_score EQUB &05, &01, &02, &01, &01, &01, &01, &00
+            EQUB SPR_CELL0, SPR_GRENADES0, SPR_LIFE0, SPR_CAGE, SPR_LEVER0, SPR_PLATE0
+.type_phase EQUB 1, 1, 1, 2, 0, 0, 0, 0, 0, 0
+.type_hp    EQUB 0, 1, 2, 1, 0, 0, 0, 0, 0, 0
+.type_score EQUB &05, &01, &02, &01, &01, &01, &01, &00, &00, &00
 ASSERT TH_SENTRY = 0 AND TH_DRONE = 1 AND TH_CRAWLER = 2 AND TH_SHARD = 3
 ASSERT TH_CELL = 4 AND TH_GRENADES = 5 AND TH_LIFE = 6
+ASSERT TH_EXIT = 7 AND TH_LEVER = 8 AND TH_PLATE = 9
 TH_ENEMIES = TH_CELL            ; types below are enemies
+TH_SWITCHES = TH_LEVER          ; types from here are switches (machines.6502)
 
 \ The drone's bob, in lines from where it started.
 .bob_tab    EQUB 0, 1, 2, 3, 3, 4, 4, 4, 4, 4, 3, 3, 2, 1, 0, 0
@@ -45,6 +47,8 @@ GR_FRAMES = 40                  ; it goes off after this long anyway
 BOOM_FRAMES = 8
 SENTRY_GAP = 48                 ; frames between a sentry's shots
 SENTRY_WARN = 12                ; frames of its warning look before each
+SENTRY_START = 31               ; its clock's start: the stagger, ANDed with this
+ASSERT SENTRY_START < SENTRY_GAP - SENTRY_WARN AND (SENTRY_START + 1 AND SENTRY_START) = 0
 HURT_FRAMES = 6                 ; a wounded enemy's flicker
 SENTRY_GUN = 1                  ; its bolt's top, below its own
 ASSERT PL_H - 16 + SENTRY_GUN + 3 <= PL_CROUCH_TOP   ; (a sergeant is 16 high)
@@ -89,8 +93,17 @@ ASSERT PL_H - 16 + SENTRY_GUN + 3 <= PL_CROUCH_TOP   ; (a sergeant is 16 high)
     LDA st_y : ASL A : ASL A : ASL A
     STA obj_y,X : STA th_y0,X
     LDA st_arg : AND #1 : ASL A : STA obj_face,X    ; 1: facing left
+    \ A switch's arg says whether it stops the room's beat.
+    CPY #TH_SWITCHES : BCC not_switch
+    LDA st_arg : AND #SW_STOPS : ORA sw_stops : STA sw_stops
+.not_switch
     LDA st_k : STA th_idx,X
-    ASL A : ASL A : ASL A : STA th_t,X  ; (staggered, so they don't fire together)
+    ASL A : ASL A : ASL A           ; (staggered, so they don't fire together)
+    \ A sergeant's starts short of its warning, so it warns before it fires.
+    CPY #TH_SENTRY : BNE stagger
+    AND #SENTRY_START
+.stagger
+    STA th_t,X
     LDA #0 : STA th_boom,X : STA th_hurt,X
     LDA #OS_CHANGED : STA obj_st,X
     JSR th_look
@@ -132,6 +145,11 @@ ASSERT PL_H - 16 + SENTRY_GUN + 3 <= PL_CROUCH_TOP   ; (a sergeant is 16 high)
     PLA : JMP one_frame
 .not_sentry
     CPY #TH_EXIT : BEQ one_frame
+    BCC not_switch
+    \ A switch: its look once thrown, after its own.
+    LDY sw_thrown : BEQ set
+    CLC : ADC #4 : BNE set          ; (lever1 is lever0 + 4)
+.not_switch
     CPY #TH_ENEMIES : BCC two_frames
     \ A pickup glints, a beat in every four.
     PHA
@@ -171,6 +189,8 @@ ASSERT SPR_DRONE1 = SPR_DRONE0 + 12 AND SPR_CRAWLER1 = SPR_CRAWLER0 + 12 AND SPR
 ASSERT SPR_SENTRY_GHOST = SPR_SENTRY + 4 AND SPR_SENTRY_GHOST2 = SPR_SENTRY + 8
 ASSERT SPR_DRONE0_GHOST2 = SPR_DRONE0 + 8 AND SPR_SHARD1_GHOST2 = SPR_SHARD1 + 8
 ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_LIFE1 = SPR_LIFE0 + 4
+ASSERT SPR_LEVER1 = SPR_LEVER0 + 4 AND SPR_PLATE1 = SPR_PLATE0 + 4
+ASSERT TH_SWITCHES = TH_EXIT + 1      ; (th_look: past the cage, a switch)
 
 \ Thing X's box (ox0-ox1, oy0-oy1), from its sprite.
 .th_box
@@ -246,7 +266,7 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
     CMP #TH_SENTRY : BNE not_sentry
     JSR sentry_fire : JMP look
 .not_sentry
-    CMP #TH_EXIT : BEQ look
+    CMP #TH_EXIT : BCS look         ; (the cage and the switches stay put)
     \ A pickup bobs.
     LDA th_t,X : LSR A : LSR A : LSR A : AND #3 : TAY
     LDA th_y0,X : SEC : SBC pickup_bob,Y
@@ -267,13 +287,24 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
     JMP next
 .pickup
     CMP #TH_EXIT : BEQ cage
+    BCS switch
     JSR take
     JMP next
 .cage
     STA cage_go                     ; (non-zero)
     JMP next
+.switch
+    JSR sw_throw                    ; (touched: a lever, or a plate stood on)
+    JMP next
 .no_touch
-    LDA th_type,X : CMP #TH_ENEMIES : BCS next
+    \ Bolts strike the enemies, and a switch till it's thrown; they pass
+    \ the rest.
+    LDA th_type,X : CMP #TH_ENEMIES : BCC shot_at
+    CMP #TH_SWITCHES : BCC pass
+    LDA sw_thrown : BEQ shot_at
+.pass
+    JMP next
+.shot_at
     STX tu_x
     LDY #NSHOTS
 .bolt
@@ -282,6 +313,12 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
     LDA obj_x,Y : STA bx0 : CLC : ADC #4 : STA bx1
     LDA obj_y,Y : STA by0 : CLC : ADC #3 : STA by1
     JSR boxes_overlap : BCC no_bolt
+    \ A switch: thrown, and the bolt sparks on it.
+    LDA th_type,X : CMP #TH_SWITCHES : BCC enemy
+    JSR bolt_spark
+    JSR sw_throw
+    JMP bolts_done
+.enemy
     \ Hit: the thing takes it, or its armour does. The bolt's gone if it
     \ killed, or else it sparks, so the player sees it land.
     LDA th_hp,X : BEQ armoured
@@ -534,19 +571,26 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
     LDA obj_face,X : EOR #2 : STA obj_face,X
     RTS
 
-\ A sentry fires every so often, along its row, if the player's in reach
-\ of it and it's in phase.
+\ A sentry fires every so often, along its row, while the player's in its
+\ sights: about level with it, and it in phase. Out of them, its clock
+\ goes round short of its warning (th_look), so it never fires at someone
+\ who has just come into them, landing or shifting, before warning them
+\ (decision 47). (Round, not held: its ghost shimmers by the clock.)
 .sentry_fire
 {
-    LDA th_t,X : CMP #SENTRY_GAP : BCC done
-    LDA #0 : STA th_t,X
-    JSR th_in_phase : BNE done
-    LDA pl_dead : BNE done
-    \ Only at a player about level with it.
+    JSR th_in_phase : BNE unsighted
+    LDA pl_dead : BNE unsighted
     LDA obj_y + PL : CLC : ADC #8 : SEC : SBC obj_y,X
     BCS below : EOR #&FF : ADC #1
 .below
-    CMP #24 : BCS done
+    CMP #24 : BCC sighted
+.unsighted
+    LDA th_t,X : CMP #SENTRY_GAP - SENTRY_WARN : BCC done
+    LDA #0 : STA th_t,X
+    RTS
+.sighted
+    LDA th_t,X : CMP #SENTRY_GAP : BCC done
+    LDA #0 : STA th_t,X
     LDY #EB0 + NEB - 1
 .find
     LDA obj_spr,Y : CMP #&FF : BEQ free

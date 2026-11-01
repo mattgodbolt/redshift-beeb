@@ -75,9 +75,12 @@ loop). Each frame:
    and room exits. `shots_update` moves Ash's bolts.
 4. `grenade_throw` and `grenade_update` handle the grenade.
 5. `things_update` moves each enemy, checks it against Ash and the
-   bolts, and collects pickups. `ebolts_update` moves the enemies' bolts.
-6. `render` draws whatever changed.
-7. `sound_update` steps the effects.
+   bolts, collects pickups, and throws a switch Ash touches or shoots.
+   `ebolts_update` moves the enemies' bolts.
+6. `mach_update` steps the room's beat, and moves its machinery when it
+   turns (see "Machinery and switches").
+7. `render` draws whatever changed.
+8. `sound_update` steps the effects.
 
 ## The palette program
 
@@ -152,9 +155,46 @@ buffer laid out like the screen:
 
 Each screen byte is written once, so nothing is ever seen half drawn.
 
+Machinery that moved is drawn the same way, before the things: each part's
+rectangle (below) grows to take in whatever it touches, and is composed
+with it.
+
 Sprites move in 2-pixel steps, so `tools/mkgfx.py` stores two versions of
 each: at a byte, and 2 pixels on. A sprite that faces a way is stored
 mirrored too.
+
+## Machinery and switches
+
+Decision 46. A room's tiles can move (`src/machines.6502`):
+
+- **On the beat.** A tile in `gfx/tiles.txt` can say `beat=<key>`: on its
+  room's beat it becomes that tile, and back on the next. The room says
+  how many frames the map holds as drawn and how many the other way
+  (`beat` in `rooms/rooms.txt`). A ram and its slot say each other, so
+  one drawn shut opens as one drawn open shuts.
+- **A switch.** A tile can say `switch=<key>` instead: it becomes that
+  tile when the room's switch is thrown, and stays so while Ash is in the
+  room. A switch is a thing, a lever (a shot or a touch throws it) or a
+  weigh plate (standing on it does). With arg 2 it stops the beat too, the
+  machinery back as drawn.
+
+What a tile becomes has its own looks and flags, so the game knows
+nothing of rams or gates: a shut ram is solid and a hazard, an open gate
+is air. `tools/mkrooms.py` draws the map four ways (as drawn, on the beat,
+the switch thrown, both), each through `gfxlib.resolve`, so a changed
+tile's neighbours take the looks they'd have against it too. The cells
+whose looks change are cut into parts, rectangles small enough for
+`cbuf`, which go in the room's record after the map, each with its looks
+both ways (the record's format is in `tools/mkrooms.py`).
+
+When the beat turns, or the switch is thrown, `mach_apply` copies the
+parts' looks into the map and lists their rectangles for `render`, which
+draws them as it draws a moving thing's. If Ash is inside anything solid
+or deadly then, they die (`crushed`): nothing else can put them there.
+
+The beat and the switch come back as drawn when the room is read again
+(`mach_load`, from `load_room`), so a death brings back the room as it was
+entered (decision 30).
 
 ## Phases
 
@@ -217,5 +257,8 @@ the editor.
   sector (`sector<n>.6502`, the disc's `S<n>`), its rooms with its looks
   from `tools/mkgfx.py` (`looks<n>.6502`), and in `rooms.6502` what the
   game needs to know about them all.
-- A room packs as runs of tiles and runs copied from the row above. The
-  record format is in `tools/mkrooms.py`'s docstring.
+- A room packs as runs of tiles and runs copied from the row above, and
+  its machinery's parts follow the map. The record format is in
+  `tools/mkrooms.py`'s docstring.
+- The build previews each room in both phases, with a row for each state
+  its machinery has (`build/preview/room_<id>.png`).

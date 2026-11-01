@@ -113,6 +113,7 @@ main > * { overflow: auto; min-height: 0; }
 .tile .ph { position: absolute; top: 3px; right: 3px; width: 7px; height: 7px; border-radius: 50%; }
 .tile .ph.red { background: var(--red); } .tile .ph.blue { background: var(--blue); }
 .tile .hz { position: absolute; top: 3px; left: 3px; font-size: 9px; color: var(--warn); }
+.tile .mc { position: absolute; bottom: 3px; right: 3px; font-size: 9px; color: #ffb74d; }
 .ttype .sw { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
 
 #roombar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
@@ -235,6 +236,8 @@ dialog .btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 1
       </div>
       <label title="G"><input type="checkbox" id="cGrid">Grid</label>
       <label title="Draw the things and Ash's start"><input type="checkbox" id="cMarkers">Things</label>
+      <label title="B: the room's machinery on its beat, the other way from how it's drawn"><input type="checkbox" id="cBeat">Beat</label>
+      <label title="W: the room's switch thrown"><input type="checkbox" id="cThrown">Thrown</label>
       <select id="zoomSel" title="Zoom">
         <option value="fit">Fit</option><option value="1">1x</option><option value="2">2x</option>
         <option value="3">3x</option><option value="4">4x</option><option value="5">5x</option>
@@ -298,6 +301,14 @@ dialog .btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 1
     is the cage: it takes Ash down (by the room's down exit) to the next sector.</p>
   <p>With <b>Start</b>, click where Ash's feet go: Ash stands on the row below. The first room needs a
     start, where a new game begins; in another room, it's where the cage brings Ash in.</p>
+  <h3>Machinery and switches</h3>
+  <p>Tiles marked ♪ in the palette are machinery on the room's beat: a ram and its slot, a turntable's deck.
+    Each becomes another tile on the beat, and back again, so paint them as the room starts. Give the room a
+    beat under <b>Machinery</b>: the frames it holds as drawn, then the other way (25 a second).
+    Tiles marked ⚑ change once a switch is thrown: a <i>lever</i>, which Ash shoots or touches, or a
+    <i>plate</i>, which Ash stands on. A switch's arg of 2 stops the beat too (add 1 to face a lever left).
+    <b>Beat</b> (<kbd>B</kbd>) and <b>Thrown</b> (<kbd>W</kbd>) show the room that way; with Things
+    on, the parts that change are dashed. Machinery that closes on Ash kills them.</p>
   <h3>Rooms and sectors</h3>
   <p>New, Duplicate, Rename id and Delete are above the view. Set the exits and the sector (1 to 5) on the
     right: a room without a sector is in the same one as the room before it. Exits stay in the room's
@@ -309,6 +320,7 @@ dialog .btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 1
     <tr><td><kbd>I</kbd> or right-click</td><td>pick up the tile under the pointer</td></tr>
     <tr><td><kbd>F</kbd></td><td>flip the phase</td></tr>
     <tr><td><kbd>G</kbd></td><td>grid on and off</td></tr>
+    <tr><td><kbd>B</kbd> <kbd>W</kbd></td><td>the machinery on the beat, the switch thrown</td></tr>
     <tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>the room before or after</td></tr>
     <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd>, <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></td><td>undo, redo</td></tr>
     <tr><td><kbd>Delete</kbd></td><td>remove the selected thing</td></tr>
@@ -339,13 +351,21 @@ const WHENS = ['deep', 'ceiling', 'tl', 'tr', 'bl', 'br', 'exit_left', 'exit_rig
 const SPRITE_FLAGS = ['phase', 'mirror'];
 // tools/mkrooms.py's list. The page reads the live one from there when it can, and check.mjs fails
 // if this copy falls behind.
-const THING_TYPES = ['sentry', 'drone', 'crawler', 'shard', 'cell', 'grenades', 'life', 'exit'];
+const THING_TYPES = ['sentry', 'drone', 'crawler', 'shard', 'cell', 'grenades', 'life', 'exit', 'lever', 'plate'];
 // mkrooms.py's THING_BOX, kept the same way: each type's width, and the lines it reaches above and
 // below its tile row's top (the drone bobs, a pickup rises 2 lines).
 const THING_BOX = {
   sentry: [16, 0, 16], drone: [16, -4, 14], crawler: [16, 0, 16], shard: [8, 0, 8], cell: [8, -2, 8],
-  grenades: [8, -2, 8], life: [8, -2, 8], exit: [16, 0, 24],
+  grenades: [8, -2, 8], life: [8, -2, 8], exit: [16, 0, 24], lever: [8, 0, 16], plate: [16, 0, 8],
 };
+// mkrooms.py's SWITCH_THINGS: what throws a room's switch (decision 46).
+const SWITCH_THINGS = ['lever', 'plate'];
+// gfxlib's machinery (decision 46): what a tile can become (beat=<key>, switch=<key>), the states
+// that come about (as drawn, on the beat, the switch thrown, both), and the most parts a room has,
+// each at most PART_W cells wide and PART_CELLS in all.
+const MACHINES = ['beat', 'switch'];
+const STATES = [[0, 0], [1, 0], [0, 1], [1, 1]];
+const MAX_PARTS = 8, PART_W = 15, PART_CELLS = 48;
 const MAX_THINGS = 6;
 const DIRS = ['left', 'right', 'up', 'down'];
 const OPPOSITE = {left: 'right', right: 'left', up: 'down', down: 'up'};
@@ -459,10 +479,20 @@ function parseGfx(text, fname) {
       const key = words[1] === 'space' ? ' ' : words[1];
       if (key.length !== 1) fail(where, "a tile's key is one character");
       // (shared says which file the game keeps a tile's looks in, not what the tile is: lookCounts.)
-      const flags = words.slice(3).filter(f => f !== 'shared'), bad = flags.filter(f => !TILE_FLAGS.includes(f));
+      const plain = words.slice(3).filter(w => !w.includes('='));
+      const flags = plain.filter(f => f !== 'shared'), bad = flags.filter(f => !TILE_FLAGS.includes(f));
       if (bad.length) fail(where, `unknown flags ${bad.join(' ')}`);
-      tiles.push({key, name: words[2], flags, shared: words.slice(3).includes('shared'), pixels,
-        hollow: ghostTile(pixels), variants: [], alts: {}});
+      // What it becomes as machinery: beat=<key> or switch=<key>, once.
+      const t = {key, name: words[2], flags, shared: plain.includes('shared'), pixels, hollow: ghostTile(pixels),
+        variants: [], alts: {}, beat: null, switch: null};
+      for (const w of words.slice(3).filter(x => x.includes('='))) {
+        const eq = w.indexOf('='), what = w.slice(0, eq), other = w.slice(eq + 1) === 'space' ? ' ' : w.slice(eq + 1);
+        if (!MACHINES.includes(what) || other.length !== 1 || t.beat != null || t.switch != null) {
+          fail(where, `a tile may say beat=<key> or switch=<key>, once: got '${w}'`);
+        }
+        t[what] = other;
+      }
+      tiles.push(t);
     } else {
       const flags = words.slice(4), bad = flags.filter(f => !SPRITE_FLAGS.includes(f));
       if (bad.length) fail(where, `unknown sprite flags ${bad.join(' ')}`);
@@ -485,6 +515,18 @@ function parseTiles(text, fname = 'gfx/tiles.txt') {
   const {tiles} = parseGfx(text, fname);
   if (!tiles.length || tiles[0].key !== ' ') fail(fname, "the first tile must be 'space'");
   if (new Set(tiles.map(t => t.key)).size !== tiles.length) fail(fname, 'duplicate tile keys');
+  // Machinery becomes a tile that's there, and can't be breakable, nor become it: a blast would come undone.
+  const by = new Map(tiles.map(t => [t.key, t]));
+  for (const t of tiles) {
+    for (const what of MACHINES) {
+      if (t[what] == null) continue;
+      const other = by.get(t[what]);
+      if (!other) fail(fname, `tile ${t.name}: ${what}='${t[what]}' isn't a tile`);
+      if (t.flags.includes('breakable') || other.flags.includes('breakable')) {
+        fail(fname, `tile ${t.name}: machinery can't be breakable, nor become it`);
+      }
+    }
+  }
   return tiles;
 }
 const parseSprites = (text, fname = 'gfx/sprites.txt') => parseGfx(text, fname).sprites;
@@ -493,11 +535,25 @@ const parseSprites = (text, fname = 'gfx/sprites.txt') => parseGfx(text, fname).
 
 const lookHash = (c, r, salt) => ((((c + 1) * 40503) ^ ((r + 1 + salt) * 32587)) >> 5) & 7;
 
-// A grid of looks ({pixels, hollow, flags}) for the room's map. A side of a solid tile is open when
-// the tile there isn't solid in both phases; a side of any other tile is open when the tile there is
-// another one; past the map's edge it's closed. A key that isn't a tile gives null.
-function resolveRoom(room, tileMap) {
-  const at = (c, r) => tileMap.get(room.map[r][c]);
+// gfxlib's machine_map: the room's map with its machinery in a state, [beat, thrown]. On the beat each
+// tile that says beat=<key> is that tile instead; once the switch is thrown, each that says switch=<key>.
+function machineMap(room, tileMap, [beat, thrown] = [0, 0]) {
+  return room.map.map(line => Array.from(line, c => {
+    const t = tileMap.get(c);
+    if (!t) return c;
+    if (beat && t.beat != null) return t.beat;
+    if (thrown && t.switch != null) return t.switch;
+    return c;
+  }).join(''));
+}
+
+// A grid of looks ({pixels, hollow, flags}) for the room's map, its machinery in the state given. A side
+// of a solid tile is open when the tile there isn't solid in both phases; a side of any other tile is
+// open when the tile there is another one; past the map's edge it's closed. A key that isn't a tile
+// gives null. Each look carries its id, [key, when, alt], for comparing (machinery).
+function resolveRoom(room, tileMap, state = [0, 0]) {
+  const rows = machineMap(room, tileMap, state);
+  const at = (c, r) => tileMap.get(rows[r][c]);
   const solidBoth = t => !!t && t.flags.includes('solid') && !t.flags.includes('red') && !t.flags.includes('blue');
   const salt = [...room.id].reduce((n, ch) => n + ch.charCodeAt(0), 0) & 0xFF;
   const grid = [];
@@ -510,7 +566,7 @@ function resolveRoom(room, tileMap) {
       [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(([dc, dr], k) => {
         const nc = c + dc, nr = r + dr;
         if (nc < 0 || nc >= MAP_W || nr < 0 || nr >= MAP_H) return;
-        const n = at(nc, nr), nk = room.map[nr][nc];
+        const n = at(nc, nr), nk = rows[nr][nc];
         if (t.flags.includes('solid') ? !solidBoth(n) : nk !== t.key) opened.add(SIDES[k]);
       });
       const holds = when => {
@@ -534,6 +590,72 @@ function resolveRoom(room, tileMap) {
   return grid;
 }
 
+// --- Machinery (gfxlib's machinery: decision 46) ---------------------------------------------------
+
+// gfxlib's _rects: cells ('c,r' strings) as rectangles, each 4-connected group's in reading order, cut
+// into columns at most PART_W wide and those into bands of rows of at most PART_CELLS cells, leaving out
+// any with none of the group in it.
+function partRects(cells) {
+  const left = new Set(cells), out = [];
+  for (let r = 0; r < MAP_H; r++) {
+    for (let c = 0; c < MAP_W; c++) {
+      if (!left.has(`${c},${r}`)) continue;
+      const group = new Set(), todo = [[c, r]];
+      while (todo.length) {
+        const [pc, pr] = todo.pop(), k = `${pc},${pr}`;
+        if (!left.has(k)) continue;
+        left.delete(k);
+        group.add(k);
+        todo.push([pc + 1, pr], [pc - 1, pr], [pc, pr + 1], [pc, pr - 1]);
+      }
+      const xs = [...group].map(k => +k.split(',')[0]), ys = [...group].map(k => +k.split(',')[1]);
+      const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+      for (let x = x0; x <= x1; x += PART_W) {
+        const w = Math.min(PART_W, x1 + 1 - x), band = Math.floor(PART_CELLS / w);
+        for (let y = y0; y <= y1; y += band) {
+          const h = Math.min(band, y1 + 1 - y);
+          let any = false;
+          for (let rr = y; rr < y + h; rr++) for (let cc = x; cc < x + w; cc++) any = any || group.has(`${cc},${rr}`);
+          if (any) out.push({x, y, w, h});
+        }
+      }
+    }
+  }
+  return out;
+}
+
+// The room's machinery as the game redraws it: {parts: [{what, x, y, w, h}], cells: {beat, switch}}
+// (each a Set of 'c,r', the cells whose looks change that way), or {error} for what the game can't
+// do, as gfxlib refuses it: a cell the beat and the switch both change, a breakable tile that changes,
+// or more than MAX_PARTS parts. The map's keys must all be tiles.
+function machinery(room, tileMap) {
+  const g = STATES.map(s => resolveRoom(room, tileMap, s));
+  const [drawn, onBeat, thrown, both] = g;
+  const cells = {beat: new Set(), switch: new Set()};
+  for (let r = 0; r < MAP_H; r++) {
+    for (let c = 0; c < MAP_W; c++) {
+      if (onBeat[r][c] !== drawn[r][c]) cells.beat.add(`${c},${r}`);
+      if (thrown[r][c] !== drawn[r][c]) cells.switch.add(`${c},${r}`);
+    }
+  }
+  for (let r = 0; r < MAP_H; r++) {
+    for (let c = 0; c < MAP_W; c++) {
+      const k = `${c},${r}`, b = cells.beat.has(k), s = cells.switch.has(k);
+      const want = b ? onBeat : s ? thrown : drawn;
+      if ((b && s) || both[r][c] !== want[r][c]) {
+        return {error: `The cell at ${c}, ${r} changes with the beat and with the switch: keep the two apart.`};
+      }
+      if ((b || s) && tileMap.get(room.map[r][c]).flags.includes('breakable')) {
+        return {error: `The breakable tile at ${c}, ${r} changes with the machinery, which would undo a blast.`};
+      }
+    }
+  }
+  const parts = [];
+  for (const what of MACHINES) for (const p of partRects(cells[what])) parts.push({what, ...p});
+  if (parts.length > MAX_PARTS) return {error: `Its machinery is ${parts.length} parts: at most ${MAX_PARTS} fit.`};
+  return {parts, cells};
+}
+
 // --- Rooms (gfxlib's read_rooms) ------------------------------------------------------------------
 //
 // A document is {header, rooms, tail, eol, finalNewline}: header is every line before the first
@@ -542,7 +664,7 @@ function resolveRoom(room, tileMap) {
 //   pre               the comment and blank lines between the room before and this one
 //   notes[keyword]    {before: comment lines just above it, after: the rest of its line from the
 //                     first '#', or trailing spaces}, for room, name, sector, exits, start,
-//                     colours and map; bands and things carry their own before and after
+//                     colours, beat and map; bands and things carry their own before and after
 //   mapSrc            the map's lines as written, where any were shorter than 32
 //   src, srcCanon     the room's lines as written and as roomLines() first wrote them, when those
 //                     differ (odd spacing, lines out of the usual order): while roomLines() still
@@ -553,6 +675,8 @@ function blankRoom(id) {
     id, name: id.toUpperCase(), sector: null, exits: {left: '-', right: '-', up: '-', down: '-'},
     start: null, colours: null, bands: [], map: null, mapSrc: null, things: [], notes: {}, pre: [], src: null,
     srcCanon: null,
+    // The machinery's beat as written: [frames as drawn] or [that, frames the other way], or null.
+    beat: null,
   };
 }
 
@@ -630,6 +754,12 @@ function parseRooms(text, fname = 'rooms.txt') {
       need(3, 'start <x> <y>');
       room.start = [wholeNumber(words[1], where), wholeNumber(words[2], where)];
       note('start');
+    } else if (key === 'beat') {
+      if (words.length !== 2 && words.length !== 3) fail(where, 'beat <frames> [<frames>]');
+      const frames = words.slice(1).map(w => wholeNumber(w, where));
+      if (!frames.every(f => f >= 1 && f <= 255)) fail(where, 'a beat is 1-255 frames each way');
+      room.beat = frames;
+      note('beat');
     } else if (key === 'map') {
       // The map's lines are taken whole (spaces matter, and '#' is stone), and padded.
       note('map');
@@ -659,7 +789,7 @@ function parseRooms(text, fname = 'rooms.txt') {
   return doc;
 }
 
-// A room in the file's usual order: room, name, sector, exits, start, colours, bands, map, things.
+// A room in the file's usual order: room, name, sector, exits, start, colours, bands, beat, map, things.
 function roomLines(r) {
   const out = [];
   const line = (kw, text) => {
@@ -677,6 +807,8 @@ function roomLines(r) {
   if (r.start) line('start', `start ${r.start[0]} ${r.start[1]}`);
   line('colours', 'colours ' + r.colours.map(colourText).join(' '));
   for (const b of r.bands) out.push(...b.before, `band ${b.line} ${b.logical} ${colourText(b)}${b.after}`);
+  if (r.beat) line('beat', 'beat ' + r.beat.join(' '));
+  else if (r.notes.beat) out.push(...r.notes.beat.before);
   line('map', 'map');
   r.map.forEach((row, k) => {
     const src = r.mapSrc && r.mapSrc[k];
@@ -725,12 +857,12 @@ function paletteRows(room, phase) {
   return rows;
 }
 
-// Into buf (RGBA, WIDTH x LINES). A key that isn't a tile, which mkrooms would refuse, is drawn as
-// orange stripes, a colour the BBC can't show.
-function renderRoom(room, tileMap, phase, buf) {
+// Into buf (RGBA, WIDTH x LINES), its machinery in a state ([beat, thrown]). A key that isn't a tile,
+// which mkrooms would refuse, is drawn as orange stripes, a colour the BBC can't show.
+function renderRoom(room, tileMap, phase, buf, state = [0, 0]) {
   const pal = paletteRows(room, phase);
   const other = phase ? 'red' : 'blue';
-  const grid = resolveRoom(room, tileMap);
+  const grid = resolveRoom(room, tileMap, state);
   for (let ty = 0; ty < MAP_H; ty++) {
     for (let tx = 0; tx < MAP_W; tx++) {
       const t = grid[ty][tx];
@@ -791,13 +923,19 @@ function sectors(doc) {
 // every sector that has rooms in own.
 const MAX_LOOKS = 128;
 function lookCounts(doc, tiles) {
-  const sector = sectors(doc), used = new Map(), own = new Map();
+  const sector = sectors(doc), used = new Map(), own = new Map(), by = new Map(tiles.map(t => [t.key, t]));
+  const use = (c, s) => {
+    if (!used.has(c)) used.set(c, new Set());
+    used.get(c).add(s);
+  };
   doc.rooms.forEach((r, k) => {
     own.set(sector[k], 0);
     for (const row of r.map || []) {
       for (const c of row) {
-        if (!used.has(c)) used.set(c, new Set());
-        used.get(c).add(sector[k]);
+        use(c, sector[k]);
+        // (and what it becomes, as machinery)
+        const t = by.get(c);
+        for (const other of t ? [t.beat, t.switch] : []) if (other != null) use(other, sector[k]);
       }
     }
   });
@@ -826,7 +964,7 @@ function validate(doc, tiles, thingTypes = THING_TYPES, thingBox = THING_BOX) {
   if (!rooms.length) add('error', null, 'There are no rooms.');
   const uses = new Map();
   for (const r of rooms) uses.set(r.id, (uses.get(r.id) || 0) + 1);
-  const keys = new Set(tiles.map(t => t.key)), sector = sectors(doc);
+  const keys = new Set(tiles.map(t => t.key)), sector = sectors(doc), tileMap = new Map(tiles.map(t => [t.key, t]));
   if (rooms.length && !rooms[0].start) add('error', 0, 'The first room needs a start, where a new game begins: use the Start tool.');
   rooms.forEach((r, k) => {
     if (sector[k] < 1 || sector[k] > 5) {
@@ -881,6 +1019,24 @@ function validate(doc, tiles, thingTypes = THING_TYPES, thingBox = THING_BOX) {
     if (odd.size) {
       const list = [...odd].map(([c, n]) => `'${c}' (${n})`).join(', ');
       add('error', k, `The map has ${list}, which ${odd.size > 1 ? "aren't tiles" : "isn't a tile"}.`);
+    } else {
+      // Machinery (decision 46): a beat for what moves on one, a switch for what one throws, and nothing
+      // the game can't do (machinery()).
+      const painted = [...new Set(r.map.join(''))].map(c => tileMap.get(c));
+      const moving = what => painted.filter(t => t[what] != null).map(t => t.name).sort();
+      const onBeat = moving('beat'), thrown = moving('switch');
+      const switches = r.things.filter(t => SWITCH_THINGS.includes(t.type));
+      if (onBeat.length && !r.beat) add('error', k, `It has machinery on a beat (${onBeat.join(', ')}), but no beat: give it one.`);
+      if (r.beat && !onBeat.length) add('warning', k, 'It has a beat, but no machinery on it.');
+      if (thrown.length && !switches.length) {
+        add('error', k, `It has tiles a switch throws (${thrown.join(', ')}), but no lever or plate to throw them.`);
+      }
+      if (switches.length && !thrown.length && !switches.some(t => (parseInt(t.args[0], 10) & 2) && r.beat)) {
+        add('warning', k, "Its switch does nothing: no tile here says switch=, and it doesn't stop a beat (arg 2).");
+      }
+      // (Without machinery nothing changes, and there's nothing to draw four ways.)
+      const m = onBeat.length || thrown.length ? machinery(r, tileMap) : {};
+      if (m.error) add('error', k, m.error);
     }
     if (r.start) {
       const [x, y] = r.start;
@@ -909,7 +1065,8 @@ G.RS = {
   OPPOSITE, ParseError, fits,
   parseTiles, parseSprites, parseRooms, serializeRooms, roomLines, newRoom, hollow, blueOf, phaseColour,
   colourText, sortedBands, paletteRows, renderRoom, resolveRoom, lookHash, drawSprite, sectors, validate,
-  idProblem, lookCounts, MAX_LOOKS,
+  idProblem, lookCounts, MAX_LOOKS, SWITCH_THINGS, MACHINES, STATES, MAX_PARTS, PART_W, PART_CELLS, machineMap,
+  machinery,
 };
 })(typeof window !== 'undefined' ? window : globalThis);
 </script>
@@ -928,14 +1085,17 @@ let THING_TYPES = RS.THING_TYPES.slice(), THING_BOX = {...RS.THING_BOX};
 const THING_LOOK = {
   sentry: ['sentry', 1, 0], drone: ['drone0', 1, 0], crawler: ['crawler0', 1, 0], shard: ['shard0', 2, 0],
   cell: ['cell0', 0, 0], grenades: ['grenades0', 0, 0], life: ['life0', 0, 0], exit: [null, 0, 0],
+  lever: ['lever0', 0, 0], plate: ['plate0', 0, 0],
 };
 const THING_COLOURS = {
   sentry: '#ff8a65', drone: '#ffd54f', crawler: '#aed581', shard: '#4fc3f7', cell: '#81c784',
-  grenades: '#ce93d8', life: '#f48fb1', exit: '#ffffff',
+  grenades: '#ce93d8', life: '#f48fb1', exit: '#ffffff', lever: '#ffb74d', plate: '#ffb74d',
 };
+// The machinery's parts, outlined: what moves on the beat, and what a switch throws.
+const PART_COLOURS = {beat: '#ffb74d', switch: '#4dd0e1'};
 const ROLE = ['', '1 main', '2 second', '3 highlight'];
 const STORE = 'redshift-editor';
-const PREFS = ['phase', 'tool', 'tile', 'thingType', 'grid', 'markers', 'zoom', 'linkBack'];
+const PREFS = ['phase', 'tool', 'tile', 'thingType', 'grid', 'markers', 'zoom', 'linkBack', 'onBeat', 'thrown'];
 const GUTTER_W = 104;
 
 const $ = id => document.getElementById(id);
@@ -958,7 +1118,7 @@ const keyLabel = k => (k === ' ' ? 'space' : k);
 let tiles = [], tileMap = new Map(), sprites = new Map(), doc = null, baseText = null;
 const ui = {
   cur: 0, phase: 0, tool: 'paint', tile: null, thingType: 'sentry', grid: true, markers: true, zoom: 'fit',
-  linkBack: true, selThing: -1, selBand: -1, hover: null, drag: null, S: 2, dpr: 1, errorRooms: new Set(),
+  linkBack: true, onBeat: false, thrown: false, selThing: -1, selBand: -1, hover: null, drag: null, S: 2, dpr: 1, errorRooms: new Set(),
   gutterHits: [], mapHits: [],
 };
 const room = () => doc.rooms[ui.cur];
@@ -1128,8 +1288,13 @@ function redraw(roomChanged = true) {
   });
 }
 
+// The machinery's state the view shows: [on the beat, the switch thrown].
+const viewState = () => [ui.onBeat ? 1 : 0, ui.thrown ? 1 : 0];
+
 function thingLook(t) {
-  const [name, phase, dy] = THING_LOOK[t.type] || [null, 0, 0];
+  let [name, phase, dy] = THING_LOOK[t.type] || [null, 0, 0];
+  // A switch, thrown, shows its next look (lever0's is lever1), as things.6502 shows it.
+  if (name && ui.thrown && RS.SWITCH_THINGS.includes(t.type)) name = name.replace(/0$/, '1');
   const s = name ? sprites.get(name) : null, reach = THING_BOX[t.type];
   return {
     sprite: s,
@@ -1159,7 +1324,7 @@ function startBox(r) {
 
 function paintRoomBuffer() {
   const r = room();
-  RS.renderRoom(r, tileMap, ui.phase, img.data);
+  RS.renderRoom(r, tileMap, ui.phase, img.data, viewState());
   if (ui.markers) {
     const pal = RS.paletteRows(r, ui.phase);
     const ash = sprites.get('ash_stand');
@@ -1220,6 +1385,19 @@ function drawView() {
     c.setLineDash([]);
   }
   if (ui.markers) {
+    // The machinery's parts: the cells that change on the beat, or when the switch is thrown, dashed.
+    let parts = [];
+    try {
+      parts = RS.machinery(r, tileMap).parts || [];
+    } catch (e) {
+      parts = [];
+    }
+    c.setLineDash([3 * dpr, 3 * dpr]);
+    for (const p of parts) {
+      strokeBox(c, {x: p.x * 8, y: p.y * 8, w: p.w * 8, h: p.h * 8}, S, PART_COLOURS[p.what], thin);
+      tag(c, p.what, p.x * 8 * S, (p.y + p.h) * 8 * S, PART_COLOURS[p.what], dpr, false);
+    }
+    c.setLineDash([]);
     if (r.start) {
       const b = startBox(r);
       strokeBox(c, b, S, 'rgba(255,255,255,.5)', thin);
@@ -1328,7 +1506,14 @@ function paintPixels(c, pixels, pal, k, flip = false) {
 }
 function tileTitle(t) {
   const flags = t.flags.length ? t.flags.join(', ') : 'scenery';
-  return `${t.name}: key '${keyLabel(t.key)}' (${flags})`;
+  return `${t.name}: key '${keyLabel(t.key)}' (${flags})${machineNote(t)}`;
+}
+// What machinery becomes: on the room's beat, or once its switch is thrown.
+function machineNote(t) {
+  const other = k => (tileMap.get(k) ? tileMap.get(k).name : keyLabel(k));
+  if (t.beat != null) return `; on the beat it becomes ${other(t.beat)}, and back`;
+  if (t.switch != null) return `; when the switch is thrown it becomes ${other(t.switch)}`;
+  return '';
 }
 
 function buildPalette() {
@@ -1341,7 +1526,8 @@ function buildPalette() {
     const b = h('button', {class: 'tile', title: tileTitle(t), onclick: () => selectTile(t.key)},
       c, h('span', {class: 'key'}, keyLabel(t.key)), h('span', {class: 'tname'}, t.name),
       ph && h('span', {class: 'ph ' + ph, title: `only there in the ${ph === 'red' ? 'Red' : 'Blue'} Phase`}),
-      t.flags.includes('hazard') && h('span', {class: 'hz', title: 'hazard: it kills'}, '▲'));
+      t.flags.includes('hazard') && h('span', {class: 'hz', title: 'hazard: it kills'}, '▲'),
+      (t.beat != null || t.switch != null) && h('span', {class: 'mc', title: `machinery${machineNote(t)}`}, t.beat != null ? '♪' : '⚑'));
     b.dataset.key = t.key;
     p.append(b);
   }
@@ -1413,6 +1599,13 @@ function setPhase(p) {
   paintPalette();
   redraw(true);
   drawMap();
+  persistSoon();
+}
+// The view's machinery: on the beat, or the switch thrown (which = 'onBeat' or 'thrown').
+function setMachineView(which, on) {
+  ui[which] = on;
+  $(which === 'onBeat' ? 'cBeat' : 'cThrown').checked = on;
+  redraw(true);
   persistSoon();
 }
 let persistTimer = 0;
@@ -1835,12 +2028,51 @@ function renderProps() {
   P.textContent = '';
   P.append(
     h('div', {id: 'roomBox'}), h('div', {id: 'startBox'}), h('div', {id: 'coloursBox'}),
-    h('div', {id: 'bandsBox'}), h('div', {id: 'thingsBox'}));
+    h('div', {id: 'bandsBox'}), h('div', {id: 'machBox'}), h('div', {id: 'thingsBox'}));
   renderRoomFields();
   renderStart();
   renderColours();
   renderBands();
+  renderMachinery();
   renderThings();
+}
+
+// The room's beat (decision 46): frames as drawn, and frames the other way.
+function renderMachinery() {
+  const r = room(), box = $('machBox');
+  box.textContent = '';
+  box.append(h('h2', {}, 'Machinery'), h('p', {class: 'hint'},
+    'Tiles marked ♪ change on the room\'s beat and back; tiles marked ⚑ change once a lever (shot or touched) ' +
+    'or a plate (stood on) is thrown. A switch with arg 2 stops the beat too, as drawn. The view shows them ' +
+    'with Beat and Thrown (B, W), the parts that change dashed.'));
+  if (!r.beat) {
+    box.append(h('button', {onclick: () => {
+      checkpoint();
+      r.beat = [50];
+      renderMachinery();
+      changed();
+    }}, 'Give it a beat'));
+    return;
+  }
+  const each = () => [r.beat[0], r.beat[r.beat.length - 1]];
+  const num = i => {
+    const inp = h('input', {type: 'number', value: each()[i], min: 1, max: 255,
+      title: i ? 'Game frames the other way (25 a second)' : 'Game frames as drawn (25 a second)'});
+    onEdit(inp, v => {
+      if (!/^\d+$/.test(v.trim())) return;
+      const b = each();
+      b[i] = parseInt(v, 10);
+      r.beat = b[0] === b[1] ? [b[0]] : b;
+    });
+    return inp;
+  };
+  const remove = h('button', {class: 'x', title: 'No beat', onclick: () => {
+    checkpoint();
+    r.beat = null;
+    renderMachinery();
+    changed();
+  }}, '✕');
+  box.append(h('div', {class: 'row'}, h('span', {class: 'lab'}, 'Beat'), num(0), h('span', {class: 'muted'}, 'then'), num(1), remove));
 }
 
 function renderRoomFields() {
@@ -2013,7 +2245,8 @@ function renderThings() {
       return inp;
     };
     // '#' would start a comment in rooms.txt.
-    const arg = h('input', {class: 'arg', value: th.args.join(' '), spellcheck: false, title: 'A number for the thing: for an enemy, 1 faces it left'});
+    const arg = h('input', {class: 'arg', value: th.args.join(' '), spellcheck: false,
+      title: 'A number for the thing: for an enemy, 1 faces it left; for a lever or plate, 2 stops the beat too'});
     onEdit(arg, v => {
       th.args = v.replace(/#/g, '').trim().split(/\s+/).filter(Boolean);
       redraw();
@@ -2356,6 +2589,8 @@ document.addEventListener('keydown', e => {
   else if (key === 'i' && ui.hover) pickTile(ui.hover);
   else if (key === 'f') setPhase(1 - ui.phase);
   else if (key === 'g') { ui.grid = $('cGrid').checked = !ui.grid; redraw(false); persistSoon(); }
+  else if (key === 'b') setMachineView('onBeat', !ui.onBeat);
+  else if (key === 'w') setMachineView('thrown', !ui.thrown);
   else if (key === '[') goRoom(ui.cur - 1);
   else if (key === ']') goRoom(ui.cur + 1);
   else if ((e.key === 'Delete' || e.key === 'Backspace') && ui.selThing >= 0) { e.preventDefault(); removeThing(ui.selThing); }
@@ -2408,6 +2643,8 @@ function wire() {
   for (const b of $('phaseSeg').children) b.onclick = () => setPhase(+b.dataset.phase);
   $('cGrid').onchange = e => { ui.grid = e.target.checked; redraw(false); persistSoon(); };
   $('cMarkers').onchange = e => { ui.markers = e.target.checked; redraw(); persistSoon(); };
+  $('cBeat').onchange = e => setMachineView('onBeat', e.target.checked);
+  $('cThrown').onchange = e => setMachineView('thrown', e.target.checked);
   $('zoomSel').onchange = e => { ui.zoom = e.target.value; layout(); persistSoon(); };
   window.addEventListener('resize', () => { if (doc) layout(); });
   // A last save, in case the page goes before the debounce does.
@@ -2494,6 +2731,8 @@ async function start(tilesText) {
   if (!THING_TYPES.includes(ui.thingType)) ui.thingType = THING_TYPES[0];
   $('cGrid').checked = ui.grid;
   $('cMarkers').checked = ui.markers;
+  $('cBeat').checked = ui.onBeat;
+  $('cThrown').checked = ui.thrown;
   $('zoomSel').value = ui.zoom;
   buildPalette();
   buildThingTypes();

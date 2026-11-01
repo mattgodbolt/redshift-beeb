@@ -35,6 +35,13 @@ Each room's record (rooms.6502 reads it):
                 &80+n repeats the last
                 tile n+1 more times; &C0+n copies n+1 tiles from the row
                 above. MAP_W * MAP_H tiles in all.
+    machinery   (decision 46, machines.6502) the beat: frames as drawn, then
+                frames the other way (0, 0 for none); a count of parts; then
+                each part: what moves it (0 the beat, 1 the switch), x, y,
+                w and h in tiles, and a look for each cell of that
+                rectangle, row by row: the beat's part has two, its look on
+                the beat and as drawn, the switch's one, once thrown. &FF
+                for a cell that doesn't change.
 """
 import argparse
 import sys
@@ -43,14 +50,48 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gfxlib as g  # noqa: E402
 
-THING_TYPES = ["sentry", "drone", "crawler", "shard", "cell", "grenades", "life", "exit"]
+THING_TYPES = ["sentry", "drone", "crawler", "shard", "cell", "grenades", "life", "exit", "lever", "plate"]
+# What throws a room's switch (decision 46): shot, or touched.
+SWITCH_THINGS = ("lever", "plate")
 # A down exit's room number with this set is the next sector's room (the cage's).
 NEXT_SECTOR = 0x80
 # Each type's size in pixels, with what it reaches beyond its sprite: the
 # drone bobs 4 lines up and down, a pickup 2 lines up (things.6502).
 THING_BOX = {"sentry": (16, 0, 16), "drone": (16, -4, 14), "crawler": (16, 0, 16),
              "shard": (8, 0, 8), "cell": (8, -2, 8), "grenades": (8, -2, 8),
-             "life": (8, -2, 8), "exit": (16, 0, 24)}
+             "life": (8, -2, 8), "exit": (16, 0, 24), "lever": (8, 0, 16), "plate": (16, 0, 8)}
+
+
+def cell_look(lk):
+    """A look as the map keeps it: the back wall's grid as plain air, which
+    the game draws from where the cell is (screen.6502's back_look), so long
+    runs of air still pack."""
+    return 0 if lk.key == " " and lk.when in g.BACK_WHENS else lk.index
+
+
+def machinery_bytes(r, tiles, lks):
+    """The room's machinery for its record (the docstring's), with what the
+    game can't do refused."""
+    where = f"room {r.ident}"
+    keys = {t.key: t for t in tiles}
+    painted = {c for line in r.map for c in line if c in keys}
+    for what in g.MACHINES:
+        moving = sorted(keys[c].name for c in painted if getattr(keys[c], what) is not None)
+        if what == "beat" and moving and not r.beat:
+            raise SystemExit(f"{where}: it has machinery on a beat ({', '.join(moving)}), but no beat line")
+        if what == "switch" and moving and not any(typ in SWITCH_THINGS for typ, *_ in r.things):
+            raise SystemExit(f"{where}: it has tiles a switch throws ({', '.join(moving)}), but no lever or plate")
+    out = list(r.beat or (0, 0))
+    parts = g.machinery(r, tiles, lks)
+    out.append(len(parts))
+    for what, x, y, w, h, cells in parts:
+        out += [g.MACHINES.index(what), x, y, w, h]
+        for row in range(y, y + h):
+            for col in range(x, x + w):
+                other, drawn = cells.get((col, row), (None, None))
+                looks = [other, drawn] if what == "beat" else [other]
+                out += [0xFF if lk is None else cell_look(lk) for lk in looks]
+    return out
 
 
 def pack(cells):
@@ -91,11 +132,12 @@ def unpack(data):
     return cells
 
 
-def render(room, tiles, phase, scale=2):
-    """The room as the BBC shows it, in one phase."""
+def render(room, tiles, phase, scale=2, state=(0, 0)):
+    """The room as the BBC shows it, in one phase, with its machinery in a
+    state (gfxlib.machine_map)."""
     from PIL import Image
     pal_rows = g.room_palette_rows(room, phase)
-    grid = g.resolve(room, tiles)
+    grid = g.resolve(room, tiles, state=state)
     im = Image.new("RGB", (256, 176))
     px = im.load()
     for ty, line in enumerate(grid):
@@ -180,15 +222,12 @@ def main():
             for c in line:
                 if c not in keys:
                     raise SystemExit(f"{where}: map line {k}: no tile {c!r}")
-        # The back wall's grid isn't kept: those cells stay plain air, and the
-        # game draws air as the back wall for where it is (screen.6502's
-        # back_look), so long runs of air still pack.
         grid = g.resolve(r, tiles, lks.of(r.sector))
         assert all(lk.sector in (None, r.sector) for line in grid for lk in line)
-        cells = [0 if lk.key == " " and lk.when in g.BACK_WHENS else lk.index for line in grid for lk in line]
+        cells = [cell_look(lk) for line in grid for lk in line]
         packed = pack(cells)
         assert unpack(packed) == cells
-        records[r.ident] = rec + packed
+        records[r.ident] = rec + packed + machinery_bytes(r, tiles, lks.of(r.sector))
 
     # Every sector's file has its tables the same length, so the game finds
     # them in the bank whichever sector is there: the rooms' (the most rooms
@@ -239,7 +278,12 @@ def main():
            f"START_Y = {first.start[1]}",
            "\\ Each room in rooms.txt's order (make ROOM=n): its sector, and its number there.",
            "ROOM_SECTOR = {" + ", ".join(str(r.sector) for r in rooms) + "}",
-           "ROOM_NUMBER = {" + ", ".join(str(number[r.ident]) for r in rooms) + "}"]
+           "ROOM_NUMBER = {" + ", ".join(str(number[r.ident]) for r in rooms) + "}",
+           "\\ The most parts of machinery a room has, and a part's most cells across",
+           "\\ and in all (decision 46: gfxlib.py says why).",
+           f"MAX_PARTS = {g.MAX_PARTS}",
+           f"PART_W = {g.PART_W}",
+           f"PART_CELLS = {g.PART_CELLS}"]
     for k, t in enumerate(THING_TYPES):
         out.append(f"TH_{t.upper()} = {k}")
     Path(a.out).write_text("\n".join(out) + "\n")
@@ -249,10 +293,16 @@ def main():
         p = Path(a.preview)
         p.mkdir(parents=True, exist_ok=True)
         for r in rooms:
-            red, blue = render(r, tiles, 0), render(r, tiles, 1)
-            both = Image.new("RGB", (red.width * 2 + 8, red.height), (60, 60, 60))
-            both.paste(red, (0, 0))
-            both.paste(blue, (red.width + 8, 0))
+            # A room with machinery has a row for each other state it has:
+            # on the beat, and the switch thrown.
+            states = [(0, 0)] + [s for s, any_ in (((1, 0), r.beat), ((0, 1), any(
+                typ in SWITCH_THINGS for typ, *_ in r.things))) if any_]
+            shots = [(render(r, tiles, 0, state=s), render(r, tiles, 1, state=s)) for s in states]
+            w, h = shots[0][0].width, shots[0][0].height
+            both = Image.new("RGB", (w * 2 + 8, (h + 8) * len(shots) - 8), (60, 60, 60))
+            for k, (red, blue) in enumerate(shots):
+                both.paste(red, (0, k * (h + 8)))
+                both.paste(blue, (w + 8, k * (h + 8)))
             both.save(p / f"room_{r.ident}.png")
 
 
