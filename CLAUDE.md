@@ -63,6 +63,8 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
   - Ash's box can hang over an edge, so a gap that counts as too wide can still be jumped from its very lip: start the simulation from every x.
   - Raising a ceiling lengthens the jumps under it: the WEIGHBRIDGE's taller corridor moved where the jump onto its ledge landed, into crystal.
   - A tunnel as low as Ash stops every jump in it: a step up out of one needs headroom where Ash stands to jump.
+  - A ledge whose end is right over the take-off's lip stops the jump up onto it: the natural jump from the lip hits its underside and drops Ash past both. End the lower one a column short of the upper (Echo Gallery's walkways).
+- **A pickup stays where it's placed when the machinery under it moves**: a cell on a span that draws back hangs in the air, and one where a platform comes to is in the air till it does.
 - **A Sliver hangs wherever it was when Ash left the Blue**, and one hanging beside the only place to shift refuses the shift there (decision 51). Where a pack waits depends on where Ash has been in the Blue: simulate its homing from each place, and keep it where walls hold it away from where Ash must shift.
 - **A jump held all the way carries past a small ledge**: a post with a hazard behind it needs a kerb or a wall to stop Ash on it.
 - **A respawn comes in the way Ash came in**, a fall into the room too. Nothing may patrol that path, or every respawn dies on it (the CRANE GANTRY's Gadfly did).
