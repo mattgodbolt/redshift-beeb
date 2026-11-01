@@ -72,11 +72,11 @@ RS_MU    = &74                  ; (two bytes: the title theme's place)
     DEX : BNE copy
     CLI
     \ PRESS SPACE, and wait for it, with the title theme playing.
+    \ (By its length: VDU 31's column, 0, would end it if a 0 did.)
     LDX #0
 .press
-    LDA press_text,X : BEQ theme
-    JSR &FFEE : INX : BNE press
-.theme
+    LDA press_text,X : JSR &FFEE
+    INX : CPX #press_text_end - press_text : BNE press
     JSR tmus.mu_init
     LDA #&0F : STA tmus.mu_free     ; (every channel: no other sounds here)
     LDA #tmus.MUS_TITLE : STA tmus.mu_req
@@ -107,7 +107,11 @@ RS_MU    = &74                  ; (two bytes: the title theme's place)
 .load_cmd   EQUS "LOAD RSDATA", 13
 .sector_cmd EQUS "LOAD S", '0' + START_SECTOR, 13     ; (at its own address, SECTOR_LOAD)
 .run_cmd    EQUS "RUN REDSHFT", 13
-.press_text EQUS 31, 8, 22, 136, 131, "PRESS SPACE TO PLAY", 0
+\ The prompt has a row of its own, over the loading message: a flash code
+\ runs to the end of its row, so it would set flashing whatever it shared one with.
+.press_text EQUS 31, 0, PRESS_ROW, 136, T_YEL, "        PRESS SPACE TO PLAY           "
+.press_text_end
+ASSERT press_text_end - press_text - 3 = 40     ; (the whole row, to its end)
 .m_down     EQUB 0                  ; M was down last VSync (&FF), or not
 }
 
@@ -125,31 +129,35 @@ RS_MU    = &74                  ; (two bytes: the title theme's place)
 \ 141 double height, 157 the colour as background, 156 black background.
 T_RED = 129 : T_YEL = 131 : T_BLUE = 132 : T_CYAN = 134 : T_WHITE = 135
 T_DBL = 141 : T_BG = 157
+PRESS_ROW = 23                  ; LOADING, then PRESS SPACE TO PLAY
 MACRO TT_TITLE
     EQUS T_DBL, T_RED, "    R  E  D", T_CYAN, "S  H  I  F  T"
 ENDMACRO
 .title_page
     EQUS 22, 7                              ; MODE 7
     EQUS 23, 1, 0, 0, 0, 0, 0, 0, 0, 0      ; no cursor
+    \ The title, the story, the keys and the rules, a row apart, and the
+    \ prompt on a row of its own (PRESS_ROW).
+    EQUS 31, 0, 0 : TT_TITLE
     EQUS 31, 0, 1 : TT_TITLE
-    EQUS 31, 0, 2 : TT_TITLE
-    EQUS 31, 0, 4, T_WHITE, "    KHARON-4, 2189. THE DEEP MINE"
-    EQUS 31, 0, 5, T_WHITE, "    HAS DUG INTO THE PRISM, AND"
-    EQUS 31, 0, 6, T_WHITE, "    REALITY HAS COME APART."
-    EQUS 31, 0, 7, T_RED, "    THE RED BELONGS TO THE MACHINES."
-    EQUS 31, 0, 8, T_CYAN, "    THE BLUE BELONGS TO THE SWARM."
-    EQUS 31, 0, 9, T_WHITE, "    ONE TROOPER. ONE HARNESS."
-    EQUS 31, 0, 10, T_WHITE, "    THE NIGHT SHIFT NEVER CAME UP."
-    EQUS 31, 0, 11, T_YEL, "    YOURS STARTS NOW."
-    EQUS 31, 0, 13, T_YEL, " Z X ", T_WHITE, "left, right   ", T_YEL, ":  ", T_WHITE, "jump"
-    EQUS 31, 0, 14, T_YEL, " /   ", T_WHITE, "crouch        ", T_YEL, "RETURN ", T_WHITE, "fire"
-    EQUS 31, 0, 15, T_YEL, " SPACE ", T_WHITE, "grenade     ", T_YEL, "SHIFT ", T_WHITE, "phase"
-    EQUS 31, 0, 16, T_WHITE, " (or cursor keys) ", T_YEL, "P ", T_WHITE, "pause  ", T_YEL, "M ", T_WHITE, "music"
-    EQUS 31, 0, 17, T_YEL, " ESCAPE ", T_WHITE, "give the room up, for a life"
+    EQUS 31, 0, 3, T_WHITE, "    KHARON-4, 2189. THE DEEP MINE"
+    EQUS 31, 0, 4, T_WHITE, "    HAS DUG INTO THE PRISM, AND"
+    EQUS 31, 0, 5, T_WHITE, "    REALITY HAS COME APART."
+    EQUS 31, 0, 6, T_RED, "    THE RED BELONGS TO THE MACHINES."
+    EQUS 31, 0, 7, T_CYAN, "    THE BLUE BELONGS TO THE SWARM."
+    EQUS 31, 0, 8, T_WHITE, "    ONE TROOPER. ONE HARNESS."
+    EQUS 31, 0, 9, T_WHITE, "    THE NIGHT SHIFT NEVER CAME UP."
+    EQUS 31, 0, 10, T_YEL, "    YOURS STARTS NOW."
+    EQUS 31, 0, 12, T_YEL, " Z X ", T_WHITE, "left, right   ", T_YEL, ":  ", T_WHITE, "jump"
+    EQUS 31, 0, 13, T_YEL, " /   ", T_WHITE, "crouch        ", T_YEL, "RETURN ", T_WHITE, "fire"
+    EQUS 31, 0, 14, T_YEL, " SPACE ", T_WHITE, "grenade     ", T_YEL, "SHIFT ", T_WHITE, "phase"
+    EQUS 31, 0, 15, T_WHITE, " (or cursor keys) ", T_YEL, "P ", T_WHITE, "pause  ", T_YEL, "M ", T_WHITE, "music"
+    EQUS 31, 0, 16, T_YEL, " ESCAPE ", T_WHITE, "give the room up, for a life"
     EQUS 31, 0, 18, T_CYAN, "Each shift costs a phase cell. The"
     EQUS 31, 0, 19, T_CYAN, "other phase is dotted: it can't touch"
-    EQUS 31, 0, 20, T_CYAN, "you, and you can't touch it."
-    EQUS 31, 0, 22, T_YEL, "Crouch to duck a sergeant's fire;"
-    EQUS 31, 0, 23, T_YEL, "crouch and throw to roll a grenade."
+    EQUS 31, 0, 20, T_CYAN, "you, and you can't touch it. Out of"
+    EQUS 31, 0, 21, T_CYAN, "cells? Find more; a life lost gives 2."
+    EQUS 31, 0, 22, T_YEL, "Crouch: duck fire, or roll a grenade."
+    EQUS 31, 15, PRESS_ROW, T_WHITE, "LOADING"
     EQUS 31, 0, 24, T_BLUE, build_stamp
 .title_page_end
