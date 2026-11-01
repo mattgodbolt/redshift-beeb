@@ -76,7 +76,7 @@ playthrough: $(TARGET)
 	node tools/playthrough.mjs
 
 # The README's screenshots, from a playthrough.
-README_SHOTS = title landing pump_red pump_blue jar tanks hut skip
+README_SHOTS = title landing pump_red pump_blue jar tanks hut skip engine signal turntable crane
 readme-shots: $(TARGET)
 	node tools/playthrough.mjs --shots build/shots
 	for n in $(README_SHOTS); do cp build/shots/$$n.png docs/media/; done

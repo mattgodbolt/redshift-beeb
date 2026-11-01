@@ -358,3 +358,15 @@ What was done, in order, with what worked and what didn't.
 - The level editor counts looks the same way (`lookCounts`), which
   `editor/check.mjs` holds to `gfxlib.Looks`, and refuses a sector with
   too many, as `mkrooms.py` does.
+
+## 2026-11-01: sectors from the disc, and the Marshalling Yard
+
+- The bank holds the art and one sector. At the cage, with the screen
+  black, the game hands the OS its machine back for one load of the next
+  sector's file, keeping safe what the OS and the DFS write over, and
+  takes it back (decision 42). Each sector's own tiles travel in its file
+  too (decision 43), so a sector has room for a kit of its own.
+- Sector 2 is built (decision 44). A playthrough plays both sectors and
+  rides down into Sector 3's placeholder without losing a life, on the B
+  and the Master.
+

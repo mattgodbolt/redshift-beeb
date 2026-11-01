@@ -372,4 +372,15 @@ Matt was away is marked *provisional* until reviewed.
       sector with too many, since it must refuse just what `mkrooms.py`
       refuses. It draws every room as before, whichever sector a tile is
       in.
+44. **2026-11-01: Sector 2, and art drawn ahead of its rooms costs
+    nothing.** A level agent built THE MARSHALLING YARD's nine rooms and
+    its kit of fifteen tiles (rails, trucks, an engine, a turntable, a
+    weigh-house, a crane, buffers, the handle, the crusher's teeth), with
+    the existing enemies, and a one-room Sector 3 to ride down to. It held
+    each room to what the playtests taught (every enemy shot from somewhere
+    safe, two ways to kill each sergeant, no hidden take-offs, finishable
+    from where Ash comes in). Decision 43 counted a tile no room used as
+    shared, so a kit drawn ahead of its rooms, or the editor's made-up test
+    rooms, overran the 128 looks; such a tile is now no sector's, and isn't
+    in the game until a room uses it.
 

@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-// A playthrough of the whole of Sector 1, from the first room to the cage,
-// Sector 2's load from the disc, and the Engine Shed, on the default build:
-// the end-to-end test that the sector can be finished, and with --shots,
-// the README's screenshots.
+// A playthrough of Sectors 1 and 2, from the first room to each sector's
+// cage, each next sector's load from the disc, and Sector 3's first room, on
+// the default build: the end-to-end test that the sectors can be finished
+// without losing a life, and with --shots, the README's screenshots.
 //
-//   node tools/playthrough.mjs               play it, and fail if a room isn't reached
+//   node tools/playthrough.mjs               play it, and fail if a room isn't reached,
+//                                            a life is lost or a sergeant lives
 //   node tools/playthrough.mjs --shots DIR   also save a screenshot at each moment the
 //                                            route marks, as DIR/<name>.png
 //
@@ -83,6 +84,18 @@ const thing = async (i) => {
     const x = (await beeb.read("obj_x", 12))[i], f = (await beeb.read("obj_face", 12))[i];
     return { x, f, alive: (await beeb.read("obj_spr", 12))[i] !== 255 };
 };
+// The enemies' bolts in flight (EB0 on).
+const bolts = async () => (await beeb.read("obj_spr", 12)).slice(10).filter((s) => s !== 255).length;
+// A sergeant (thing i) that should be dead.
+const dead = async (i, where) => { if ((await thing(i)).alive) throw new Error(`${where}'s sergeant lived`); };
+// The cage: its ride, then the next sector's rooms from the disc (src/sector.6502).
+const rideCage = async (sector) => {
+    const ride = await beeb.runUntil("sector_load", 15);
+    if (ride.stopped_reason !== "breakpoint") throw new Error("the cage didn't load the next sector");
+    const load = await beeb.runUntil("sector_load.done", 30);
+    if (load.stopped_reason !== "breakpoint") throw new Error(`Sector ${sector}'s load didn't finish`);
+    console.log(`${`Sector ${sector} loaded`.padEnd(16)} in ${(load.cycles_run / 2e6).toFixed(2)}s`);
+};
 let lives0 = null;
 const expectRoom = async (n, name) => {
     const s = await g.st();
@@ -101,6 +114,8 @@ const fireUntilDead = async (i, limit = 150, crouch = false) => {
     return !(await thing(i)).alive;
 };
 const cross = async (dir, room) => { await g.walkUntilRoom(dir, room); await g.gf(3); };
+// Into a room, and on once it's drawn and its things are out.
+const settle = async () => { await until(async () => (await beeb.peek("blackout")) === 0, 100); await g.gf(2); };
 const until = async (test, limit = 400) => { for (let i = 0; i < limit; i++) { if (await test()) return; await g.gf(1); } };
 
 // --- The title page, then the route ---------------------------------------
@@ -214,24 +229,160 @@ try {
     // under. Then, once a shot has struck the crate, down to the floor to
     // roll a charge into it, crouched under the next.)
     await g.walkTo(24); await g.walkTo(34);
-    const bolts = async () => (await beeb.read("obj_spr", 12)).slice(10).filter((s) => s !== 255).length;  // (EB0 on)
     await until(async () => (await bolts()) > 0, 80);
     await until(async () => (await bolts()) === 0, 40);
     await g.walkTo(44);
     await g.down("D"); await g.gf(2); await g.tap("G", 2); await g.gf(30); await g.up("D");
-    if ((await thing(4)).alive) throw new Error("the Skip Shaft's sergeant lived");
-    // (The ride, then Sector 2's rooms from the disc: src/sector.6502.)
+    await dead(4, "the Skip Shaft");
     await g.down("R");
-    const ride = await beeb.runUntil("sector_load", 15);
+    await rideCage(2);
     await g.up("R");
-    if (ride.stopped_reason !== "breakpoint") throw new Error("the cage didn't load the next sector");
-    const load = await beeb.runUntil("sector_load.done", 30);
-    if (load.stopped_reason !== "breakpoint") throw new Error("Sector 2's load didn't finish");
-    console.log(`${"Sector 2 loaded".padEnd(16)} in ${(load.cycles_run / 2e6).toFixed(2)}s`);
     await g.gf(20); await mark("sector2");
     await until(async () => (await beeb.peek("room_sector")) === 2 && (await beeb.peek("blackout")) === 0, 200);
+    await g.land();
+
+    // --- Sector 2: the Marshalling Yard ------------------------------------
+
+    // 1 ENGINE SHED: Trundlers in numbers, one on the floor behind the
+    // buffers, one on the engine.
     await expectRoom(0, "ENGINE SHED");
     if ((await beeb.peek("room_sector")) !== 2) throw new Error("the Engine Shed isn't in Sector 2");
+    await g.gf(10); await mark("engine");
+    await g.walkTo(18);
+    // (Over the buffers once the first has rolled off, and shoot it crouched.)
+    await until(async () => { const a = await thing(4); return a.x > 48 && a.f === 0; }, 200);
+    await g.jump("R", 20);
+    if (!(await fireUntilDead(4, 100, true))) throw new Error("the Engine Shed's floor Trundler lived");
+    // (Up onto the engine when the other is off at its far end.)
+    await g.walkTo(52);
+    await until(async () => (await thing(5)).x > 88, 300);
+    await g.jump("R", 14);
+    if (!(await fireUntilDead(5, 100, true))) throw new Error("the engine's Trundler lived");
+    await g.walkTo(80); await g.jump("R", 14);
+    await cross("R", 1); await settle();
+    // 2 SIGNAL BOX: a sergeant up in the box, lobbed from the truck on its
+    // plinth, where the sergeant's fire passes over.
+    await expectRoom(1, "SIGNAL BOX");
+    if (!(await fireUntilDead(4, 150))) throw new Error("the Signal Box's Trundler lived");
+    await g.walkTo(8); await g.jump("R", 10);
+    await g.walkTo(44); await g.jump("R", 12);
+    await g.walkTo(56);
+    await g.down("R"); await g.gf(1); await g.up("R");
+    await mark("signal");
+    await g.tap("G", 2); await g.gf(40);
+    await dead(5, "the Signal Box");
+    await g.jump("R", 12);
+    await g.walkTo(118, 300);
+    await cross("R", 2); await settle();
+    // 3 TURNTABLE: the deck's Trundler, the barricade, and down through the
+    // welded hatch in the Blue.
+    await expectRoom(2, "TURNTABLE");
+    await g.walkTo(20);
+    if (!(await fireUntilDead(4, 150, true))) throw new Error("the turntable's Trundler lived");
+    await g.jump("R", 14);
+    await g.walkTo(70); await g.jump("R", 14);
+    await g.tap("S", 2); await g.gf(2);
+    await g.down("L"); await g.gf(1); await g.up("L");
+    await g.gf(10); await mark("turntable");
+    await g.down("F");
+    await until(async () => !(await thing(5)).alive && !(await thing(6)).alive, 150);
+    await g.up("F");
+    await g.walkUntilRoom("R", 3, 200); await settle();
+    await g.gf(30);
+    // 4 WEIGHBRIDGE: up the truck to the siding, back to the Red where the
+    // crystal grows, and a charge for the jammed carts.
+    await expectRoom(3, "WEIGHBRIDGE");
+    await g.walkTo(92); await g.jump("L", 12); await g.jump("L", 22);
+    // (The siding's Trundler is a ghost in the Blue: back to the Red with it
+    // off at the far end, and shoot it.)
+    await until(async () => { const t = await thing(4); return t.x < 54 && t.f === 2; }, 300);
+    await g.tap("S", 2); await g.gf(2);
+    if (!(await fireUntilDead(4, 100, true))) throw new Error("the Weighbridge's first Trundler lived");
+    await g.walkTo(58);
+    await mark("weighbridge");
+    // (A charge rolled into the carts' foot, and fire on through the gap at
+    // the Trundler that was behind them.)
+    await g.down("D"); await g.gf(2); await g.tap("G", 2); await g.up("D");
+    if (!(await fireUntilDead(5, 150, true))) throw new Error("the Trundler behind the carts lived");
+    await cross("L", 4); await settle();
+    // 5 SIDING FOUR: truck to truck, a Trundler on each, then the Gadfly
+    // under the barricade, and through it in the Blue.
+    await expectRoom(4, "SIDING FOUR");
+    await g.walkTo(102); await g.jump("L", 12);
+    if (!(await fireUntilDead(4, 150, true))) throw new Error("Siding Four's first Trundler lived");
+    await g.walkTo(86); await g.jump("L", 20);
+    if (!(await fireUntilDead(5, 150, true))) throw new Error("Siding Four's second Trundler lived");
+    await g.walkTo(58); await g.jump("L", 20);
+    await g.walkTo(20);
+    if (!(await fireUntilDead(6, 150))) throw new Error("Siding Four's Gadfly lived");
+    await g.tap("S", 2); await g.gf(2);
+    await g.walkUntilRoom("L", 5, 200); await settle();
+    // 6 CRANE GANTRY: back to the Red through the crystal, and a Gadfly under
+    // each of the crane's loads.
+    await g.land();
+    await expectRoom(5, "CRANE GANTRY");
+    await g.tap("S", 2); await g.gf(2);
+    await g.walkTo(36);
+    await mark("crane");
+    if (!(await fireUntilDead(4, 200))) throw new Error("the Crane Gantry's first Gadfly lived");
+    await g.jump("R", 12);
+    await g.walkTo(66);
+    if ((await thing(5)).alive && !(await fireUntilDead(5, 200))) throw new Error("the Crane Gantry's second Gadfly lived");
+    await g.walkTo(68); await g.jump("R", 12);
+    await g.walkTo(84); await g.jump("R", 20);
+    await cross("R", 6); await settle();
+    // 7 BUFFER STOPS: the barricade and the Slivers in the Blue, the plates
+    // in the Red, and down past the buffers.
+    await expectRoom(6, "BUFFER STOPS");
+    await g.walkTo(18);
+    await g.tap("S", 2); await g.gf(2);
+    await g.down("F");
+    await until(async () => !(await thing(4)).alive && !(await thing(5)).alive, 150);
+    await g.up("F");
+    await g.walkTo(68);
+    await mark("buffers");
+    await g.tap("S", 2); await g.gf(2);
+    if (!(await fireUntilDead(6, 200, true))) throw new Error("the Buffer Stops' Trundler lived");
+    await g.walkTo(104); await g.jump("R", 10);
+    await g.walkUntilRoom("R", 7, 200); await settle();
+    // 8 DEAD MAN'S HANDLE: down onto the truck between two sergeants, and a
+    // charge lobbed at each.
+    await g.land();
+    await expectRoom(7, "DEAD MAN'S HANDLE");
+    await g.walkTo(86);
+    await g.walkTo(60); await g.land();
+    await mark("handle");
+    await g.walkTo(66);
+    await g.down("R"); await g.gf(1); await g.up("R");
+    await g.tap("G", 2); await g.gf(40);
+    await dead(5, "the Dead Man's Handle's right");
+    await g.walkTo(70);
+    await g.down("L"); await g.gf(1); await g.up("L");
+    await g.tap("G", 2); await g.gf(40);
+    await dead(4, "the Dead Man's Handle's left");
+    await g.walkUntilRoom("L", 8, 300); await settle();
+    // 9 CRUSHER'S MOUTH: along the beam between the jaws, never jumping, a
+    // charge from the truck at the sergeant, and the cage.
+    await g.land();
+    await expectRoom(8, "CRUSHER'S MOUTH");
+    await mark("crusher");
+    await until(async () => { const t = await thing(4); return t.x > 52 && t.f === 0; }, 300);
+    await g.walkTo(24);
+    if (!(await fireUntilDead(4, 150, true))) throw new Error("the beam's Trundler lived");
+    await g.walkTo(72); await g.land();
+    await g.walkTo(70);
+    await g.down("R"); await g.gf(1); await g.up("R");
+    await g.tap("G", 2); await g.gf(40);
+    await dead(6, "the Crusher's Mouth");
+    await until(async () => { const t = await thing(5); return t.x > 104 && t.f === 0; }, 300);
+    await g.walkTo(80);
+    if (!(await fireUntilDead(5, 150, true))) throw new Error("the Crusher's Mouth's floor Trundler lived");
+    await g.down("R");
+    await rideCage(3);
+    await g.up("R");
+    await g.gf(20); await mark("sector3");
+    await until(async () => (await beeb.peek("room_sector")) === 3 && (await beeb.peek("blackout")) === 0, 200);
+    await expectRoom(0, "THE END, FOR NOW");
     await g.gf(25);
 } catch (e) {
     console.log(`FAIL: ${e.message}`);

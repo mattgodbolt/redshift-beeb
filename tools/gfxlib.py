@@ -260,7 +260,9 @@ class Looks:
     while it's loaded.
 
     A tile's looks are a sector's own when only that sector's rooms use the
-    tile and it isn't flagged shared. The empty tile's are always shared:
+    tile and it isn't flagged shared; a tile no room uses, and not flagged
+    shared, is no sector's, and isn't in the game at all (art drawn ahead
+    of its rooms costs nothing). The empty tile's are always shared:
     the game fills with it (T_EMPTY) and draws the back wall from its
     looks. The shared looks number from 0, in file order (looks), so the
     empty tile is 0 and its variants stay in order; each sector's own
@@ -278,9 +280,13 @@ class Looks:
                 for c in line:
                     used.setdefault(c, set()).add(r.sector)
 
+        UNUSED = "unused"
+
         def owner(i, t):
             s = used.get(t.key, set())
-            return None if i == 0 or t.shared or len(s) != 1 else next(iter(s))
+            if i == 0 or t.shared or len(s) > 1:
+                return None
+            return next(iter(s)) if s else UNUSED
 
         whose = [owner(i, t) for i, t in enumerate(tiles)]
         self.shared = looks([t for t, s in zip(tiles, whose) if s is None])

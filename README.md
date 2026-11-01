@@ -70,8 +70,34 @@ THE LEACH WORKS, where Ash starts, teaches one thing a room:
    spans, Red plates, and Slivers that wake when you shift into their
    phase.
 9. **SKIP SHAFT.** Down to THE CAGE, past a second sergeant. The cage takes
-   Ash down to Sector 2, whose first room, the ENGINE SHED, is as far as
-   the game goes for now.
+   Ash down to Sector 2.
+
+## Sector 2, the Marshalling Yard
+
+<table>
+<tr><td><img src="docs/media/engine.png" alt="The Engine Shed"></td>
+<td><img src="docs/media/signal.png" alt="The Signal Box"></td></tr>
+<tr><td><img src="docs/media/turntable.png" alt="The Turntable, in the Blue Phase"></td>
+<td><img src="docs/media/crane.png" alt="The Crane Gantry"></td></tr>
+</table>
+
+The ore railway's hub, and the machines' home ground. Red barricades
+everywhere, so going round costs cells:
+
+1. **ENGINE SHED.** Trundlers in numbers, around an engine on its running
+   gear.
+2. **SIGNAL BOX.** A Drill Sergeant up in its box, and an ore truck to
+   throw from.
+3. **TURNTABLE.** Torn rails as spikes, and a welded hatch to drop through
+   in the Blue.
+4. **WEIGHBRIDGE.** Jammed ore carts that only a grenade moves.
+5. **SIDING FOUR.** Truck to truck over the spike gaps.
+6. **CRANE GANTRY.** Gadflies under the hanging loads.
+7. **BUFFER STOPS.** Both phases in turn: the Blue for the spans, the Red
+   for the plates.
+8. **DEAD MAN'S HANDLE.** A truck between two sergeants.
+9. **CRUSHER'S MOUTH.** A beam between the jaws, and the cage down to Sector
+   3, which is as far as the game goes for now.
 
 ## The idea
 

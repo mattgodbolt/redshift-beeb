@@ -183,8 +183,15 @@ else {
 
 // --- Made-up rooms, for what the real ones don't have yet -----------------------------------------
 
+// Every tile, split between alpha (Sector 2) and gamma (Sector 3): each is drawn, and each is one
+// sector's own, so the two sectors' looks stay within what the game can number (decision 43).
 const keys = tiles.map(t => t.key).join('');
-const row = (k, n) => Array.from({length: RS.MAP_W}, (_, i) => keys[(i * n + k * 7) % keys.length]).join('');
+const half = Math.ceil(keys.length / 2);
+const keysOf = n => (n === 3 ? keys.slice(0, half) : ' ' + keys.slice(half));
+const row = (k, n) => {
+  const ks = keysOf(n);
+  return Array.from({length: RS.MAP_W}, (_, i) => ks[(i * n + k * 7) % ks.length]).join('');
+};
 const map = n => Array.from({length: RS.MAP_H}, (_, k) => (k % 3 ? row(k, n) : row(k, n).replace(/ +$/, '')));
 const blankMap = Array(RS.MAP_H).fill('');
 const rich = [

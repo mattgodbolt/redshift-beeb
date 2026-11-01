@@ -49,6 +49,8 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 - **After tiles are drawn over things** (a phase shift, a blast), mark the things changed (`objs_touch`), never forgotten (`objs_forget`). Forgotten things lose their old rectangle and leave trails. `objs_forget` is only for a new room.
 - **The sideways bank must stay paged** (`RS_BANK`, `&F4` and `romsel`). Everything in RSDATA is read in place.
 - **Enemies and their bolts call `player_hit`, hazards and pits `player_die`.** `player_hit` does nothing in the safe spell after a respawn (decision 14); a pit must always kill, or Ash falls off the bottom of the room.
+- **A `make ROOM=n` build starts Ash at that room's `start`, or the first room's**, not where they'd come in; and after a room change its things spawn only once it's drawn, so a script waits for `blackout` to clear.
+- **A Gadfly bobs over walls that don't cover the row it fills**: bound its beat with walls the height of its bob.
 - **The interrupt runs with D as the game left it**: `add_score` uses decimal mode, so the VSync path does `CLD` before anything that adds.
 - **The interrupt writes the sound chip.** Main-loop code that writes a tone (two bytes) holds `mu_busy` across them, as `sound_update` does. A loop that doesn't call `sound_update` (a card, game over) leaves an effect holding its channel: stop the effects first (`sound_quiet`).
 - **The game's frame is 312 lines, 39936 cycles, not 40000** (MODE 7's interlaced one is). A tool counting frames from cycles drifts a frame every 150 or so.

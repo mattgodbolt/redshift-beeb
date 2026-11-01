@@ -805,8 +805,9 @@ function lookCounts(doc, tiles) {
   tiles.forEach((t, i) => {
     const n = 1 + t.variants.length + Object.values(t.alts).reduce((sum, list) => sum + list.length, 0);
     const s = [...(used.get(t.key) || [])];
-    if (i === 0 || t.shared || s.length !== 1) shared += n;
-    else own.set(s[0], own.get(s[0]) + n);
+    // (gfxlib's Looks: a tile no room uses, and not flagged shared, is no sector's.)
+    if (i === 0 || t.shared || s.length > 1) shared += n;
+    else if (s.length === 1) own.set(s[0], own.get(s[0]) + n);
   });
   return {shared, own};
 }
