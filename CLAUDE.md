@@ -37,7 +37,7 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 - The art and the rooms are text. `tools/mkgfx.py` and `tools/mkrooms.py` turn them into `build/data/*.6502`, and `tools/gfxlib.py` is the shared reader. The level editor in `editor/` reads the same files.
 - The music is text too (`music/`; `music/instruments.txt` says how), made into data by `tools/mkmusic.py`. One player, `musicplay.6502`, is included twice, each in its own scope with its own data: in the game, where the VSync interrupt steps it (`music.6502`), and in RSLOAD for the title theme. The game's effects take a channel from it whenever they want one.
 - Each colour has a job (`gfx/tiles.txt`'s header, decision 20); keep new art to it. A tile's variants are picked from its surroundings when the rooms are built (`gfxlib.resolve`); the editor has a copy of that in its core script, which `editor/check.mjs` holds to the build pixel for pixel. Air is drawn by position at run time (`back_look`), not stored.
-- The sideways bank is the tight memory. If it fills, compress the room records with baron's section `transform` and `LZ_PARSE` (they're unpacked once a room); leave the art raw, since it's read every frame.
+- The sideways bank is the tight memory, and the sprites are most of it: each is kept at two shifts, and mirrored if it faces a way. The rooms are already packed well (runs and row copies): a byte-aligned LZ through baron's `transform` and `LZ_PARSE`, on the packed or the raw maps, came out bigger, so that's been tried.
 
 ## Traps met
 

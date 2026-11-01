@@ -264,3 +264,16 @@ What was done, in order, with what worked and what didn't.
   low pages are still the OS's, and `pl_safe` falls in its sound
   workspace. It pokes it only once the game is running now.
 
+## 2026-10-31: compressing the rooms, tried
+
+- With the bank filling, the room records went through a baron section
+  transform: each record its own section, packed by `LZ_PARSE` into a
+  byte-aligned LZ (a control byte for literals or a match, a byte for the
+  distance) and unpacked into a buffer as the room's entered. It saved
+  nothing. Measured over every room's map, the existing packing (runs, and
+  copies from the row above) takes fewer bytes than that LZ does, on the
+  raw maps or on top of the packing. A bit-level format might win a
+  little (chuckie-egg-2-beeb's rooms needed one), but the rooms are a
+  small part of the bank: the sprites, at two shifts and mirrored, are
+  most of it. Reverted.
+
