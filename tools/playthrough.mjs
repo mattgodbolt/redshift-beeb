@@ -255,7 +255,7 @@ try {
     if (!(await fireUntilDead(4, 100, true))) throw new Error("the Engine Shed's floor Trundler lived");
     // (Up onto the engine when the other is off at its far end.)
     await g.walkTo(52);
-    await until(async () => (await thing(5)).x > 84, 300);
+    await until(async () => (await thing(5)).x > 88, 300);
     await g.jump("R", 14);
     if (!(await fireUntilDead(5, 100, true))) throw new Error("the engine's Trundler lived");
     await g.walkTo(80); await g.jump("R", 14);
@@ -298,10 +298,12 @@ try {
     await until(async () => { const t = await thing(4); return t.x < 54 && t.f === 2; }, 300);
     await g.tap("S", 2); await g.gf(2);
     if (!(await fireUntilDead(4, 100, true))) throw new Error("the Weighbridge's first Trundler lived");
-    await g.walkTo(50);
+    await g.walkTo(58);
     await mark("weighbridge");
-    await g.down("D"); await g.gf(2); await g.tap("G", 2); await g.gf(30); await g.up("D");
-    if (!(await fireUntilDead(5, 120, true))) throw new Error("the Trundler behind the carts lived");
+    // (A charge rolled into the carts' foot, and fire on through the gap at
+    // the Trundler that was behind them.)
+    await g.down("D"); await g.gf(2); await g.tap("G", 2); await g.up("D");
+    if (!(await fireUntilDead(5, 150, true))) throw new Error("the Trundler behind the carts lived");
     await cross("L", 4); await settle();
     // 5 SIDING FOUR: truck to truck, a Trundler on each, then the Gadfly
     // under the barricade, and through it in the Blue.
