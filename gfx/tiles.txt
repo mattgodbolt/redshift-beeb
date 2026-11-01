@@ -15,6 +15,12 @@
 #   3  white: the player, enemies, pickups and lethal tips. In a band of
 #      liquid the room makes 3 the liquid's colour, and nothing else there
 #      may use it.
+# Light falls from the top left. A shape's lit side is 2 and its shadow
+# side steps down by dither density: the body colour full, then on half the
+# pixels (a checkerboard), then a quarter, then black. A lit top that
+# isn't a lip is dithered 2 and 1, never a solid run of 2. Shading keeps a
+# shape's outline solid where it faces the light: a dotted outline and a
+# sparse hatch are what's out of phase.
 # Flags: solid (stands you up and stops you), hazard (kills), breakable
 # (a grenade clears it, and the breakable tiles above and below it), red /
 # blue (only there in that phase: out of phase it's drawn as a dotted
@@ -307,14 +313,14 @@ alt H base
 1.1.1.1.
 ........
 
-# A girder: a solid beam to stand on. (No lattice: hatching means a block
-# that's out of phase.) Where it ends in the open, an end
-# plate and a knee bracket under it.
+# A girder: a solid beam to stand on, its underside in shadow. (No
+# lattice: hatching means a block that's out of phase.) Where it ends in
+# the open, an end plate and a knee bracket under it.
 tile = girder solid
 22222222
 11111111
 11211121
-11111111
+.1.1.1.1
 ........
 ........
 ........
@@ -324,7 +330,7 @@ variant = left
 22222222
 21111111
 21211121
-21111111
+21.1.1.1
 2111....
 21......
 ........
@@ -334,7 +340,7 @@ variant = right
 22222222
 11111112
 11211212
-11111112
+.1.1.1.2
 ....1112
 ......12
 ........
@@ -440,77 +446,80 @@ alt w base
 
 # --- Scenery: in front of the back wall, not solid.
 
-# A round pipe: lit on the left, a flange where it ends.
+# A round pipe: lit on the left, the body, and its right side in shadow. A
+# flange where it ends, and now and then on the way, is a ring wider than
+# the pipe, shaded the same way, with the pipe darker in its shadow.
 tile | pipe
-..2211..
-..2211..
-..2211..
-..2211..
-..2211..
-..2211..
-..2211..
-..2211..
+.22111..
+.2211.1.
+.22111..
+.2211.1.
+.22111..
+.2211.1.
+.22111..
+.2211.1.
 
 variant | up
-.222211.
-.122111.
-..2211..
-..2211..
-..2211..
-..2211..
-..2211..
-..2211..
+21111111
+2221111.
+.1.1.1..
+.2211.1.
+.22111..
+.2211.1.
+.22111..
+.2211.1.
 
 variant | down
-..2211..
-..2211..
-..2211..
-..2211..
-..2211..
-..2211..
-.222211.
-.122111.
+.22111..
+.2211.1.
+.22111..
+.2211.1.
+.22111..
+.1111.1.
+22211111
+11111.1.
 
 alt | base
-..2211..
-..2211..
-..2211..
-.222211.
-.122111.
-..2211..
-..2211..
-..2211..
+.22111..
+.2211.1.
+.22111..
+.1111.1.
+22211111
+2221111.
+.1.1.1..
+.2211.1.
 
 tile - hpipe
 ........
 ........
-........
 11111111
+21212121
 11111111
-........
+.1.1.1.1
 ........
 ........
 
-# (Drawn in the body colour alone, and thin: a lit top would say "stand
-# here", and it's only a pipe behind the play.)
+# (Its top edge is the body colour, and the light on it a dithered band
+# under that: a lit top would say "stand here", and it's only a pipe
+# behind the play. Its underside is in shadow, and a flange rings each end.)
 variant - left
 ........
-........
-11......
-11111111
-11111111
-11......
-........
+21......
+21111111
+21212121
+21111111
+11.1.1.1
+1.......
 ........
 
 variant - right
 ........
-........
-......11
-11111111
-11111111
-......11
-........
+......21
+11111121
+21212121
+11111121
+.1.1.111
+......1.
 ........
 
 # Old scenery, kept so the rooms still read: dots are now just air.
@@ -534,12 +543,13 @@ tile v weed
 .1.11...
 ..1.1...
 
-# Swarm crystal, the Blue Phase's: a span to walk on, and spikes.
+# Swarm crystal, the Blue Phase's: a span to walk on (its underside in
+# shadow, as a girder's), and spikes.
 tile b span solid blue
 22222222
 21122112
 11111111
-.111111.
+.1.1.1..
 ........
 ........
 ........
@@ -591,13 +601,15 @@ tile P plate solid red
 
 # --- Set pieces: each room's landmark, from a small kit. Scenery unless it
 # --- says solid; drawn in colours 1 and 2 only, mostly line, so they sit
-# --- behind the play. The small wheel is two by two: ( ) over [ ]. The big
-# --- rim (an octagon, for the Pump House's flywheel and the Settling Tanks'
-# --- gauge) is { N } along the top, W and E down the sides, and < S >
-# --- along the bottom, as long as it needs to be.
+# --- behind the play, and shaded from the top left like everything else.
+# --- The small wheel is two by two: ( ) over [ ]. The big rim (an octagon,
+# --- for the Pump House's flywheel and the Settling Tanks' gauge) is
+# --- { N } along the top, W and E down the sides, and < S > along the
+# --- bottom, as long as it needs to be.
 
 # A small spoked wheel: the Skip Shaft's sheave, the Engine Shed's wagon
-# wheels. It sits on the bottom of its cells.
+# wheels. It sits on the bottom of its cells. Lit round its top left, its
+# rim's outer edge in shadow round the bottom right.
 tile ( wheel_tl
 ........
 .....211
@@ -610,13 +622,13 @@ tile ( wheel_tl
 
 tile ) wheel_tr
 ........
-11......
+1.......
 1111....
-..111...
+..11....
 ...111..
-..1.11..
+..1.1...
 .1...11.
-2....11.
+2....1..
 
 tile [ wheel_bl
 21111121
@@ -626,21 +638,23 @@ tile [ wheel_bl
 .111...1
 ..111..1
 ...11111
-.....111
+.....1.1
 
 tile ] wheel_br
 2111111.
-2....11.
+2....1..
 .1...11.
-..1.11..
+..1.1...
 ...111..
-..111...
+..11....
 1111....
-11......
+1.......
 
-# The big rim's corners: cut at 45 degrees, lit down the left side. A
-# rim cut one tile deep has them in its corners; one cut two tiles deep
-# has each twice, end to end (the flywheel).
+# The big rim's corners: cut at 45 degrees. A rim cut one tile deep has
+# them in its corners; one cut two tiles deep has each twice, end to end
+# (the flywheel). The rim is raised: lit on the outside of its top left
+# half and the inside of its bottom right, its outer edge in shadow round
+# the bottom right.
 tile { rim_tl
 .......2
 ......21
@@ -672,17 +686,19 @@ tile < rim_bl
 .......2
 
 tile > rim_br
-.....111
-....111.
-...111..
-..111...
-.111....
-111.....
-11......
+.....21.
+....211.
+...21...
+..211...
+.21.....
+211.....
+1.......
 1.......
 
 # A lattice mast, and a lamp in a cage to go on top: the Landing Zone's
 # beacon, the Engine Shed's signal post (with its arm), the Catwalks' trestles.
+# The cage's cap is lit on the left and its right bar falls into shadow
+# (its glow is the lamp's own light).
 tile ! mast
 .2....1.
 .21...1.
@@ -694,12 +710,12 @@ tile ! mast
 .2....1.
 
 tile * beacon
-...11...
-..1221..
+...21...
+..2111..
 .122221.
-.121121.
+.12112..
 .122221.
-..1111..
+..111...
 .2.11.1.
 .211111.
 
@@ -768,37 +784,40 @@ tile T thread solid
 
 # Corrugated sheet, solid: the Foreman's Hut's roof, and the Skip Shaft's
 # skip. Its top is a lip to stand on, rolled where it ends on the left.
+# Each ridge is lit on its left face and shaded on its right, and each
+# rail along the bottom has its underside in shadow.
 tile A corrugated solid
+211.211.
 21..21..
+211.211.
 21..21..
-21..21..
-21..21..
-21..21..
+211.211.
 11111111
-1111111.
+1.1.1.1.
 ........
 
 variant A up+left
 .2222222
 2111111.
 .21..21.
-.21..21.
+.211.211
 .21..21.
 .1111111
-..11111.
+..1.1.1.
 ........
 
 variant A up
 22222222
 11111111
+211.211.
 21..21..
-21..21..
-21..21..
+211.211.
 11111111
-1111111.
+1.1.1.1.
 ........
 
-# The Foreman's Hut's window and door.
+# The Foreman's Hut's window and door, the door's post shaded on its
+# right.
 tile + window
 .......1
 .2.....1
@@ -810,13 +829,13 @@ tile + window
 11111111
 
 tile d doorpost
-2111....
-2111....
-21211...
-2111....
+21111...
 2111....
 21211...
 2111....
+21111...
+21211...
+21111...
 2111....
 
 # The Catwalks' railing, with a post at its end.
@@ -846,8 +865,8 @@ variant Y right
 tile c outflow_l
 .1221111
 .1221111
+12221111
 21111111
-11111111
 ........
 ..21..21
 ..21..21
@@ -869,7 +888,7 @@ tile s pour_l
 
 # The big rim's straight runs (its corners are { } < > above).
 tile N rim_top
-11111111
+21212121
 11111111
 11111111
 ........
@@ -884,9 +903,9 @@ tile S rim_bottom
 ........
 ........
 ........
+21212121
 11111111
-11111111
-11111111
+.1.1.1.1
 
 tile W rim_left
 211.....
@@ -899,19 +918,20 @@ tile W rim_left
 211.....
 
 tile E rim_right
-.....111
-.....111
-.....111
-.....111
-.....111
-.....111
-.....111
-.....111
+.....21.
+.....211
+.....21.
+.....211
+.....21.
+.....211
+.....21.
+.....211
 
 # The Pump House's flywheel: eight spokes (l h \ /), where they meet the
-# rim (G Z D K: top, bottom, left, right), and the hub (O).
+# rim (G Z D K: top, bottom, left, right), and the hub (O): a boss lit
+# round its top left, in shadow round its bottom right.
 tile G rim_top_spoke
-11111111
+21212121
 11111111
 11111111
 ...11...
@@ -926,9 +946,9 @@ tile Z rim_bottom_spoke
 ...11...
 ...11...
 ...11...
+21212121
 11111111
-11111111
-11111111
+.1.1.1.1
 
 tile D rim_left_spoke
 211.....
@@ -941,14 +961,14 @@ tile D rim_left_spoke
 211.....
 
 tile K rim_right_spoke
-.....111
-.....111
-.....111
+.....21.
+.....211
+.....21.
 11111111
-11111111
-.....111
-.....111
-.....111
+1111111.
+.....211
+.....21.
+.....211
 
 tile l spoke_v
 ...11...
@@ -992,12 +1012,12 @@ tile / spoke_up
 
 tile O hub
 11.11.11
-11122111
-.121121.
+.122211.
+.2211111
 12111111
-12111111
-.121111.
-11111111
+1211.1.1
+.1111.1.
+11.1.1..
 11.11.11
 
 # The Settling Tanks' gauge, inside the big rim: its scale at 10:30 (a),
@@ -1048,8 +1068,8 @@ tile Q pivot
 ......22
 ...222..
 ..2112..
-..2111..
-...11...
+..211.1.
+...1.1..
 ..1.....
 .1......
 
@@ -1076,45 +1096,47 @@ tile 8 chain
 
 # The Catwalks' hoist, two tiles wide, hung from the rock on two chains:
 # its gearbox (M m), the hook's block (U u) and the hook (J g over X p).
+# The boxes are lit along their tops and left sides, and shaded down their
+# right sides and underneath.
 tile M hoist_l
 .....111
 ....11..
-..211111
+..212121
 .2111111
 .2111111
 .2111111
-..111111
+..1111.1
 ...11...
 
 tile m hoist_r
 111.....
 ..11....
 111111..
-1111111.
-1111111.
+111111..
 1111111.
 111111..
+1.1.1...
 ...11...
 
 tile U block_l
 ...11...
-..211111
+..212121
 .2111111
 .211..11
 .211.111
 .211..11
 .2111111
-..111111
+..1111.1
 
 tile u block_r
 ...11...
 111111..
 1111111.
-11..111.
+11..11..
 111.111.
-11..111.
+11..11..
 1111111.
-111111..
+.1.1.1..
 
 tile J hook_tl
 .......1
@@ -1157,7 +1179,9 @@ tile p hook_br
 ........
 
 # Slurry Run's outflow: a pipe two tiles wide (1 2), a flange on it (3 4),
-# and the right halves of its mouth (5) and what pours out (6).
+# and the right halves of its mouth (5) and what pours out (6). The pipe is
+# lit down its left, and its right side falls off from half to a quarter.
+# The flange and the mouth's lip are rings, as on the small pipe.
 tile 1 bigpipe_l
 .1221111
 .1221111
@@ -1169,40 +1193,40 @@ tile 1 bigpipe_l
 .1221111
 
 tile 2 bigpipe_r
-1111111.
-1111111.
-1111111.
-1111111.
-1111111.
-1111111.
-1111111.
-1111111.
+11111...
+1111.1..
+11111.1.
+1111.1..
+11111...
+1111.1..
+11111.1.
+1111.1..
 
 tile 3 flange_l
 .1221111
 .1221111
 ........
 21111111
-11111111
-........
+21221111
+.1.1.1.1
 .1221111
 .1221111
 
 tile 4 flange_r
-1111111.
-1111111.
+11111...
+1111.1..
 ........
-11111111
-11111111
-........
+111111.1
 1111111.
-1111111.
+.1.1.1..
+11111.1.
+1111.1..
 
 tile 5 outflow_r
+11111...
+1111.1..
+111111.1
 1111111.
-1111111.
-11111111
-11111111
 ........
 .21..21.
 .21..21.
