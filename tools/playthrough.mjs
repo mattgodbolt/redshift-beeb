@@ -956,13 +956,14 @@ try {
     await shiftTo(0, "the Interference's far ledge");
     await cross("R", 6); await settle();
     // 7 FOCAL LENGTH: the swarm hangs over the Prism's floor, still in the
-    // Red. The Trundler; along under the swarm's ghosts, where a shift is
-    // refused, to the floor's far end; into the Blue there, and the swarm
-    // comes in a line.
+    // Red. The Trundler, shot crouching from the step at the way in, where it
+    // can't come; along under the swarm's ghosts, where a shift is refused,
+    // to the floor's far end; into the Blue there, and the swarm comes in a
+    // line.
     await expectRoom(6, "FOCAL LENGTH");
-    await g.walkTo(14);
+    await g.walkTo(4);
     await face("R");
-    if (!(await fireUntilDead(4, 300))) throw new Error("the Focal Length's Trundler lived");
+    if (!(await fireUntilDead(4, 300, true))) throw new Error("the Focal Length's Trundler lived");
     await g.walkTo(50);
     await shift();
     if ((await g.st()).phase !== 0) throw new Error("a shift under the Focal Length's swarm wasn't refused");
@@ -972,13 +973,14 @@ try {
     await face("L");
     await fight("the Focal Length's swarm", 5, 6, 7, 8);
     await cross("R", 7); await settle();
-    // 8 THE DARK FRINGE: the Hinge's floor before the Hinge. The Slivers from
-    // the way in; up the pillar; into the Red there, out of the sergeant's
-    // fire, and a charge lobbed at it; along the Red's floor and up the step.
+    // 8 THE DARK FRINGE: the Hinge's fight before the Hinge, and the bands go
+    // dark. The Slivers from the way in, along the Blue's floor; up the
+    // pillar; into the Red there, out of the sergeant's fire, and a charge
+    // lobbed at it; along the Red's floor and up the step.
     await expectRoom(7, "THE DARK FRINGE");
     await face("R");
     await fight("the Dark Fringe's Slivers", 5, 6);
-    await g.walkTo(30);
+    await g.walkTo(42);
     await g.jump("R", 8);
     if ((await g.st()).y !== 80) throw new Error("Ash missed the Dark Fringe's pillar");
     await shiftTo(0, "the Dark Fringe");
@@ -986,8 +988,6 @@ try {
     await mark("fringe");
     await g.tap("G", 2); await g.gf(40);
     await dead(4, "the Dark Fringe");
-    await g.walkTo(48);
-    await g.jump("R", 12);
     await g.walkTo(104);
     await g.jump("R", 10);
     await cross("R", 8); await settle();

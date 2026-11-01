@@ -1505,18 +1505,18 @@ map
 ϟ                              ϟ
 ϟ                              ϟ
 ϟ                               
-         ϟϟ                     
-         ϟϟ                     
-         ϟϟ                 ϟϟϟϟ
-ϟϟBBBBBBBϟϟRRBBRRRRRRRϟϟϟϟϟϟϟϟϟϟ
-ϟϟ       ϟϟ           ϟϟϟϟϟϟϟϟϟϟ
-ϟϟ       ϟϟ           ϟϟϟϟϟϟϟϟϟϟ
-ϟϟ       ϟϟ           ϟϟϟϟϟϟϟϟϟϟ
-ϟϟ       ϟϟ           ϟϟϟϟϟϟϟϟϟϟ
-ϟϟ^^^^^^^ϟϟ^^^^^^^^^^^ϟϟϟϟϟϟϟϟϟϟ
-thing sentry 22 14 1
-thing shard 6 12
-thing shard 8 13
+             ϟϟ                 
+             ϟϟ                 
+             ϟϟ             ϟϟϟϟ
+ϟϟBBBBBBBBBBBϟϟRRRRRRRRRRRϟϟϟϟϟϟ
+ϟϟ           ϟϟ           ϟϟϟϟϟϟ
+ϟϟ           ϟϟ           ϟϟϟϟϟϟ
+ϟϟ           ϟϟ           ϟϟϟϟϟϟ
+ϟϟ           ϟϟ           ϟϟϟϟϟϟ
+ϟϟ^^^^^^^^^^^ϟϟ^^^^^^^^^^^ϟϟϟϟϟϟ
+thing sentry 26 14 1
+thing shard 9 13
+thing shard 11 12
 
 # THE HINGE (decision 58), at the Prism's focus: the Drill Sergeant the
 # size of a house in the Red, the crystal bloom in the Blue, one heart. Its
