@@ -139,8 +139,11 @@ ENDMACRO
     EQUS 31, 0, 14, T_YEL, " /   ", T_WHITE, "crouch        ", T_YEL, "RETURN ", T_WHITE, "fire"
     EQUS 31, 0, 15, T_YEL, " SPACE ", T_WHITE, "grenade     ", T_YEL, "SHIFT ", T_WHITE, "phase"
     EQUS 31, 0, 16, T_WHITE, " (or cursor keys) ", T_YEL, "P ", T_WHITE, "pause  ", T_YEL, "M ", T_WHITE, "music"
+    EQUS 31, 0, 17, T_YEL, " ESCAPE ", T_WHITE, "give the room up, for a life"
     EQUS 31, 0, 18, T_CYAN, "Each shift costs a phase cell. The"
     EQUS 31, 0, 19, T_CYAN, "other phase is dotted: it can't touch"
     EQUS 31, 0, 20, T_CYAN, "you, and you can't touch it."
+    EQUS 31, 0, 22, T_YEL, "Crouch to duck a sergeant's fire;"
+    EQUS 31, 0, 23, T_YEL, "crouch and throw to roll a grenade."
     EQUS 31, 0, 24, T_BLUE, build_stamp
 .title_page_end

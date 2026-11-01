@@ -141,6 +141,7 @@ OS_SHOWN = &80              ; on the screen, at o_*
 .th_idx     SKIP NOBJ       ; its place in the room's list (room_gone)
 .th_y0      SKIP NOBJ       ; where it started, down
 .th_boom    SKIP NOBJ       ; frames left of exploding, or 0
+.th_hurt    SKIP NOBJ       ; frames left of flickering from a hit it lived through
 MAX_ROOMS = 64
 .room_gone  SKIP MAX_ROOMS  ; a bit for each thing in each room: killed or taken
 .gr_i       SKIP 1          ; how far through the grenade's arc

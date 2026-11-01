@@ -547,12 +547,12 @@ tile b span solid blue
 
 tile x crystalspikes hazard blue
 ........
-...3....
-...2..3.
-..32..2.
-..22.32.
-.122.22.
-.1221221
+..3...3.
+..3...3.
+.323.323
+.222.222
+2222.222
+22222222
 22222222
 
 # Boiling water, the Red Phase's hazard (the Sump boils only in the Red),

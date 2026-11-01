@@ -333,9 +333,12 @@ CATCH = 6                       ; lines below the top that still catch
 .shot
     LDA obj_spr,X : CMP #&FF : BEQ next
     LDA th_boom,X : BEQ flying
-    \ A spark: there a moment, then gone.
-    DEC th_boom,X : BNE next
-    BEQ gone                        ; (always)
+    \ A spark: there a moment (moving, if it's a ricochet), then gone.
+    DEC th_boom,X : BEQ gone
+    LDA obj_x,X : CLC : ADC shot_dx,X
+    CMP #128 - 4 + 1 : BCS next     ; (at the screen's edge, it stops)
+    STA obj_x,X
+    JMP next
 .flying
     LDA obj_x,X : CLC : ADC shot_dx,X
     CMP #128 - 4 + 1 : BCS gone     ; (off either side: it wraps past 128)
@@ -365,6 +368,7 @@ SPARK_FRAMES = 4
 .spark
     LDA #SPR_SPARK : STA obj_spr,X
     LDA #SPARK_FRAMES : STA th_boom,X
+    LDA #0 : STA shot_dx,X          ; (still; armour sets it flying back)
     LDA obj_y,X : BEQ high : DEC obj_y,X    ; (centred on the bolt)
 .high
     LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X

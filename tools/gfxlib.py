@@ -184,7 +184,9 @@ def ghost_sprite(pixels, parity=0):
                 continue
             edge = x in (0, w - 1) or y in (0, h - 1) or any(
                 not pixels[y + dy][x + dx] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))
-            if edge or (x + y + 2 * parity) % 4 == 0:
+            # (A small thing has too little inside for a sparse fill: an outline
+            # alone read as a gem to collect. Its whole shape is dithered.)
+            if (w <= 8 and (x + y + parity) % 2 == 0) or (w > 8 and (edge or (x + y + 2 * parity) % 4 == 0)):
                 out[y][x] = 2 if c == 3 else c
     return out
 

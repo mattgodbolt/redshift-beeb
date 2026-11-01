@@ -45,6 +45,7 @@ ENDIF
     JSR pause
 .not_paused
     JSR music_key
+    JSR restart_key
     LDA keys_new : AND #KB_SHIFT : BEQ no_shift
     LDA pl_dead : BNE no_shift
     JSR try_shift
@@ -269,3 +270,19 @@ START_GRENADES = 5
 .over_text EQUS "   OUT OF LIVES. OUT OF PHASE.  ", 0
 }
 
+\ ESCAPE: Ash gives the room up, for a life, and starts it again: a way out
+\ of any corner, a phase gate with no cells among them (decision 40).
+.restart_key
+{
+    LDX #K_ESCAPE : JSR key_down : BEQ up
+    LDA rk_down : BNE done
+    INC rk_down
+    LDA pl_dead : BNE done
+    JMP player_die
+.done
+    RTS
+.up
+    STA rk_down                     ; (A = 0)
+    RTS
+.rk_down EQUB 0
+}

@@ -29,6 +29,7 @@ The music follows the phase: listen to it change when you shift.
 | SPACE | throw a grenade (crouching, roll it) |
 | SHIFT | flip the phase |
 | P | pause |
+| ESCAPE | give the room up and start it again, for a life |
 | M | music off / on |
 
 ## Sector 1, room by room

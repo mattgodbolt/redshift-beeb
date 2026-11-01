@@ -318,7 +318,7 @@ thing sentry 23 16 1
 thing exit 28 15
 
 room engine_shed
-name ENGINE SHED
+name THE END, FOR NOW
 sector 2
 exits left=- right=- up=- down=-
 start 3 17

@@ -263,4 +263,19 @@ Matt was away is marked *provisional* until reviewed.
       A key held from play skipped it before.
     - M works on the title page too, and the game starts with the music
       as M left it there (`RS_MUSIC`).
+40. **2026-10-31: what a hit did, a sergeant's warning, and a way out.**
+    From a third newcomer's playtest:
+    - An enemy that lives through a hit flickers, so a Trundler's first
+      bolt doesn't look like a miss. A bolt on armour ricochets: its spark
+      flies back the way it came. A wall's spark stays put.
+    - A Drill Sergeant in phase shows its visor and muzzle lit for
+      `SENTRY_WARN` frames before each shot, where it used to fire
+      without warning (once just as Ash landed).
+    - ESCAPE gives the room up for a life and starts it again, so no phase
+      gate can trap a player with no cells (rooms are one way).
+    - A small enemy's ghost dithers its whole shape: an outline alone read
+      as a gem to collect. The crystal spike is drawn as spikes, not a
+      tuft like the weeds. The title page lists ESCAPE and says that a
+      crouch ducks a sergeant's fire and rolls a grenade. The Engine Shed
+      is named THE END, FOR NOW.
 
