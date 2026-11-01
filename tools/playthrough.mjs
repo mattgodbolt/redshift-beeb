@@ -134,8 +134,9 @@ try {
     if (!(await fireUntilDead(4, 200))) throw new Error("the Pump House's Gadfly lived");
     await g.tap("S", 2); await g.gf(2);
     await g.gf(20); await mark("pump_blue");
-    await g.walkTo(92); await g.jump("R", 10);
-    await g.walkTo(106); await g.jump("R", 16);
+    // (Up the crate on the chain, from where it stops Ash, and then the ledge.)
+    await g.walkTo(102, 80); await g.jump("R", 16);
+    await g.walkTo(110); await g.jump("R", 16);
     await cross("R", 2);
     // 3 VAT ROW (in the Blue)
     await expectRoom(2, "VAT ROW");
@@ -171,11 +172,12 @@ try {
     await cross("R", 5);
     // 6 FOREMAN'S HUT
     await expectRoom(5, "FOREMAN'S HUT");
-    await g.walkTo(34); await g.jump("R", 8); await g.walkTo(43);
+    // (A charge lobbed from the crate, where the sergeant's fire passes under.)
+    await g.walkTo(26); await g.jump("R", 8); await g.walkTo(36);
     await g.down("R"); await g.gf(1); await g.up("R");
     await mark("hut");
     await g.tap("G", 2); await g.gf(40);
-    await g.walkTo(62); await g.jump("R", 12);
+    if ((await thing(4)).alive) throw new Error("the Foreman's Hut's sergeant lived");
     await cross("R", 6);
     // 7 THE CATWALKS
     await expectRoom(6, "THE CATWALKS");
@@ -207,11 +209,16 @@ try {
     // 9 SKIP SHAFT, and the cage
     await expectRoom(8, "SKIP SHAFT");
     await mark("skip");
-    await g.walkTo(22); await g.jump("R", 10);
-    await g.walkTo(30); await g.jump("R", 6); await g.walkTo(38);
-    await g.down("R"); await g.gf(1); await g.up("R");
-    await g.tap("G", 2); await g.gf(40);
-    await g.walkTo(66); await g.jump("R", 14);
+    // (Down the ledges onto the crate, where the sergeant's fire passes
+    // under. Then, once a shot has struck the crate, down to the floor to
+    // roll a charge into it, crouched under the next.)
+    await g.walkTo(24); await g.walkTo(34);
+    const bolts = async () => (await beeb.read("obj_spr", 12)).slice(10).filter((s) => s !== 255).length;  // (EB0 on)
+    await until(async () => (await bolts()) > 0, 80);
+    await until(async () => (await bolts()) === 0, 40);
+    await g.walkTo(44);
+    await g.down("D"); await g.gf(2); await g.tap("G", 2); await g.gf(30); await g.up("D");
+    if ((await thing(4)).alive) throw new Error("the Skip Shaft's sergeant lived");
     await g.down("R");
     await until(async () => { const s = await g.st(); return s.room !== 8 || s.dead; }, 100);
     await g.up("R");
