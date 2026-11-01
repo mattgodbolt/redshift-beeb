@@ -90,6 +90,7 @@ ENDIF
     LDA &FC                         ; the interrupted A, saved by the OS
     RTI
 .dark
+    CLD                             ; (it adds below: add_score may have left D set)
     \ Every entry black, and T1 put off past the next VSync.
     LDA #&FF : STA usrvia_t1ll : STA usrvia_t1lh
     STA usrvia_t1cl : STA usrvia_t1ch

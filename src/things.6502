@@ -320,6 +320,13 @@ ASSERT SPR_CELL1 = SPR_CELL0 + 4 AND SPR_GRENADES1 = SPR_GRENADES0 + 4 AND SPR_L
 \ Thing X dies: it explodes, it scores, and it stays dead.
 .th_kill
 {
+    \ The explosion (16 by 16) held on the playfield, as grenade_bang's is.
+    LDA obj_x,X : CMP #128 - 8 + 1 : BCC x_in
+    LDA #128 - 8 : STA obj_x,X
+.x_in
+    LDA obj_y,X : CMP #PLAY_LINES - 16 + 1 : BCC y_in
+    LDA #PLAY_LINES - 16 : STA obj_y,X
+.y_in
     LDA #BOOM_FRAMES : STA th_boom,X
     JSR th_gone
     LDY th_type,X

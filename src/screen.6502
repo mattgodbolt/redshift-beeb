@@ -178,6 +178,7 @@ ASSERT T_EMPTY = 0
     DEY : BPL row
     \ On the bar's second row, its bottom line is the rule.
     LDA pr_dst+1 : CMP #HI(screen + ROW_BYTES) : BCC no_rule
+    CMP #HI(screen + 2 * ROW_BYTES) : BCS no_rule      ; (a card's text isn't ruled)
     LDA #&0F                        ; (logical 1 across: a solid line)
     LDY #7 : STA (pr_dst),Y
     LDY #15 : STA (pr_dst),Y

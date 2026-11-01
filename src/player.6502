@@ -313,7 +313,11 @@ CATCH = 6                       ; lines below the top that still catch
     CLC : ADC obj_y + PL : STA obj_y,X
     LDA obj_face + PL : BNE leftward
     LDA #SHOT_SPEED : STA shot_dx,X
-    LDA obj_x + PL : CLC : ADC #PL_W - 2 : STA obj_x,X
+    LDA obj_x + PL : CLC : ADC #PL_W - 2
+    CMP #128 - 4 + 1 : BCC on_screen
+    LDA #128 - 4                    ; (on the screen: it leaves next frame)
+.on_screen
+    STA obj_x,X
     JMP fired
 .leftward
     LDA #256 - SHOT_SPEED : STA shot_dx,X
@@ -335,9 +339,11 @@ CATCH = 6                       ; lines below the top that still catch
     LDA th_boom,X : BEQ flying
     \ A spark: there a moment (moving, if it's a ricochet), then gone.
     DEC th_boom,X : BEQ gone
-    LDA obj_x,X : CLC : ADC shot_dx,X
+    LDA shot_dx,X : BEQ next        ; (a wall's spark stays put)
+    CLC : ADC obj_x,X
     CMP #128 - 4 + 1 : BCS next     ; (at the screen's edge, it stops)
     STA obj_x,X
+    LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
     JMP next
 .flying
     LDA obj_x,X : CLC : ADC shot_dx,X
@@ -381,6 +387,9 @@ SPARK_FRAMES = 4
     STX bc_x
     LDA obj_x + PL : CLC : ADC #4 : LSR A : LSR A : STA ta_c0   ; Ash's middle
     LDA obj_x,X : CLC : ADC #2 : LSR A : LSR A                ; the bolt's
+    CMP #MAP_W : BCC in_map
+    LDA #MAP_W - 1                  ; (past it is the next row's first)
+.in_map
     CMP ta_c0 : BCS ordered
     LDY ta_c0 : STA ta_c0 : TYA
 .ordered
@@ -419,6 +428,9 @@ SPARK_FRAMES = 4
     JMP change_room
 .none
     CPX #3 : BNE wall
+    \ A pit: Ash dies at the playfield's foot, all of them on it (drawn
+    \ any lower, the sprite would go past the screen into the bank).
+    LDA #PLAY_LINES - PL_H : STA obj_y + PL
     JMP player_die
 .wall
     RTS

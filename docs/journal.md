@@ -277,3 +277,22 @@ What was done, in order, with what worked and what didn't.
   small part of the bank: the sprites, at two shifts and mirrored, are
   most of it. Reverted.
 
+## 2026-10-31: a code review
+
+- A fresh agent read the engine for bugs, and confirmed four in the
+  emulator:
+  - a ricochet's spark moved but was never redrawn (it wasn't marked
+    changed);
+  - nothing kept a sprite above the playfield's foot, and below it the
+    renderer writes into the sideways bank: a death in a bottomless pit,
+    or an enemy blown up low enough, would have corrupted the tiles for
+    the rest of the session (no room has either yet). A pit death now
+    holds Ash on the playfield, and an enemy's explosion is held on it as
+    a grenade's is;
+  - a bolt fired at the right edge read the next map row's first column
+    as a wall, and sparked in the open;
+  - every line of a sector card was underlined by the status bar's rule.
+- And two latent risks closed: decimal mode cleared first on the
+  interrupt's blackout path, and T1 stopped before its interrupt is
+  enabled at start-up.
+

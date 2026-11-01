@@ -89,11 +89,16 @@ ENDIF
     JMP ridden
 .found
     STX tc_x
+    LDA obj_x,X : STA tc_x0
 .ride
     JSR wait_vsync : JSR wait_vsync
     LDX tc_x
-    LDA frame : AND #1 : ASL A : SEC : SBC #1    ; -1 or +1, by turns
-    CLC : ADC obj_x,X : STA obj_x,X
+    \ Where it stands, and a step in from it, by turns (in, so never off
+    \ the screen).
+    LDA frame : AND #1 : LDY tc_x0 : BEQ rightward
+    EOR #&FF : CLC : ADC #1         ; (left of where it stands)
+.rightward
+    CLC : ADC tc_x0 : STA obj_x,X
     LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
     INC frame
     JSR render
@@ -105,6 +110,7 @@ ENDIF
 .done
     RTS
 .tc_x EQUB 0
+.tc_x0 EQUB 0
 }
 
 \ Into room A, the player where they are (or, with at_start set, where the
