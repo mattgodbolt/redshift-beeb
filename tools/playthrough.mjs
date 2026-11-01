@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// A playthrough of Sectors 1 to 3, from the first room to each sector's
-// cage, each next sector's load from the disc, and Sector 4's first room, on
+// A playthrough of Sectors 1 to 4, from the first room to each sector's
+// cage, each next sector's load from the disc, and Sector 5's first room, on
 // the default build: the end-to-end test that the sectors can be finished
 // without losing a life, and with --shots, the README's screenshots.
 //
@@ -651,6 +651,181 @@ try {
     await g.up("L");
     await g.gf(20); await mark("sector4");
     await until(async () => (await beeb.peek("room_sector")) === 4 && (await beeb.peek("blackout")) === 0, 200);
+    await g.land();
+
+    // --- Sector 4: the Spar Seams ------------------------------------------
+
+    // Fire at a pack, turning to whichever is nearest, as a player does.
+    const fight = async (what, ...ids) => {
+        await g.down("F");
+        for (let i = 0; i < 400; i++) {
+            const ts = (await Promise.all(ids.map(thing))).filter((t) => t.alive);
+            if (!ts.length) break;
+            const s = await g.st();
+            const near = ts.reduce((a, b) => (Math.abs(a.x - s.x) <= Math.abs(b.x - s.x) ? a : b));
+            const want = near.x < s.x ? 2 : 0;
+            if ((await thing(0)).f !== want) { await g.up("F"); await face(want ? "L" : "R"); await g.down("F"); }
+            await g.gf(1);
+        }
+        await g.up("F");
+        if (await alive(...ids)) throw new Error(`${what} lived`);
+    };
+
+    // 1 THE MOTHER LODE, the lesson: the Blue's crystal grows and draws back
+    // here. Into the Blue on the ledge, where two Slivers wake and come over
+    // the pit; over the span while its middle is out; back to the Red on the
+    // landing, where crystal holds the way out, for the Trundler on the step.
+    await expectRoom(0, "THE MOTHER LODE");
+    if ((await beeb.peek("room_sector")) !== 4) throw new Error("the Mother Lode isn't in Sector 4");
+    await g.gf(10); await mark("mother_red");
+    await shift();
+    await face("R");
+    await fight("the Mother Lode's Slivers", 4, 5);
+    await g.walkTo(28);
+    await mark("mother_blue");
+    await frameRate("the span drawing back and growing");
+    await beatTurns(0);
+    await g.walkTo(78);
+    await shift();
+    await face("R");
+    if (!(await fireUntilDead(6, 200))) throw new Error("the Mother Lode's Trundler lived");
+    await g.walkTo(88);
+    await g.jump("R", 10);
+    await cross("R", 1); await settle();
+    // 2 SPAR FACE: a pack of charges on the ledge; down into the gallery,
+    // where a Gadfly hunts in the Red (the Blue's road is the span above it,
+    // over the crystal on the floor); a charge brings the face down whole;
+    // through the Blue's blocks to the welded hatch, into the Blue there, down.
+    await expectRoom(1, "SPAR FACE");
+    await g.walkTo(14);
+    await until(async () => (await thing(5)).x > 60, 300);
+    await g.walkTo(30);
+    await g.land();
+    await face("R");
+    if (!(await fireUntilDead(5, 200))) throw new Error("the Spar Face's Gadfly lived");
+    await g.walkTo(78);
+    await mark("face");
+    await g.tap("G", 2); await g.gf(30);
+    await g.walkTo(108);
+    await shift();
+    await g.walkUntilRoom("R", 2, 100); await settle(); await g.land();
+    // 3 THE ASSAY ROOM: in through the welded hatch in the Blue; over the
+    // lab's crystal as it sinks, up onto the assay furnace, back to the Red
+    // there, out of the sergeant's fire, and a charge lobbed over the
+    // Blue's wall at it; out past it.
+    await expectRoom(2, "THE ASSAY ROOM");
+    await frameRate("the spikes sinking and pushing up");
+    await beatTurns(1);
+    await g.walkTo(74);
+    await g.jump("L", 10);
+    await shift();
+    await face("L");
+    await mark("assay");
+    await g.tap("G", 2); await g.gf(40);
+    await dead(4, "the Assay Room");
+    await g.walkUntilRoom("L", 3, 300); await settle();
+    // 4 SORTING TABLE, the Red's road: the Trundler on the belt, shot from
+    // the floor; along the belt, where the Blue's crystal pushes up through it
+    // in turn; down into the alcove, onto the welded hatch, into the Blue, down.
+    // (The Blue's road times the spikes, and pays a cell.)
+    await expectRoom(3, "SORTING TABLE");
+    await face("L");
+    if (!(await fireUntilDead(4, 200))) throw new Error("the Sorting Table's Trundler lived");
+    await g.walkTo(108);
+    await g.jump("L", 10);
+    await mark("sorting");
+    await g.walkTo(14);
+    await g.land();
+    await g.walkTo(2);
+    await shift();
+    await g.walkUntilRoom("L", 4, 100); await settle(); await g.land();
+    // 5 THE CHANDELIER: spans that take turns under the crystal chandelier,
+    // in the Blue: over the first while it's out, onto the boss, over the
+    // second as it grows; onto the ledge, back to the Red with the Gadfly
+    // away, it, and out through the Blue's crystal.
+    await expectRoom(4, "THE CHANDELIER");
+    await until(async () => (await beat()) === 0, 300);
+    await g.walkTo(60);
+    await mark("chandelier");
+    await until(async () => (await beat()) === 1, 300);
+    await g.walkTo(100);
+    await until(async () => (await thing(4)).x > 112, 300);
+    await shift();
+    await face("R");
+    if (!(await fireUntilDead(4, 200))) throw new Error("the Chandelier's Gadfly lived");
+    await cross("R", 5); await settle();
+    // 6 SPLIT SEAM, the upper road (the sergeant's): over the gap onto the
+    // crate for its charges, one lobbed at the sergeant against the stub of
+    // spar; through the Blue's wall, onto the stub, into the Blue, and over
+    // the span. (The lower road is the swarm's, under the seam.)
+    await expectRoom(5, "SPLIT SEAM");
+    await g.walkTo(2);
+    await g.jump("R", 16);
+    await face("R");
+    await mark("split");
+    await g.tap("G", 2); await g.gf(40);
+    await dead(4, "the Split Seam");
+    await g.walkTo(56);
+    await g.jump("R", 8);
+    await shift();
+    await cross("R", 6); await settle();
+    // 7 ECHO GALLERY: twin bays, each its phase's. Over the first, the
+    // Blue's, on its span while it's out, onto the pier; back to the Red, down
+    // into the second bay, its floor the Blue's crystal, for the Gadfly; out.
+    await expectRoom(6, "ECHO GALLERY");
+    await g.walkTo(16);
+    await beatTurns(0);
+    await g.walkTo(62);
+    await mark("echo");
+    await shift();
+    await until(async () => { const t = await thing(4); return t.x > 90 && t.f === 0; }, 300);
+    await g.walkTo(74);
+    await g.land();
+    await face("R");
+    if (!(await fireUntilDead(4, 200))) throw new Error("the Echo Gallery's Gadfly lived");
+    await g.walkTo(100);
+    await g.jump("R", 12);
+    await cross("R", 7); await settle();
+    // 8 LAST PAYDIRT: the bridge comes and goes too fast to cross. Up onto
+    // the welded ledge in the Red, for a cell and charges, and the lever shot
+    // across the drop, past the Blue's crystal: it stops the bridge. Into the
+    // Blue, the Slivers, over the bridge and down.
+    await expectRoom(7, "LAST PAYDIRT");
+    await g.walkTo(2);
+    await g.jump("R", 8);
+    await face("R");
+    await g.down("F"); await until(async () => (await beeb.peek("sw_thrown")) !== 0, 60); await g.up("F");
+    await thrown("the Last Paydirt");
+    await mark("paydirt");
+    await g.walkTo(20);
+    await g.land();
+    await shift();
+    await fight("the Last Paydirt's Slivers", 7, 8);
+    await g.walkUntilRoom("R", 8, 300); await settle(); await g.land();
+    // 9 BORE NINE: sergeants dug in round the drill. Onto the first crate,
+    // into the Red, a charge at the near one; through the Blue's wall onto
+    // the second crate, a charge at the far one; to the welded door, into
+    // the Blue, the swarm that guards the cage; and the cage, the drill shaft.
+    await expectRoom(8, "BORE NINE");
+    await shift();
+    await face("L");
+    await mark("bore");
+    await g.tap("G", 2); await g.gf(40);
+    await dead(5, "Bore Nine's near");
+    await g.walkTo(68);
+    await g.jump("L", 8);
+    await face("L");
+    await g.tap("G", 2); await g.gf(40);
+    await dead(4, "Bore Nine's far");
+    await g.walkTo(22);
+    await face("L");
+    await shift();
+    await fight("Bore Nine's swarm", 7, 8, 9);
+    await g.down("L");
+    await rideCage(5);
+    await g.up("L");
+    await g.gf(20); await mark("sector5");
+    await until(async () => (await beeb.peek("room_sector")) === 5 && (await beeb.peek("blackout")) === 0, 200);
     await expectRoom(0, "THE END, FOR NOW");
     await g.gf(25);
 } catch (e) {
