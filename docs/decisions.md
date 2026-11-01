@@ -1028,4 +1028,110 @@ Matt was away is marked *provisional* until reviewed.
       Assay Room's cell on the furnace and shifts there as it cools, steps
       off the chandelier, leaves Echo Gallery in the Red, and climbs to the
       Paydirt's ledge for the lever and the cell.
+58. **2026-11-01: THE HINGE** (*provisional*). The game's boss, at the
+    Prism's focus, and the first step of Sector 5: its room replaces the
+    sector's placeholder, and Bore Nine's cage brings Ash into it. The
+    story's: the one thing in the mine that's in both phases at once, a Drill
+    Sergeant the size of a house in the Red and a crystal flower that sheds
+    Slivers in the Blue, one heart between them.
+    - **It's tiles, each a picture in each phase.** Far bigger than any
+      sprite, it's seven tiles by ten on the map. A tile in
+      `gfx/tiles.txt` can have a `blue` block: its picture in the Blue Phase,
+      in the same cells, with the same flags in both. So a shift turns the
+      sergeant into the bloom where it stands. Such a look has both phases'
+      bits in `tile_attr`, so a shift draws it again as it does a phase's
+      own; it has no variants or alts and isn't a phase's own. The level
+      editor reads and draws them, and its check holds both pictures to the
+      build's.
+    - **Its states are tiles too.** `then=<key>` names the tile the game's
+      code turns a tile into next, and its looks go wherever that tile's do;
+      `mkgfx.py` names those looks (`T_HINGE_...`), the sector's own, so the
+      code may use them only in that sector's rooms. `src/hinge.6502` writes
+      them into the map and lists each changed cell for `render`, as the
+      machinery's parts are drawn. The room's thing `hinge` marks the heart;
+      the gun's muzzle, the bud and the lamps are found on the map by their
+      looks when the room is read.
+    - **A round:** in the Red, two charges burst on the plate dent it and
+      crack it, and the crystal cracks with it, open on the core. In the
+      Blue, a bolt into the core through the crack, before the crystal grows
+      back, puts out a lamp in its visor, and the crack snaps shut. The crack
+      narrows to a slit in its last moments. Three lamps, three rounds, each
+      faster than the last: the gun's shots, the bud's Slivers, the swarm's
+      size and the crack's time. A crack that closes unshot is a round to
+      try again.
+    - **It warns, as a sergeant and machinery do (decisions 47, 48).** Its
+      gun's muzzle, at Ash's head on the walkway, lights before each shot;
+      it fires only while Ash is in the Red and in its line, a crouch ducks
+      it, and out of its line its clock goes round short of the warning. Its
+      bud, on its face, lights before it sheds a Sliver in front of it, only
+      while Ash is in the Blue and the swarm isn't full; otherwise it waits
+      just short of its warning, so it sheds soon after a shift into the
+      Blue, but never without warning.
+    - **It's fair.** The pillar stands above the gun's line: the place to
+      lob from, as a sergeant's crate is (decision 41), and the ledge where
+      Ash comes in is behind it. The walkway is a patchwork of the Red's
+      blocks and the Blue's over white spikes, so every shift is a choice of
+      where Ash will be standing: on the pillar, or on a seam between two
+      blocks, which holds Ash in both phases. The Slivers hang as ghosts in
+      the Red (decision 15), and a shift is refused beside one (decision 51),
+      so where Ash left the swarm decides where they can shift back; the
+      seams are the other places. A death reads the room again, the fight
+      from its start (decision 30).
+    - **The Prism's look.** White faces in both phases, cut into diamonds by
+      thin lines in the body colour, which the room bands down the screen in
+      the colours the Prism splits light into: red, magenta and yellow in the
+      Red; blue and cyan in the Blue. Green stays acid's (decision 27). The
+      Hinge's body takes the bands too.
+
+    Calls made in building it (*provisional*):
+    - The fight starts, on arrival and after every death, with at least
+      eight cells and nine charges (`HG_CELLS`, `HG_GRENADES`), as a death
+      leaves at least two cells and a charge (decisions 13 and 16). A round
+      takes a shift each way and two charges, and a respawn starts the
+      fight again, so anything less could leave a player who'd spent them
+      unable to win. The room has no pickups: its things are the Hinge and
+      the Slivers it sheds, which take the free slots.
+    - The bud is on the bloom's face, so its Slivers come out between Ash
+      and the core and take the bolts meant for it; from the bloom's top
+      they tumbled down its sides and never reached the fight.
+    - The Hinge's code and the endings' code are in main RAM, its art in
+      Sector 5's file, and the endings' words in RSDATA with the rest of the
+      words on screen. Sector 5's eight rooms to come will make its file the
+      largest, and so grow the bank's sector region; code there would have
+      cost the bank later what it costs main RAM now.
+    - Bore Nine's prism face (`Ω`) stays its own: the Prism's walls are a
+      tile of Sector 5's (`ϟ`), with its diamonds on a two by two grid as the
+      back wall's are.
+    - A shift in the Hinge's room draws every one of its cells again, the
+      dearest shift in the game; it's a frame's hiccup at a shift, as every
+      room's is, and play's own frames stay inside a frame.
+59. **2026-11-01: the endings** (*provisional*). The story's two endings,
+    with its words on screen (`docs/story.md`, section 6).
+    - **Victory**, when the core takes its last bolt: the swarm and every
+      bolt go with it; the Hinge folds shut, its cells gone a column at a
+      time from its far side to its heart; the Prism goes dark one facet at
+      a time, each of the room's bands of colour black in turn from the top;
+      a moment's dark; the lamps come up white, every colour white. Then the
+      story's victory words, a card at a time, each until a key or a few
+      seconds, and THE END, which waits for a key before a new game. Under
+      it, what the visor still shows: a second Prism, deeper down, facing
+      the other way, in dotted lines. A short
+      piece plays under it (`music/win.txt`): the theme's fall in the Red's
+      E Phrygian, the split's climb in the Blue's E Lydian, and home to E
+      major, with a low E struck under it like a very large door closing.
+    - **Out of lives**: after OUT OF LIVES. OUT OF PHASE. and its phrase, the
+      story's ending for it on two cards, then a key for a new game. It was
+      the one line in the status bar.
+    - **Cards of any length.** A card's lines are centred on the screen,
+      every other row, in a frame a row out all round (`card_lines`); a
+      sector's card is one of three lines. `CARD_LINE` holds each line
+      inside the frame, so the story's lines of up to 32 characters are
+      broken again for the screen, the same words; section 6 has them as
+      shown.
+
+    Calls made in building it (*provisional*):
+    - THE END, not the title page: the title page is RSLOAD's, gone from
+      memory once the game runs.
+    - The fight's victory is the last thing in the game for now: there's
+      no score table, and the new game starts from Sector 1.
 
