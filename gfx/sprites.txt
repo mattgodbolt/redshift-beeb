@@ -373,28 +373,30 @@ sprite crawler1 16 16 phase
 1111111111111111
 ................
 
-# --- The Blue Phase's swarm. SLIVER: a spiked crystal with a dark core,
-# --- turning: hostile, not a gem.
+# --- The Blue Phase's swarm. SLIVER: a crystal mite, lit from the top
+# --- left, with two dark eyes, horns and legs that scuttle between its two
+# --- looks: a creature that comes for you, not a gem that glints (an X and
+# --- a cross in turn read as a twinkle among the Spar Seams' crystal).
 
 sprite shard0 8 8 phase
-3......3
-.32..23.
-..3223..
-.231132.
-.231132.
-..3223..
-.32..23.
-3......3
+.3....2.
+..3..2..
+..3332..
+.313212.
+33332211
+..3221..
+.2.11.1.
+2......1
 
 sprite shard1 8 8 phase
-...33...
-...22...
-..2112..
-33211233
-33211233
-..2112..
-...22...
-...33...
+3......2
+.3....2.
+..3332..
+.313212.
+.333221.
+3.3221.1
+..2..1..
+..2..1..
 
 # --- Their bolts, and what's left of things.
 

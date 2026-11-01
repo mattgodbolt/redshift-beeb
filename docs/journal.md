@@ -676,3 +676,37 @@ glints among the sector's crystal, a lever that is the only way across
 with nothing to say so, three rooms that are a blinking span then a shift,
 and cells that pinch in the first two rooms.
 
+## 2026-11-01: the Spar Seams' second pass
+
+A level and art agent took the playtest's list (decision 56). The sector's
+crystal now speaks one language: scenery crystal is a faint outline in the
+rock's own colour, crystal to stand on is a shelf with a lit lip and points
+hanging under it, the swarm's spikes are prisms, and spar that breaks is
+cracked as the other sectors' walls are. The Sliver became a crystal mite
+with eyes and legs, so it reads as something that comes for you rather than
+something that glints, in every sector.
+
+Then a room an idea. The Mother Lode stops the Red at the ledge with a
+welded plate, so the first span's ghost can't be walked onto, and lays a
+cell on the span. The Sorting Table has two rhythms on its belt, the Red's
+hoppers pouring and the Blue's crystal pushing up, out of step, so neither
+phase walks past it. The Chandelier drops: the Company's winch lowers it on
+its chains, and Ash rides its boss down. Echo Gallery is two walkways, each
+the other's echo in the other phase, woven down and up in whichever phase
+Ash brings. The paydirt's lever stands at eye level across the drop, and
+Bore Nine lost the crystal walls the swarm pinned itself against: its
+prisms on the floor keep the Blue on the first crate, where a Blue arrival
+meets the swarm coming across the room.
+
+- The searches over Ash's movement found the weave's trap before a player
+  could: with each walkway's ends over the other's, the natural jump from
+  the lower one's lip hit the upper one's underside and dropped Ash past
+  both. The lower row's segments stop a column short now, and every jump
+  works from a run of take-offs.
+- They also showed the chandelier couldn't be skipped: the roof is too low
+  over its boss to jump from, and a fall off its side lands short of the
+  plates.
+- The playthrough rides the chandelier, weaves Echo Gallery in the Blue and
+  checks the new cells are taken; its frame-rate checks take in the
+  chandelier lowering and the hoppers pouring as well.
+

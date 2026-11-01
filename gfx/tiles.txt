@@ -2423,18 +2423,23 @@ tile ŏ drainbody hazard red switch=space as=ö
 # --- does: its walls (φ) come down to a grenade. The swarm's crystal is the
 # --- Blue's, and here it grows: on the beat its spans draw back and its
 # --- spikes push up, and come back (as=, below), flickering first.
+# --- Crystal has one language here (decision 56): scenery crystal recedes,
+# --- drawn in the body colour alone with no lit edge and no lip; crystal you
+# --- stand on has its lit lip; crystal that stops you is a wall (the Blue's
+# --- blocks); and spar that breaks is cracked, as the cracked wall is. No
+# --- scenery glints or makes a star: that's a Sliver's shape.
 
-# A wall of spar: a block of crystal split by a black crack, as the cracked
-# wall is, with no lit edge, so it reads as what breaks; a glint on each
-# face of it says it's spar.
+# A wall of spar: blocks of it split by black cracks into rhombs, as the
+# cracked wall is split, with no lit edge and no glint, so it reads as what
+# breaks.
 tile φ sparwall solid breakable
 1111.11.
-1211.21.
-1111.11.
-111.111.
-11.1211.
-1.12111.
+111.1.1.
 11.111..
+1.11111.
+.1.1111.
+1111.11.
+111.1.1.
 ........
 
 # A vein of spar through the rock: brick, crossed by a streak of crystal
@@ -2451,47 +2456,47 @@ tile γ vein solid
 2.......
 
 # A spar crystal, two tiles wide: its point (Δ δ) on its body (Θ θ), as
-# tall as it needs to be. The face on the left is lit, its edge solid; the
-# face on the right in shadow; the ridge between them lit. Scenery.
+# tall as it needs to be. Scenery, so it sits back: its edges and the
+# ridge between its faces drawn in the body colour, with nothing lit.
 tile Δ crystal_tl
-.......2
-......22
-.....212
-....2112
-...21.12
-..21.1.2
-.21.1..2
-21.1...2
+.......1
+......1.
+.....1..
+....1...
+...1....
+..1.....
+.1......
+1.......
 
 tile δ crystal_tr
 1.......
-11......
-1.1.....
-1..1....
-1.1.1...
-1..1.1..
-1.1.1.1.
-1..1.1.1
+.1......
+..1.....
+...1....
+1...1...
+1....1..
+1.....1.
+1......1
 
 tile Θ crystal_l
-21.....2
-21.....2
-2.1....2
-21..2..2
-21...2.2
-2.1....2
-21.....2
-21.....2
+1.......
+1.......
+1.......
+1.......
+1.......
+1.......
+1.......
+1.......
 
 tile θ crystal_r
-1.1....1
-.1.....1
-1.1....1
-.1.....1
-1.1....1
-.1.....1
-1.1....1
-.1.....1
+1......1
+1......1
+1......1
+1......1
+1......1
+1......1
+1......1
+1......1
 
 # The assay furnace, two by two (tl tr bl br, from an even column and
 # row): a firebrick box, its top a lip, lit down its left, and its mouth an
@@ -2627,33 +2632,142 @@ tile ξ spar solid
 1.11211.
 ........
 
-# A spar crystal hung point down: its point, under a crystal's body.
+# A spar crystal hung point down: its point, under a crystal's body (or a
+# chandelier's boss). Scenery, drawn as the crystal is.
 tile Ψ crystal_bl
-21.....2
-.21....2
-..21...2
-...21..2
-....21.2
-.....212
-......22
-.......2
+1.......
+.1......
+..1.....
+...1....
+....1...
+.....1..
+......1.
+.......1
 
 tile ψ crystal_br
-1.1....1
-.1....1.
-1.1..1..
-.1..1...
+1......1
+1.....1.
+1....1..
+1...1...
 ...1....
 ..1.....
 .1......
 1.......
+
+# The swarm's crystal, the Blue's, as it grows here: a span that's a shelf
+# of crystal, its top a lip and its points hanging under it, where the
+# other sectors' spans are girders; and spikes that are prisms of it,
+# pushing up, their points white.
+tile л crystalspan solid blue
+22222222
+21221211
+11111111
+.11.1111
+..1..11.
+..1...1.
+......1.
+........
+
+alt л base
+22222222
+12112212
+11111111
+111.11.1
+.1...1..
+.1...1..
+.1......
+........
+
+tile ц crystalprisms hazard blue
+..3.....
+..3...3.
+.323..3.
+.321.323
+.221.321
+3221.221
+22211221
+22211221
+
+# Ore pouring from a picking belt's hopper: hot lumps, white where they'd
+# hurt, falling from the spout between the hopper's two halves. The Red's,
+# and it kills. Two columns wide, the stream down the middle: the left one
+# as written, the right one its variant.
+tile п ore hazard red
+...2321.
+...333..
+....232.
+...2.32.
+...232..
+....3.2.
+...2321.
+....33..
+
+variant п right
+.1232...
+..333...
+.232....
+.23.2...
+..232...
+.2.3....
+.1232...
+..33....
+
+# The way down, in the bottom row of a shaft that's a room's exit down:
+# an arrow, where the other sectors have chevrons, which at the foot of a
+# pit read as spikes.
+tile ч waydown
+........
+...22...
+...22...
+...22...
+.222222.
+..2222..
+...22...
+........
 
 # The swarm's crystal growing (decision 46's machinery, the Blue's): a span
 # that's there as drawn and draws back on the beat (ш), a span that grows
 # on the beat (щ), spikes that sink on the beat (ж) and spikes that push up
 # on it (з). Each is drawn as the span or the spikes (as=), so they cost no
 # looks.
-tile ш spangoes solid blue beat=space as=b
-tile щ spancomes beat=b as=space
-tile ж spikesgo hazard blue beat=space as=x
-tile з spikescome beat=x as=space
+tile ш spangoes solid blue beat=space as=л
+tile щ spancomes beat=л as=space
+tile ж spikesgo hazard blue beat=space as=ц
+tile з spikescome beat=ц as=space
+
+# The hoppers pouring (the Red's machinery): ore that stops on the beat
+# (ъ) and ore that starts (ф).
+tile ъ orestops hazard red beat=space as=п
+tile ф orestarts beat=п as=space
+
+# The Company's winch chain, that THE CHANDELIER hangs from: a link face on,
+# lit down its left, then one edge on. Scenery.
+tile ϡ winchchain
+...11...
+..2..1..
+..2..1..
+..2..1..
+...11...
+...21...
+...21...
+...21...
+
+# THE CHANDELIER, lowered on the beat on its chains by the Company's winch
+# and drawn up again: its boss of spar (ξ) with crystals hung under it,
+# each cell of it going (б, д, э, и, й), or becoming chain (ю, ы, ь), and
+# coming lower down (г, я, Λ, Γ, Π), and the chain paying out (Σ). All
+# drawn as the boss, the crystals and the chain.
+tile б bossgoes solid beat=space as=ξ
+tile ю bosschains solid beat=ϡ as=ξ
+tile г bosscomes beat=ξ as=space
+tile д hunglgoes beat=space as=Ψ
+tile э hungrgoes beat=space as=ψ
+tile и bodylgoes beat=space as=Θ
+tile й bodyrgoes beat=space as=θ
+tile ы hunglchains beat=ϡ as=Ψ
+tile ь hungrchains beat=ϡ as=ψ
+tile я hunglcomes beat=Ψ as=space
+tile Λ hungrcomes beat=ψ as=space
+tile Γ bodylcomes beat=Θ as=space
+tile Π bodyrcomes beat=θ as=space
+tile Σ chaincomes beat=ϡ as=space
