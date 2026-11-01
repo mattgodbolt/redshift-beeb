@@ -848,3 +848,15 @@ Matt was away is marked *provisional* until reviewed.
       sergeant's through SPLIT SEAM, kills every sergeant, throws the
       paydirt's lever, and rides Bore Nine's cage into Sector 5.
 
+55. **2026-11-01: Slivers keep off each other** (*provisional*). From the
+    Spar Seams' newcomer playtest: in BORE NINE three Slivers pinned against
+    a wall stacked into what looked like one, and outran the gun. Their
+    aims (decision 51) differ, but a wall stops them all at the same place.
+    A Sliver's step that would put it on another live Sliver is not taken
+    (`shard_blocked`, `shard_on`), so a pack held by a wall waits beside and
+    below itself, and each can be seen and shot. Two that begin a move on
+    each other (placed so, or spawned there) move as the walls let them
+    until they're clear, so none is ever stuck. A first try had each
+    Sliver give way only to earlier slots; an earlier one then moved onto
+    a later one the wall already held.
+

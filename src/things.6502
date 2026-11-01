@@ -465,9 +465,6 @@ ASSERT TH_SWITCHES = TH_EXIT + 1      ; (th_look: past the cage, a switch)
 .cm_x EQUB 0
 }
 
-\ A shard: towards the player, a step at a time, every other frame. Out
-\ of phase it hangs still: a ghost that homed would sit on the player,
-\ to kill them the moment they shifted (decision 15).
 \ Where in Ash's box each slot's Sliver aims: steps across, lines down.
 \ Across, anywhere it still overlaps Ash's box; down, only where a
 \ standing bolt still meets it and it still reaches a crouched Ash, so
@@ -482,36 +479,83 @@ FOR a = SHARD_AIM
     ASSERT a[1] < PL_GUN + SPR_BOLT_H AND a[1] + SPR_SHARD0_H > PL_GUN
 NEXT
 ASSERT P% - shard_aim_y = NTH AND shard_aim_y - shard_aim_x = NTH
+
+\ A shard: towards the player, a step at a time, every other frame. Out
+\ of phase it hangs still: a ghost that homed would sit on the player,
+\ to kill them the moment they shifted (decision 15).
 .shard_move
 {
     LDA th_t,X : AND #1 : BNE done
     JSR th_in_phase : BNE done
+    \ On another Sliver already (they began there), it moves as the walls
+    \ let it until it's clear; otherwise it keeps off the others.
+    JSR shard_on : STA sh_crowded
     \ Each slot aims at its own part of Ash (decision 51), or a swarm comes
     \ together into what looks like one Sliver.
     LDA obj_x + PL : CLC : ADC shard_aim_x - TH0,X : CMP obj_x,X
     BEQ y_axis : BCC left
     INC obj_x,X
-    JSR th_solid : BEQ y_axis
-    DEC obj_x,X : JMP y_axis        ; (a wall: not that way)
+    JSR shard_blocked : BEQ y_axis
+    DEC obj_x,X : JMP y_axis        ; (a wall, or a Sliver: not that way)
 .left
     DEC obj_x,X
-    JSR th_solid : BEQ y_axis
+    JSR shard_blocked : BEQ y_axis
     INC obj_x,X
 .y_axis
     LDA obj_y + PL : CLC : ADC shard_aim_y - TH0,X : CMP obj_y,X
     BEQ moved : BCC up
     INC obj_y,X : INC obj_y,X
-    JSR th_solid : BEQ moved
+    JSR shard_blocked : BEQ moved
     DEC obj_y,X : DEC obj_y,X : JMP moved
 .up
     DEC obj_y,X : DEC obj_y,X
-    JSR th_solid : BEQ moved
+    JSR shard_blocked : BEQ moved
     INC obj_y,X : INC obj_y,X
 .moved
     LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
 .done
     RTS
 }
+
+\ Is Sliver X's new place in a wall, or on another Sliver? Z clear (BNE)
+\ if so. X is kept; Y isn't. A pack held by a wall waits in a queue
+\ rather than stacking into what looks like one Sliver (decision 55).
+.shard_blocked
+{
+    JSR th_solid : BNE done         ; (a wall)
+    LDA sh_crowded : BEQ shard_on   ; (crowded already: walls only)
+    LDA #0
+.done
+    RTS
+}
+
+\ Is Sliver X on another live Sliver? Z clear (BNE), A not 0, if so.
+.shard_on
+{
+    STX sh_self
+    LDY #TH0
+.other
+    CPY sh_self : BEQ next
+    LDA obj_spr,Y : CMP #&FF : BEQ next
+    LDA th_type,Y : CMP #TH_SHARD : BNE next
+    LDA th_boom,Y : BNE next
+    LDA obj_x,X : SEC : SBC obj_x,Y : BCS dx
+    EOR #&FF : ADC #1               ; (carry clear: the distance, not its sign)
+.dx
+    CMP #SPR_SHARD0_W / 2 : BCS next
+    LDA obj_y,X : SEC : SBC obj_y,Y : BCS dy
+    EOR #&FF : ADC #1
+.dy
+    CMP #SPR_SHARD0_H : BCS next
+    LDA #1
+    RTS
+.next
+    INY : CPY #TH0 + NTH : BNE other
+    LDA #0
+    RTS
+}
+.sh_self    EQUB 0
+.sh_crowded EQUB 0                  ; not 0: this Sliver began this move on another
 
 \ Is anything solid (in thing X's own phase: attr_ptr) under thing X's
 \ box? Z clear (BNE) if so. X is kept.

@@ -658,3 +658,21 @@ grenade.
   it drew back and caught Ash waiting on the stub; the upper road's span is
   still now, and the swarm keeps to the lower road.
 
+## 2026-11-01: the Spar Seams' first newcomer
+
+A newcomer played the Spar Seams through to the cage. The split seam's lower
+road, with its shift at the top of a jump, the paydirt's lever and the spar
+wall coming down to one grenade were the high points. The low one was the
+cage: arriving in the Blue, three Slivers pinned against a column stacked
+into one, and the respawn put them back each time. Decision 51's spread
+aims hadn't helped, since a wall holds every aim at the same place, so
+Slivers now keep off each other (decision 55). The first try let each give
+way only to earlier slots, which the emulator showed was no good: the
+earlier one walked onto the one the wall already held.
+
+The rest is level work: crystal scenery that looks solid beside a column of
+it that is, moving crystal that reads as girders, Slivers that read as gem
+glints among the sector's crystal, a lever that is the only way across
+with nothing to say so, three rooms that are a blinking span then a shift,
+and cells that pinch in the first two rooms.
+
