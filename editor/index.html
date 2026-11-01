@@ -341,9 +341,9 @@ const SPRITE_FLAGS = ['phase', 'mirror'];
 // if this copy falls behind.
 const THING_TYPES = ['sentry', 'drone', 'crawler', 'shard', 'cell', 'grenades', 'life', 'exit'];
 // mkrooms.py's THING_BOX, kept the same way: each type's width, and the lines it reaches above and
-// below its tile row's top (the drone bobs, the crawler sits 4 lines down).
+// below its tile row's top (the drone bobs, a pickup rises 2 lines).
 const THING_BOX = {
-  sentry: [16, 0, 16], drone: [16, -4, 14], crawler: [16, 4, 16], shard: [8, 0, 8], cell: [8, -2, 8],
+  sentry: [16, 0, 16], drone: [16, -4, 14], crawler: [16, 0, 16], shard: [8, 0, 8], cell: [8, -2, 8],
   grenades: [8, -2, 8], life: [8, -2, 8], exit: [16, 0, 24],
 };
 const MAX_THINGS = 6;
@@ -926,7 +926,7 @@ let THING_TYPES = RS.THING_TYPES.slice(), THING_BOX = {...RS.THING_BOX};
 // both), and how far down its tile row it's drawn, as src/things.6502 has them (type_spr,
 // type_phase, and the crawler's tracks on the floor). Out of its phase it's a ghost.
 const THING_LOOK = {
-  sentry: ['sentry', 1, 0], drone: ['drone0', 1, 0], crawler: ['crawler0', 1, 4], shard: ['shard0', 2, 0],
+  sentry: ['sentry', 1, 0], drone: ['drone0', 1, 0], crawler: ['crawler0', 1, 0], shard: ['shard0', 2, 0],
   cell: ['cell0', 0, 0], grenades: ['grenades0', 0, 0], life: ['life0', 0, 0], exit: [null, 0, 0],
 };
 const THING_COLOURS = {

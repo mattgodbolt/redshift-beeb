@@ -383,4 +383,16 @@ Matt was away is marked *provisional* until reviewed.
     shared, so a kit drawn ahead of its rooms, or the editor's made-up test
     rooms, overran the 128 looks; such a tile is now no sector's, and isn't
     in the game until a room uses it.
+45. **2026-11-01: no shifting onto an enemy, a Trundler a standing shot
+    hits, a Sliver that looks hostile, a ride you can feel.** From the
+    Sector 2 newcomer playtest:
+    - A shift that would put Ash inside an enemy of the new phase is
+      refused, as one into a block is: it killed at once, with no warning.
+    - The Trundler has a cab on top and stands 16 lines tall, its tracks
+      where they were, so a standing bolt meets it; standing shots used to
+      fly over the first enemy a player met.
+    - The Sliver is a spiked crystal with a dark core: its ghost still read
+      as a gem to collect.
+    - The cage ride darkens the room from the top down, a row a frame, as
+      the cage goes down the shaft.
 

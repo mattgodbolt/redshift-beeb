@@ -47,9 +47,8 @@ THING_TYPES = ["sentry", "drone", "crawler", "shard", "cell", "grenades", "life"
 # A down exit's room number with this set is the next sector's room (the cage's).
 NEXT_SECTOR = 0x80
 # Each type's size in pixels, with what it reaches beyond its sprite: the
-# drone bobs 4 lines up and down, a pickup 2 lines up, the crawler sits 4
-# lines down (things.6502).
-THING_BOX = {"sentry": (16, 0, 16), "drone": (16, -4, 14), "crawler": (16, 4, 16),
+# drone bobs 4 lines up and down, a pickup 2 lines up (things.6502).
+THING_BOX = {"sentry": (16, 0, 16), "drone": (16, -4, 14), "crawler": (16, 0, 16),
              "shard": (8, 0, 8), "cell": (8, -2, 8), "grenades": (8, -2, 8),
              "life": (8, -2, 8), "exit": (16, 0, 24)}
 

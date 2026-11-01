@@ -95,6 +95,7 @@ ENDIF
 .found
     STX tc_x
     LDA obj_x,X : STA tc_x0
+    LDA #0 : STA tc_row
 .ride
     JSR wait_vsync : JSR wait_vsync
     LDX tc_x
@@ -107,6 +108,11 @@ ENDIF
     LDA obj_st,X : ORA #OS_CHANGED : STA obj_st,X
     INC frame
     JSR render
+    \ Going down: the room above goes dark, a row a frame from the top.
+    LDA tc_row : CMP #MAP_H : BCS dark
+    JSR dark_row
+    INC tc_row
+.dark
     LDA mus.mu_req : BPL ride       ; (not started yet)
     LDA mus.mu_piece : BPL ride     ; (still playing)
 .ridden
@@ -120,7 +126,20 @@ ENDIF
     RTS
 .tc_x EQUB 0
 .tc_x0 EQUB 0
+.tc_row EQUB 0
+\ Row tc_row of the playfield cleared to black.
+.dark_row
+    LDA tc_row : ASL A : CLC : ADC #HI(play_screen) : STA tc_p+1
+    LDA #0 : STA tc_p : TAY
+.clear
+    STA (tc_p),Y : INY : BNE clear
+    INC tc_p+1
+.clear2
+    STA (tc_p),Y : INY : BNE clear2
+    RTS
 }
+tc_p = text_ptr                     ; (fixed zero page: nothing prints in the ride)
+ASSERT LO(play_screen) = 0 AND ROW_BYTES = 512
 
 \ Into room A, the player where they are (or, with at_start set, where the
 \ room's start is): the room drawn while the screen is black, then shown.
@@ -177,7 +196,21 @@ FLASH_FRAMES = 8                ; a refused shift's red, in frames
     JSR flip
     LDA #0 : STA ta_dy : LDA #PL_H - 1 : STA ta_h
     LDA obj_x + PL : JSR box_at
-    LDA #TF_SOLID : JSR test_area : BEQ shifted
+    LDA #TF_SOLID : JSR test_area : BNE refuse
+    \ Nor onto an enemy that would be there in the new phase (decision 45).
+    JSR pl_box
+    LDX #TH0
+.enemy
+    LDA obj_spr,X : CMP #&FF : BEQ next_enemy
+    LDA th_boom,X : BNE next_enemy
+    LDA th_type,X : CMP #TH_ENEMIES : BCS next_enemy
+    JSR th_in_phase : BNE next_enemy
+    JSR th_box
+    JSR boxes_overlap : BCS refuse
+.next_enemy
+    INX : CPX #TH0 + NTH : BNE enemy
+    JMP shifted
+.refuse
     JSR flip
 .refused
     \ Refused: the buzz, and the status bar red a moment.

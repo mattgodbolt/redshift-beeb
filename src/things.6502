@@ -87,9 +87,6 @@ ASSERT PL_H - 16 + SENTRY_GUN + 3 <= PL_CROUCH_TOP   ; (a sergeant is 16 high)
     LDA type_hp,Y : STA th_hp,X
     LDA st_x : ASL A : ASL A : STA obj_x,X
     LDA st_y : ASL A : ASL A : ASL A
-    CPY #TH_CRAWLER : BNE not_crawler
-    CLC : ADC #4                    ; (12 lines high: its tracks on the floor)
-.not_crawler
     STA obj_y,X : STA th_y0,X
     LDA st_arg : AND #1 : ASL A : STA obj_face,X    ; 1: facing left
     LDA st_k : STA th_idx,X
