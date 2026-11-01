@@ -859,4 +859,86 @@ Matt was away is marked *provisional* until reviewed.
     until they're clear, so none is ever stuck. A first try had each
     Sliver give way only to earlier slots; an earlier one then moved onto
     a later one the wall already held.
+56. **2026-11-01: the Spar Seams' second pass: one language for crystal, a
+    room an idea, and a fair cage** (*provisional*). A level and art pass
+    from the Spar Seams' first newcomer playtest, whose engine fix was
+    decision 55. What the newcomer liked stays: the split seam's lower road,
+    the paydirt's lever, the spar face coming down to one grenade, and a
+    ride on the chandelier.
+    - **Crystal has one language.** The newcomer took scenery crystal for
+      solid or deadly, walked through crystals into spikes, and took the
+      spar face, a wall that breaks, for more of the same.
+      - Scenery crystal (the Mother Lode's spires, the chandelier's
+        pendants, the stalactites) is drawn in the body colour alone, with
+        no lit edge and no lip, so it sits back.
+      - Crystal you stand on has its lit lip. The swarm's spans are shelves
+        of crystal, a lip with points hanging under it, where they read as
+        girders; its spikes are prisms of it pushing up, their points white.
+        They're the sector's own tiles, and the moving ones are drawn as
+        them, so the crystal that grows and draws back looks like crystal.
+      - Crystal that stops you is the Blue's blocks, a wall.
+      - Spar that breaks is cracked into rhombs, as the cracked wall is, and
+        has no glint.
+      - No scenery glints or makes a star: that's a Sliver's shape.
+    - **A Sliver is a creature.** It was an X and a cross in turn, which read
+      as a gem glinting among the crystal, and as a dotted cross out of
+      phase. It's a crystal mite now, lit from the top left, with two dark
+      eyes, horns, and legs that scuttle between its two looks. Its size, so
+      its aims and the build's asserts, is as it was, and it's the same in
+      every sector.
+    - **A room an idea, and neither phase a free pass.** Three rooms were a
+      blinking span then a shift to the Red, and the Sorting Table's Red
+      walked past its puzzle.
+      - THE MOTHER LODE, the lesson: a welded plate at the ledge's end stops
+        the Red, where a newcomer walked onto the span's ghost, taking it for
+        a mesh walkway. A cell lies on the span.
+      - SORTING TABLE: two rhythms on the picking belt, out of step. In the
+        Red its hoppers pour ore onto it; in the Blue the crystal pushes up
+        through it. Each phase waits in its own pocket.
+      - THE CHANDELIER drops. The Company's winch lowers it on its chains on
+        the beat and draws it up again: over the Blue's span onto its boss,
+        ride it down onto the cell that hangs where it comes to, and off it
+        over the Red's plates before it goes back up. Its spans and its
+        Gadfly are gone.
+      - ECHO GALLERY: two walkways over the acid, one over the other, each
+        the other's echo. Where the lower is the Blue's crystal, the upper is
+        the Red's plates, and the other way round, so whichever phase Ash
+        comes in with weaves down and up between them on its own. Its bays
+        and its Gadfly are gone.
+      - LAST PAYDIRT: the lever is in plain sight across the drop, at the
+        height of the way in, and a shot from anywhere along it, standing or
+        crouched, in either phase, throws it. It was high in a pocket, shot
+        from the top of one crate. Crystal grown over the shaft down holds
+        the Blue, so Ash goes down to Bore Nine in the Red.
+      - BORE NINE: its walls of the Blue's crystal are gone. Arriving in the
+        Blue, the swarm used to pin itself against one by the cage, where
+        the Red then had to shift beside it. Now the Blue's prisms on the
+        floor before the near sergeant keep the Blue on the first crate, and
+        a Blue arrival meets the swarm coming across the room. In the Red it
+        comes out of the shaft at whoever shifts on the floor before the
+        door, from far enough to be shot.
+    - **The opening's cells.** The first two rooms cost three cells and gave
+      none: the Mother Lode's cell pays for its two shifts and one more.
+    - **Smaller.**
+      - SPLIT SEAM's way in is four tiles long, ending at the crate, so
+        walking on stops at the crate instead of dropping into the lower
+        road; the hole down to it is past the crate.
+      - The way down a shaft is an arrow (Spar Face, Sorting Table, Last
+        Paydirt): chevrons at the foot of a pit read as spikes.
+
+    Calls made in building it (*provisional*):
+    - The sector's spans, prisms, chain and way-down arrow are its own
+      tiles, not the shared ones redrawn, so the other sectors look as they
+      did and the shared looks don't grow.
+    - Echo Gallery has no enemy: the weave is its idea. Spar Face's is the
+      sector's last Gadfly, as no other gallery had a patrol that kept off
+      the jumps Ash must make and could still be shot.
+    - Bore Nine's far sergeant can be passed in the Blue, by meeting the
+      swarm from the second crate instead of at the door: the same cell, a
+      different fight.
+    - The paydirt's ledge keeps its charges and loses its cell, as the
+      sector has a cell more.
+    - The playthrough takes the Red's road through the Sorting Table, rides
+      the chandelier, weaves Echo Gallery in the Blue, and checks the Mother
+      Lode's and the Chandelier's cells are taken.
 

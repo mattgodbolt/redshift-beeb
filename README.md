@@ -174,15 +174,15 @@ let it come level, and shoot it.
 ## Sector 4, the Spar Seams
 
 <table>
-<tr><td><img src="docs/media/mother_red.png" alt="The Mother Lode in the Red Phase, where the cage brings Ash in"></td>
+<tr><td><img src="docs/media/mother_red.png" alt="The Mother Lode in the Red Phase: the welded plate at the ledge's end"></td>
 <td><img src="docs/media/mother_blue.png" alt="The Mother Lode in the Blue Phase: the span over the pit"></td></tr>
 <tr><td><img src="docs/media/face.png" alt="Spar Face: in the gallery, at the face"></td>
 <td><img src="docs/media/assay.png" alt="The Assay Room: on the furnace"></td></tr>
-<tr><td><img src="docs/media/sorting.png" alt="The Sorting Table: on the picking belt"></td>
-<td><img src="docs/media/chandelier.png" alt="The Chandelier: on its boss, between the spans"></td></tr>
+<tr><td><img src="docs/media/sorting.png" alt="The Sorting Table: on the belt between the hoppers"></td>
+<td><img src="docs/media/chandelier.png" alt="The Chandelier: ridden down on its boss"></td></tr>
 <tr><td><img src="docs/media/split.png" alt="Split Seam: on the crate over the seam"></td>
-<td><img src="docs/media/echo.png" alt="Echo Gallery: on the pier between the bays"></td></tr>
-<tr><td><img src="docs/media/paydirt.png" alt="Last Paydirt: the lever thrown"></td>
+<td><img src="docs/media/echo.png" alt="Echo Gallery: on the Blue's upper walkway"></td></tr>
+<tr><td><img src="docs/media/paydirt.png" alt="Last Paydirt: a shot at the lever across the drop"></td>
 <td><img src="docs/media/bore.png" alt="Bore Nine: the sergeants round the drill"></td></tr>
 </table>
 
@@ -192,31 +192,40 @@ draw back and grow again and its spikes sink and push up, flickering
 first. It's all the Blue's, so in the Red it's a ghost, and the Red's way
 is the Company's welded plates, crates and machines. Spar is the rock's
 own crystal, in both phases, and a wall of it comes down to a grenade.
+Crystal that's only scenery is drawn faint, crystal you can stand on has
+a lit lip, and spar that breaks is cracked.
 
-1. **THE MOTHER LODE.** The first lesson (above, in each phase). A span
-   over the pit whose middle draws back and grows again: cross it in the
-   Blue while two Slivers come over the pit, and back to the Red on the
-   landing, where crystal holds the way out, for the Trundler on the step.
+1. **THE MOTHER LODE.** The first lesson (above, in each phase). A welded
+   plate stops the Red at the ledge's end. In the Blue, a span over the pit
+   whose middle draws back and grows again, with a cell on it, and two
+   Slivers that come over the pit; back to the Red on the landing, where
+   crystal holds the way out, for the Trundler on the step.
 2. **SPAR FACE.** A face of spar from floor to roof, which one grenade
    brings down. Reach it through the gallery, where a Gadfly hunts in the
    Red, or over the Blue's span above it; then the welded hatch down.
 3. **THE ASSAY ROOM.** The lab's crystal sinks and pushes up on the beat.
    Up onto the assay furnace, out of a sergeant's fire, and lob over the
    swarm's wall at it.
-4. **SORTING TABLE.** Crystal pushes up through the picking belt in turn.
-   The Red's road is a Trundler to shoot; the Blue's times the spikes and
-   climbs for a cell.
-5. **THE CHANDELIER.** Two spans that take turns under a chandelier of spar,
-   and a Gadfly in the corridor beyond, behind the Red's plates.
+4. **SORTING TABLE.** Two rhythms on the picking belt, out of step: in the
+   Red its hoppers pour ore onto it, and in the Blue crystal pushes up
+   through it. The Red's road shoots a Trundler first; the Blue's climbs
+   for a cell.
+5. **THE CHANDELIER.** The Company's winch still lowers the chandelier on
+   the beat and draws it up again. Ride its boss down, and get off it over
+   the Red's plates before it goes back up.
 6. **SPLIT SEAM.** Two roads either side of a seam of spar: the sergeant's
    over it, the swarm's under it.
-7. **ECHO GALLERY.** Twin bays, each the other's echo in the other phase: a
-   span in the Blue over the first, a Gadfly in the Red in the second.
-8. **LAST PAYDIRT.** A bridge that comes and goes too fast to cross, and the
-   Company's lever that stops it, if you can get a clear shot at it.
-9. **BORE NINE.** Two Drill Sergeants dug in round the drill, a swarm in the
-   drill shaft, and the shaft itself is the cage, down to Sector 5, which is
-   as far as the game goes for now.
+7. **ECHO GALLERY.** Two walkways over the acid, one over the other, each
+   the other's echo: where one is the Red's plates, the other is the Blue's
+   crystal. Whichever phase you come in with, weave down and up between
+   them.
+8. **LAST PAYDIRT.** A bridge that comes and goes too fast to cross, and
+   across the drop, at the height of the way in, the Company's lever that
+   stops it. Slivers over the bridge, and crystal grown over the shaft down.
+9. **BORE NINE.** Two Drill Sergeants dug in round the drill, the Blue's
+   crystal on the floor between them, a swarm in the drill shaft, and the
+   shaft itself is the cage, down to Sector 5, which is as far as the game
+   goes for now.
 
 ## The idea
 
