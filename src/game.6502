@@ -229,12 +229,16 @@ FLASH_FRAMES = 8                ; a refused shift's red, in frames
     PLA : SEC : SBC #1 : TAX
     LDA card_lo,X : STA text_ptr
     LDA card_hi,X : STA text_ptr+1
+    \ The sector's name in white (logical 2), its lines in yellow (1).
+    LDA #1 : STA pr_ink
     LDA #10 : STA sc_row
     LDA #3 : STA sc_n
 .line
     LDY sc_row : JSR print_centred
+    LDA #0 : STA pr_ink
     LDA sc_row : CLC : ADC #2 : STA sc_row
     DEC sc_n : BNE line
+    JSR card_frame                  ; (over the text: a long line reaches it)
     JSR card_show
     \ Three seconds, or a key once all are up. (read_keys uses X and Y.)
     \ Keys already down (the title's SPACE) aren't new.
@@ -344,3 +348,49 @@ START_GRENADES = 5
     RTS
 .rk_down EQUB 0
 }
+
+\ A sector card's frame, in logical 3 (cyan on the card): a box round
+\ character rows FRAME_TOP to FRAME_BOT, columns FRAME_L to FRAME_R.
+FRAME_TOP = 9 : FRAME_BOT = 15 : FRAME_L = 1 : FRAME_R = 30
+.card_frame
+{
+    ZA_AUTO2 cf_p, cf_q
+    ZA_AUTO1 cf_n
+    \ The top's first line and the bottom's last.
+    LDA #LO(screen + FRAME_TOP * ROW_BYTES + FRAME_L * 16) : STA cf_p
+    LDA #HI(screen + FRAME_TOP * ROW_BYTES + FRAME_L * 16) : STA cf_p+1
+    LDY #0 : JSR across
+    LDA #LO(screen + FRAME_BOT * ROW_BYTES + FRAME_L * 16) : STA cf_p
+    LDA #HI(screen + FRAME_BOT * ROW_BYTES + FRAME_L * 16) : STA cf_p+1
+    LDY #7 : JSR across
+    \ The sides: the left column's leftmost pixel, the right's rightmost.
+    LDA #FRAME_BOT - FRAME_TOP + 1 : STA cf_n
+    LDA #LO(screen + FRAME_TOP * ROW_BYTES + FRAME_L * 16) : STA cf_p
+    LDA #HI(screen + FRAME_TOP * ROW_BYTES + FRAME_L * 16) : STA cf_p+1
+    LDA #LO(screen + FRAME_TOP * ROW_BYTES + FRAME_R * 16 + 8) : STA cf_q
+    LDA #HI(screen + FRAME_TOP * ROW_BYTES + FRAME_R * 16 + 8) : STA cf_q+1
+.side_row
+    LDY #7
+.side_line
+    LDA (cf_p),Y : ORA #&88 : STA (cf_p),Y          ; (pixel 0, logical 3)
+    LDA (cf_q),Y : ORA #&11 : STA (cf_q),Y          ; (pixel 3, logical 3)
+    DEY : BPL side_line
+    INC cf_p+1 : INC cf_p+1         ; (the next row: ROW_BYTES on)
+    INC cf_q+1 : INC cf_q+1
+    DEC cf_n : BNE side_row
+    RTS
+\ Line Y across the columns, from cf_p.
+.across
+    LDX #FRAME_R - FRAME_L + 1
+.col
+    LDA #&FF : STA (cf_p),Y
+    TYA : ORA #8 : TAY : LDA #&FF : STA (cf_p),Y : TYA : AND #7 : TAY
+    LDA cf_p : CLC : ADC #16 : STA cf_p
+    BCC same
+    INC cf_p+1
+.same
+    DEX : BNE col
+    RTS
+}
+ASSERT ROW_BYTES = 2 * 256
+
