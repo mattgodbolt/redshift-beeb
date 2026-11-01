@@ -1258,10 +1258,12 @@ tile 6 pour_r
 # --- ore trucks, its cracked walls ore carts jammed together, and its
 # --- landmarks are the railway's: an engine, a signal box's windows, a
 # --- turntable's pivot, a weighbridge's dial, a crane, buffer stops, a dead
-# --- man's handle and a crusher's teeth.
+# --- man's handle and a crusher's teeth. A piece drawn two by two (tl, tr,
+# --- bl, br) starts on an even column and an even row, or it's cut wrong.
 
 # Track: a rail on sleepers. The rail's head is the lip you walk on; where
-# the track ends in the open, the rail ends in a fishplate.
+# the track ends in the open, the rail's end is lit on its left and falls
+# into shadow on its right.
 tile t track solid
 22222222
 11111111
@@ -1284,9 +1286,9 @@ variant t left
 
 variant t right
 2222222.
-11111112
-.1.1.1.1
-11111111
+1111111.
+.1.1.1..
+1111111.
 .2111.2.
 .2111.1.
 ........
@@ -1600,19 +1602,9 @@ variant 0 br
 1.1.11..
 1111....
 
-# The turntable's king post, and its bearing under the deck.
+# The turntable's king post: its bearing under the deck, on its post.
 tile 9 kingpost
-..2111..
-..21.1..
-..2111..
-..21.1..
-..2111..
-..21.1..
-..2111..
-..21.1..
-
-variant 9 up
-22222111
+2121211.
 .2111.1.
 ..2111..
 ..21.1..
@@ -1695,36 +1687,37 @@ variant ? br
 1111111.
 111111..
 
-# A dead man's handle: its grip, its shaft, and the quadrant it rides in.
+# A dead man's handle: its T-grip, its shaft (lit down its left), and the
+# notched quadrant it rides in.
 tile . handle
-...21...
-...21...
-...21...
-...21...
-...21...
-...21...
-...21...
-...21...
+...211..
+...211..
+...211..
+...211..
+...211..
+...211..
+...211..
+...211..
 
 variant . up
-.22222..
-.211111.
-..1111..
-...21...
-...21...
-...21...
-...21...
-...21...
+.2222221
+21111111
+.111111.
+...211..
+...211..
+...211..
+...211..
+...211..
 
 variant . down
-...21...
-...21...
-..2111..
-.21.1.1.
-21.....1
-21.....1
-211111.1
-.1111111
+...211..
+...211..
+..22111.
+.2111111
+21.1.1.1
+21111111
+2111111.
+.111111.
 
 # A crusher's teeth: up from its lower jaw, and down from its upper one.
 tile V teeth hazard

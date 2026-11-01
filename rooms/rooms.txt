@@ -506,7 +506,7 @@ tttttttttttttttttttttttttttttttt
 ################################
 thing drone 16 15
 thing drone 24 15 1
-thing cell 13 13
+thing cell 11 13
 
 room buffers
 name BUFFER STOPS
