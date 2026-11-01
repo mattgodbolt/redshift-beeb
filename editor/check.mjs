@@ -205,16 +205,22 @@ else {
 
 // --- Made-up rooms, for what the real ones don't have yet -----------------------------------------
 
-// Every tile, split between alpha (Sector 2) and gamma (Sector 3): each is drawn, and each is one
-// sector's own, so the two sectors' looks stay within what the game can number (decision 43). The
-// split is where the looks they'd own (a tile's own, its variants and alts) come out about even. (A
-// tile drawn as another owns none.)
+// Every tile, split between alpha (Sector 2), gamma (Sector 3) and delta (Sector 4): each is drawn,
+// and each is one sector's own, so each sector's looks stay within what the game can number
+// (decision 43). The splits are where the looks they'd own (a tile's own, its variants and alts)
+// come out about even, in thirds, as there are three sectors' kits to share out. (A tile drawn as
+// another owns none.)
 const keys = tiles.map(t => t.key).join('');
 const owned = tiles.map((t, i) => (i === 0 || t.shared || t.like != null ? 0
   : 1 + t.variants.length + Object.values(t.alts).reduce((n, list) => n + list.length, 0)));
-let half = 0;
-for (let sum = 0; half < tiles.length && 2 * (sum + owned[half]) <= owned.reduce((a, b) => a + b, 0); half++) sum += owned[half];
-const keysOf = n => (n === 3 ? keys.slice(0, half) : ' ' + keys.slice(half));
+const allOwned = owned.reduce((a, b) => a + b, 0);
+const cut = part => {
+  let i = 0;
+  for (let sum = 0; i < tiles.length && 3 * (sum + owned[i]) <= part * allOwned; i++) sum += owned[i];
+  return i;
+};
+const third = cut(1), twoThirds = cut(2);
+const keysOf = n => (n === 3 ? keys.slice(0, third) : ' ' + (n === 5 ? keys.slice(third, twoThirds) : keys.slice(twoThirds)));
 const row = (k, n) => {
   const ks = keysOf(n);
   return Array.from({length: RS.MAP_W}, (_, i) => ks[(i * n + k * 7) % ks.length]).join('');
@@ -229,7 +235,8 @@ const rich = [
   '# beta: no colours line, odd spacing, and blank map lines', 'room beta', 'name   BETA', 'exits  left=alpha',
   'map', ...blankMap.map((l, k) => (k === 21 ? '______' : l)), '',
   'room gamma', 'name GAMMA', 'sector 3 # deeper', 'exits up=gamma', 'start 20 18', 'colours blue green magenta', 'band 2 1 white', 'band 4 1 black',
-  'band 175 3 red', 'map', ...map(5), 'thing shard 1 1', 'thing exit 29 19 0 extra', '', '# the end', '',
+  'band 175 3 red', 'map', ...map(5), 'thing shard 1 1', 'thing exit 29 19 0 extra', '',
+  'room delta', 'name DELTA', 'sector 4', 'start 2 18', 'map', ...map(7), '', '# the end', '',
 ].join('\n');
 const richDoc = roundTrip(rich, 'made-up rooms', false);
 roundTrip(rich.replace(/\n/g, '\r\n'), 'made-up rooms with CRLF', false);

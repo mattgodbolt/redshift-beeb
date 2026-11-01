@@ -16,7 +16,9 @@
 #   2  its lit edges: the lip of whatever you can stand on, trims
 #   3  white: the player, enemies, pickups and lethal tips. In a band of
 #      liquid the room makes 3 the liquid's colour, and nothing else there
-#      may use it.
+#      may use it. (The Sump's boiling water is drawn in 1 instead, which a
+#      sump room makes red from the water down: it rises and drains where
+#      Ash walks, and a band of 3 would turn them red. See o.)
 # Light falls from the top left. A shape's lit side is 2 and its shadow
 # side steps down by dither density: the body colour full, then on half the
 # pixels (a checkerboard), then a quarter, then black. A lit top that
@@ -592,17 +594,21 @@ tile x crystalspikes hazard blue shared
 22222222
 22222222
 
-# Boiling water, the Red Phase's hazard (the Sump boils only in the Red),
-# in its band's liquid colour.
+# Boiling water's surface, the Red Phase's hazard (the Sump boils only in
+# the Red): bubbles bursting in the lip colour over a body in the body
+# colour, which a sump room makes red from the water's surface down
+# (decision 50). Not 3: the water rises and drains where Ash walks, and a
+# band of 3 would turn them red there. Out of phase it's a faint ghost, its
+# foam a dotted line at the level the water would be.
 tile o boiling hazard red shared
 ........
-.3...3..
-3.3.....
-...3.3.3
-3.333333
-33333333
-3.3.3.3.
-.3.3.3.3
+.2...2..
+2.2.....
+...1.1.1
+1.111111
+11111111
+1.11.111
+111111.1
 
 # A lamp hung from the rock: its light is colour 2.
 tile L lamp shared
@@ -1918,3 +1924,492 @@ tile Ç truckgoes solid beat=space as=C
 tile ç truckcomes beat=C as=space
 tile Ĉ wheelsgo solid beat=r as=C
 tile ĉ wheelscome hazard beat=C as=r
+
+# --- The Sump's kit (Sector 3). Its water boils in the Red and is gone in
+# --- the Blue, where the dry bed under it is the road: the water's surface
+# --- (o, above) and body are the Red Phase's, drawn in the body colour,
+# --- which a room makes red from the surface down. Its landmarks are the
+# --- sump's plumbing: the outfall's pipe, a cistern, boilers, the steam
+# --- traps' vents, an office's furniture, a sluice gate, depth posts and
+# --- the plughole's plug on its chain. Nothing but water stands in water
+# --- unless it's solid: a cell of scenery there isn't hot, and a shift at
+# --- just the right spot would survive in the soup (decision 50).
+
+# Boiling water's body, under its surface (o): bubbles rising in it.
+tile ö boilbody hazard red
+11111111
+111.1111
+11.1.111
+111.1111
+11111111
+11111.11
+1111.1.1
+11111.11
+
+# The sump's bed, dry in the Blue: caked silt, its top a lip to walk on.
+tile ë bed solid
+22222222
+11111111
+1..111..
+11111111
+111..111
+11111111
+.111.111
+1.1.1.1.
+
+# A big pipe, two rows high and solid, its top a lip: lit along its top,
+# the body, and its underside in shadow (ñ over ń). Where it ends in the
+# open, a flange rings its mouth, and a flange (ǹ over ņ) rings it on the
+# way.
+tile ñ pipetop solid
+22222222
+11111111
+21212121
+11111111
+11111111
+11111111
+11111111
+11111111
+
+variant ñ right
+2222222.
+11111121
+21212121
+11111121
+11111121
+11111121
+11111121
+11111121
+
+variant ñ left
+.2222222
+21111111
+21212121
+21111111
+21111111
+21111111
+21111111
+21111111
+
+tile ǹ flangetop solid
+22222222
+11121111
+21221212
+11121111
+11121111
+11121111
+11121111
+11121111
+
+tile ń pipebottom solid
+11111111
+11111111
+11111111
+11111111
+1.1.1.1.
+.1.1.1.1
+1...1...
+........
+
+variant ń right
+11111121
+11111121
+11111121
+11111121
+1.1.1.21
+.1.1.121
+1...1.2.
+......2.
+
+variant ń left
+21111111
+21111111
+21111111
+21111111
+21.1.1.1
+2.1.1.1.
+.2..1...
+.2......
+
+tile ņ flangebottom solid
+11121111
+11121111
+11121111
+11121111
+1.121.1.
+.1.2.1.1
+1..21...
+...2....
+
+# Boiling water pouring from the outfall's mouth: ribbons lit on their
+# left. The Red Phase's, and it kills, as the water it falls into does.
+tile ŵ pour hazard red
+.21111..
+.211.11.
+.2111.1.
+..21111.
+.211111.
+.21.111.
+.2111.1.
+..21111.
+
+# A riveted seam round the cistern's plating: solid.
+tile ţ tankseam solid
+11111111
+........
+2.1.2.1.
+11111111
+........
+1.1.1.1.
+11111111
+1111111.
+
+# A boiler, seen from the side: a riveted drum two rows high, solid, its
+# top a lip to walk on and its ends rolled round, lit along its top and
+# falling into shadow underneath; it sits in a firebrick setting (ƅ), with
+# its firebox doors (ƒ).
+tile ƀ boiler solid
+11111111
+11111111
+11111111
+1.11.11.
+.1.1.1.1
+1.1.1.1.
+...1...1
+........
+
+variant ƀ up+left
+...22222
+.2221212
+.2111111
+21111111
+21.11.11
+21111111
+21111111
+21111111
+
+variant ƀ up+right
+22222...
+212121..
+1111111.
+1111111.
+1.11.11.
+1111111.
+111111.1
+1111111.
+
+variant ƀ up
+22222222
+21212121
+11111111
+11111111
+1.11.11.
+11111111
+11111111
+11111111
+
+variant ƀ left
+21111111
+21111111
+21111111
+.21.11.1
+.2.1.1.1
+..21.1.1
+....1...
+........
+
+variant ƀ right
+1111111.
+111111.1
+1111111.
+1.11.1.1
+.1.1.1..
+1.1.1...
+...1....
+........
+
+tile ƅ setting solid
+11.1111.
+11.1111.
+........
+1111.111
+1111.111
+........
+11.1111.
+11.1111.
+
+variant ƅ left
+21.1111.
+21.1111.
+2.......
+2111.111
+2111.111
+2.......
+21.1111.
+21.1111.
+
+variant ƅ right
+11.11112
+11.11112
+.......2
+1111.112
+1111.112
+.......2
+11.11112
+11.11112
+
+# A firebox door in the setting: a plate with its draught vents, framed
+# lit along its top and left. Solid, as the setting is.
+tile ƒ firebox solid
+........
+.2222221
+.21....1
+.21.11.1
+.21....1
+.21.11.1
+.2111111
+........
+
+# A steam trap's vent, in the floor: a grating to walk on, its top a lip.
+tile ŧ vent solid
+22222222
+21.21.21
+21.21.21
+21.21.21
+11111111
+1.11.11.
+11111111
+........
+
+# Steam from a vent: white where it would scald, wreathed in the lip
+# colour. The Red Phase's, there on the beat and gone (the sump's dry in
+# the Blue), and steam that comes on the beat (as=).
+tile ş steam hazard red beat=space
+..222...
+.23332..
+2333332.
+23333322
+.2333332
+..22.232
+.2.22332
+2332.32.
+
+# An office desk: its top a lip, a drawer, and its legs.
+tile đ desk solid
+22222222
+11111111
+1..2...1
+1......1
+11111111
+.1....1.
+.1....1.
+.1....1.
+
+# A shelf on the office wall, bracketed to it: its top a lip.
+tile ŝ shelf solid
+22222222
+11111111
+.1.1.1.1
+..1.....
+...1....
+....1...
+.....1..
+......1.
+
+# A filing cabinet: drawers with their handles, solid, its top a lip.
+# The office's crate.
+tile ķ cabinet solid
+21111111
+21.22.1.
+21111111
+2.......
+21111111
+21.22.1.
+21111111
+2.......
+
+variant ķ up
+22222222
+21111111
+21.22.1.
+21111111
+2.......
+21111111
+21.22.1.
+2.......
+
+# The office's windows, onto the rock: panes with a glint, in a frame.
+tile ŷ window
+11111111
+1.....21
+1....2.1
+1......1
+11111111
+1..2...1
+1.2....1
+11111111
+
+# The office clock, stopped: its rim lit round the top left.
+tile ċ clock
+..2211..
+.2....1.
+2..1...1
+2..1...1
+2..111.1
+1......1
+.1....1.
+..1111..
+
+# A sluice gate: boards between iron bands, solid, that rise into its
+# housing once the room's switch is thrown (and the water drains).
+tile ǧ gate solid switch=space
+2112112.
+2112112.
+2112112.
+21212121
+2112112.
+2112112.
+2112112.
+2111111.
+
+# The sluice's rack, up from its housing: a toothed rod, scenery.
+tile ř rack
+..2111..
+..21.1..
+..2111..
+..21.1..
+..2111..
+..21.1..
+..2111..
+..21.1..
+
+# The plughole's iron collar, round its throat: its top a lip, riveted
+# under (the riveted seam, ţ, below it). No variants, so it looks the same
+# whether the plug is in the plughole or not.
+tile ł collar solid
+22222222
+21111111
+2.1.2.1.
+21111111
+........
+11111111
+1.1.1.1.
+11111111
+
+# The overflow's tide gauge on the wall: a staff marked every foot, the
+# feet longer. Scenery.
+tile ğ gauge
+.2111...
+.21.....
+.211....
+.21.....
+.21111..
+.21.....
+.211....
+.21.....
+
+# The plughole's plug, four wide and two high, on its chain: rubber, its
+# crown lit and rolled at its shoulders, its sides tapering into shadow.
+# Solid: it hangs over the plughole, and drops into it on the beat (it
+# kills what it closes on, as all machinery does), and the chain pays out
+# after it: ƿ becomes the chain's left half and Ƿ its right, þ is the plug
+# that becomes air, and Þ is the plughole that the plug comes into.
+tile ƿ plug solid beat=ȼ
+11111111
+11111111
+11111111
+11111111
+11111111
+11111111
+11111111
+11111111
+
+variant ƿ up+left
+...22222
+.2211111
+21111111
+21111111
+21111111
+.2111111
+.2111111
+..211111
+
+variant ƿ up+right
+22222...
+11111.1.
+1111111.
+111111.1
+1111111.
+111111.1
+11111.1.
+111111..
+
+variant ƿ up
+22222222
+11.22.11
+1.2..2.1
+11111111
+11111111
+11111111
+11111111
+11111111
+
+variant ƿ left
+..211111
+..211111
+...21111
+...21111
+...21111
+....2111
+....2111
+.....211
+
+variant ƿ right
+111111..
+11111.1.
+11111...
+1111.1..
+11111...
+111.1...
+1111....
+11.1....
+
+# Its chain, from the roof: links on edge and face on, the left half and
+# the right (they meet over the plug's middle).
+tile ȼ chain_l
+......11
+.....2..
+.....2..
+......11
+.......1
+......2.
+......2.
+.......1
+
+tile Ȼ chain_r
+11......
+..1.....
+..1.....
+11......
+1.......
+.1......
+.1......
+1.......
+
+tile Ƿ plug_r solid beat=Ȼ as=ƿ
+tile þ plug_air solid beat=space as=ƿ
+tile Þ plughole beat=ƿ as=space
+tile ɀ chaincomes_l beat=ȼ as=space
+tile Ɂ chaincomes_r beat=Ȼ as=space
+
+# Steam that comes on the beat, where the vent's other steam goes.
+tile š steamcomes beat=ş as=space
+
+# Water that moves (as=, so it costs no looks): on the beat, a flood's
+# surface and body that come (ò õ), and a surface the flood rises over
+# (ő); once the switch is thrown, a surface and a body that drain (ô ŏ).
+tile ò floodsurf beat=o as=space
+tile õ floodbody beat=ö as=space
+tile ő drowns hazard red beat=ö as=o
+tile ô drainsurf hazard red switch=space as=o
+tile ŏ drainbody hazard red switch=space as=ö

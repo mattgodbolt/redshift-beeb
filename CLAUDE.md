@@ -52,6 +52,8 @@ The README's play link boots `redshift.ssd` at the repo root through jsbeeb's `g
 - **Enemies and their bolts call `player_hit`, hazards and pits `player_die`.** `player_hit` does nothing in the safe spell after a respawn (decision 14); a pit must always kill, or Ash falls off the bottom of the room.
 - **A `make ROOM=n` build starts Ash at that room's `start`, or the first room's**, not where they'd come in; and after a room change its things spawn only once it's drawn, so a script waits for `blackout` to clear.
 - **A Gadfly bobs over walls that don't cover the row it fills**: bound its beat with walls the height of its bob.
+- **A Gadfly bobs 4 lines either way**: only something taller than two rows holds it, and one that slips its beat can fly the room and wait at the respawn.
+- **Scenery standing in a hazard leaves safe holes in it**: a non-solid tile in water or acid isn't hot, so a shift there survives. Nothing non-solid stands in a hazard.
 - **The interrupt runs with D as the game left it**: `add_score` uses decimal mode, so the VSync path does `CLD` before anything that adds.
 - **Inside `things_update`, `attr_ptr` is the thing's own phase's tiles**, not Ash's. Anything it calls that tests Ash against the map (a switch's `crushed`) sets it back first (`set_tile_ptrs`).
 - **A thing's clock (`th_t`) drives its looks too**: a ghost's shimmer, a pickup's glint. Don't hold it still to time something; let it go round.

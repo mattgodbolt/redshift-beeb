@@ -537,3 +537,64 @@ Matt was away is marked *provisional* until reviewed.
     - The engine's cab glazing is solid: Ash can't get through the cab, so
       now a bolt can't either. (Its panes were scenery, two rows high, too
       low for Ash and nothing to a bolt.)
+50. **2026-11-01: Sector 3, THE SUMP** (*provisional*). A level agent built
+    the Sump's nine rooms and its kit, with the existing enemies, and a
+    one-room Sector 4 to ride down to, held to what the playtests taught
+    (decisions 35, 41, 44, 45, 47 and 49): every enemy shot from somewhere
+    safe, two ways to kill each sergeant, no hidden take-offs, and every room
+    finished from where Ash comes in, in either phase, with two cells.
+    - **The water is the Red Phase's.** It boils in the Red and is gone in
+      the Blue, where the dry bed under it is the road. Shift back in the bed
+      and you're in the soup: the interlock has no opinion about heat. The
+      first room teaches it (crystal holds its way out in the Blue, so Ash
+      shifts back on the far bank), and most rooms after it have a Red road
+      and a Blue one, each with its own enemies.
+    - **It's drawn in the body colour (1), not 3 as acid is.** The water
+      rises and drains where Ash walks (the sluice, the overflow), and a band
+      making 3 red there would turn Ash and the enemies red with it. A room
+      with magenta rock makes 1 red from the water's surface down, its floor
+      colour (decision 20); one with red rock needs no band. Out of phase the
+      body's ghost is faint, and the foam on its surface (`o`, redrawn: no
+      room used it) a dotted line at the level the water would be.
+    - **Nothing stands in the water but water, unless it's solid.** A cell
+      of scenery there (a cistern's legs, a table's) wasn't hot, so a shift
+      at just the right spot survived in the soup, and was stuck there.
+      Solid things (a drowned desk, a step) are fine: Ash can't be inside
+      them. The cistern hangs from rods, and the office's Red road is wall
+      shelves.
+    - **The machinery,** each warning before it turns (decision 48): the
+      steam traps' vents, which steam in turn on the beat; the sluice gate's
+      handle, a switch that lifts the gate and drains the water in both
+      phases; the overflow, which floods the walkway on the beat; and the
+      plughole's plug, a press that drops into the plughole on its chain.
+    - **The rooms**, a thing each: OUTFALL the dry bed and where to shift
+      back; THE CISTERN the high road over a tank or the low road under it;
+      BOILER WALK a sergeant over boiling gaps, lobbed from a steam dome;
+      STEAM TRAP the vents; DROWNED OFFICE shelves over the flood, a cabinet
+      to lob from, and a sergeant; SLUICE GATE a switch that makes the bed
+      safe in the Red; THE U-BEND water that stands to one level in both
+      legs, so Ash climbs above it before shifting back; OVERFLOW the flood
+      and the depth posts to wait on; THE PLUGHOLE the press over the way
+      down, and a sergeant before the cage. Lips alternate yellow and cyan
+      from room to room, rock red and magenta.
+    - **One Gadfly**, on OUTFALL's far bank, held there by a welded
+      barricade that Ash climbs through in the Blue, as the Pump House's is
+      (decision 35): a Gadfly bobs over more than two rows, so nothing lower
+      holds it that wouldn't hold Ash. Everywhere else a Gadfly could be shot
+      standing, its patrol crossed a jump Ash had to make, or it could reach
+      nobody.
+    - **Slivers** home on Ash and stop at walls, so a pack of them waits
+      under a ledge Ash must drop from: THE U-BEND's start in the far leg,
+      where the core holds them until Ash is down in the bend, and they come
+      along it at Ash's height.
+
+    Calls made in building it (*provisional*):
+    - THE PLUGHOLE's basin first flooded on the beat as the plug dropped.
+      The flood, the plug and its chain changed as one connected block of
+      cells, every frame of the warning redrawing far more than a frame
+      holds. Now the basin's water stands, so the Blue is the way down the
+      plughole, and the plug is a press over it; the plughole's iron collar
+      has no variants, so its walls don't change when the plug drops in.
+    - The level editor's check splits every tile between made-up rooms in
+      three sectors, not two: with a third sector's kit, two halves held
+      more looks than the game can number, and that comparison was skipped.

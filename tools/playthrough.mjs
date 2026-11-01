@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// A playthrough of Sectors 1 and 2, from the first room to each sector's
-// cage, each next sector's load from the disc, and Sector 3's first room, on
+// A playthrough of Sectors 1 to 3, from the first room to each sector's
+// cage, each next sector's load from the disc, and Sector 4's first room, on
 // the default build: the end-to-end test that the sectors can be finished
 // without losing a life, and with --shots, the README's screenshots.
 //
@@ -125,6 +125,17 @@ const beatTurns = async (on) => {
 };
 // The room's switch, which should have been thrown.
 const thrown = async (where) => { if (!(await beeb.peek("sw_thrown"))) throw new Error(`${where}'s switch wasn't thrown`); };
+const shift = async () => { await g.tap("S", 2); await g.gf(2); };
+// The frame rate across the machinery's next warning and turn, while Ash
+// waits: in game frames and VSyncs, which wrap at 256.
+const frameRate = async (what) => {
+    const b0 = await beeb.peek("beat_on"), f0 = await beeb.peek("frame"), v0 = await beeb.peek("vsyncs");
+    await until(async () => (await beeb.peek("beat_on")) !== b0, 150);
+    await g.gf(5);
+    const frames = ((await beeb.peek("frame")) - f0) & 255, vsyncs = ((await beeb.peek("vsyncs")) - v0) & 255;
+    console.log(`${"(frame rate)".padEnd(16)} ${frames} game frames in ${vsyncs} VSyncs, ${what}`);
+    if (frames * 2 < vsyncs - 2) throw new Error(`frames dropped, ${what}: ${frames} in ${vsyncs} VSyncs`);
+};
 
 // --- The title page, then the route ---------------------------------------
 
@@ -435,6 +446,193 @@ try {
     await g.up("R");
     await g.gf(20); await mark("sector3");
     await until(async () => (await beeb.peek("room_sector")) === 3 && (await beeb.peek("blackout")) === 0, 200);
+    await g.land();
+
+    // --- Sector 3: the Sump ------------------------------------------------
+
+    // 1 OUTFALL: the sump boils in the Red, and its bed is dry in the Blue.
+    // Into the Blue on the bank, where Slivers wake; down into the bed for
+    // the cell, up onto the far bank through the welded barricade's ghost,
+    // and back to the Red there (not in the bed), with the Gadfly off at the
+    // far end, to shoot it and walk through the crystal.
+    await expectRoom(0, "OUTFALL");
+    if ((await beeb.peek("room_sector")) !== 3) throw new Error("the Outfall isn't in Sector 3");
+    await g.gf(10); await mark("outfall_red");
+    await shift();
+    await g.down("F");
+    await until(async () => !(await thing(4)).alive && !(await thing(5)).alive && !(await thing(6)).alive, 200);
+    await g.up("F");
+    if ((await thing(4)).alive || (await thing(5)).alive || (await thing(6)).alive) throw new Error("the Outfall's Slivers lived");
+    await g.walkTo(60);
+    await mark("outfall_blue");
+    await g.walkTo(88);
+    await g.jump("R", 20);
+    await until(async () => { const t = await thing(7); return t.x >= 112 && t.f === 0; }, 300);
+    await shift();
+    if (!(await fireUntilDead(7, 150))) throw new Error("the Outfall's Gadfly lived");
+    await cross("R", 1); await settle();
+    // 2 THE CISTERN: the Red's high road: onto the bracket, up onto the
+    // cistern's lid once its Trundler has rolled off to the far end, shoot it
+    // as it comes back, and down the far side to the shaft.
+    await expectRoom(1, "THE CISTERN");
+    await g.walkTo(20); await g.jump("R", 10);
+    await until(async () => { const t = await thing(4); return t.x >= 64 && t.f === 0; }, 300);
+    await g.jump("R", 12);
+    await mark("cistern");
+    if (!(await fireUntilDead(4, 150))) throw new Error("the Cistern's Trundler lived");
+    await g.walkTo(84); await g.walkTo(96);
+    await g.walkUntilRoom("R", 2, 200); await settle(); await g.land();
+    // 3 BOILER WALK: down onto the last boiler, a pack of charges, shoot the
+    // Trundler on the middle one, across, up onto its steam dome, and a charge
+    // lobbed at the Drill Sergeant on the first; across, and out through the
+    // crystal.
+    await expectRoom(2, "BOILER WALK");
+    await g.walkTo(118);
+    await g.walkTo(96);
+    if (!(await fireUntilDead(5, 150))) throw new Error("the Boiler Walk's Trundler lived");
+    await g.jump("L", 14);
+    await g.walkTo(62);
+    await g.jump("L", 8);
+    await g.walkTo(52);
+    await mark("boiler");
+    await g.tap("G", 2); await g.gf(40);
+    await dead(4, "the Boiler Walk");
+    await g.jump("L", 20);
+    await cross("L", 3); await settle(); await g.land();
+    // 4 STEAM TRAP: the vents steam in turn on the beat: past the first while
+    // it's off, shoot the Trundler, past the next in its turn, and the last,
+    // and over the gap to the shaft.
+    await expectRoom(3, "STEAM TRAP");
+    await frameRate("the vents steaming");
+    await until(async () => (await beeb.peek("beat_on")) === 1, 200);
+    await g.walkTo(100);
+    await g.jump("L", 10);
+    await g.walkTo(68);
+    if (!(await fireUntilDead(4, 150))) throw new Error("the Steam Trap's Trundler lived");
+    await mark("steam");
+    await until(async () => (await beeb.peek("beat_on")) === 0, 200);
+    await g.walkTo(42);
+    await until(async () => (await beeb.peek("beat_on")) === 1, 200);
+    await g.walkTo(26);
+    await g.jump("L", 30);
+    await g.walkUntilRoom("L", 4, 200); await settle(); await g.land();
+    // 5 DROWNED OFFICE: down onto the stair landing, shoot the Trundler on
+    // the first shelf, along the shelves over the boiling water, up onto the
+    // filing cabinet, and a charge lobbed at the Drill Sergeant on the far
+    // landing; on over the last shelf and out.
+    await expectRoom(4, "DROWNED OFFICE");
+    await g.down("R"); await g.gf(1); await g.up("R");
+    if (!(await fireUntilDead(4, 150))) throw new Error("the Drowned Office's Trundler lived");
+    await g.walkTo(6); await g.jump("R", 14);
+    await g.walkTo(38); await g.jump("R", 14);
+    await g.walkTo(64); await g.jump("R", 8);
+    await g.walkTo(68);
+    await mark("office");
+    await g.tap("G", 2); await g.gf(40);
+    await dead(5, "the Drowned Office");
+    await g.jump("R", 16);
+    await g.walkTo(86); await g.jump("R", 14);
+    await cross("R", 5); await settle();
+    // 6 SLUICE GATE: the gate's handle is under the water in the Red: into
+    // the Blue on the bank, where Slivers wake; down into the dry bed for a
+    // cell, and the handle shot, which lifts the gate and drains the sump. On
+    // under the gate to the crystal in the culvert's mouth, and back to the
+    // Red in the bed, safe now, for the Trundler beyond it; up into the
+    // culvert over its kerb, and down the drain.
+    await expectRoom(5, "SLUICE GATE");
+    await shift();
+    await g.down("F");
+    await until(async () => !(await thing(6)).alive && !(await thing(7)).alive && !(await thing(8)).alive, 200);
+    await g.up("F");
+    if ((await thing(6)).alive || (await thing(7)).alive || (await thing(8)).alive) throw new Error("the Sluice Gate's Slivers lived");
+    await g.walkTo(44);
+    {
+        // (The frame rate across the throw: the gate and the sump's water
+        // redrawn at once.)
+        const f0 = await beeb.peek("frame"), v0 = await beeb.peek("vsyncs");
+        await g.down("F"); await g.gf(10); await g.up("F");
+        const frames = ((await beeb.peek("frame")) - f0) & 255, vsyncs = ((await beeb.peek("vsyncs")) - v0) & 255;
+        console.log(`${"(frame rate)".padEnd(16)} ${frames} game frames in ${vsyncs} VSyncs, the sump draining`);
+        if (frames * 2 < vsyncs - 2) throw new Error(`the Sluice Gate dropped frames: ${frames} in ${vsyncs} VSyncs`);
+    }
+    await thrown("the Sluice Gate");
+    await mark("sluice");
+    await g.walkTo(76);
+    await shift();
+    if (!(await fireUntilDead(5, 150))) throw new Error("the Sluice Gate's Trundler lived");
+    await g.jump("R", 10);
+    await g.walkUntilRoom("R", 6, 200); await settle(); await g.land();
+    // 7 THE U-BEND: down onto the ledge in the right leg, and into the Blue;
+    // down the leg and along the dry bend for a cell, where the Slivers come
+    // down the other leg; up it to the ledge at the waterline, and back to the
+    // Red there for the welded plate up to the way out.
+    await expectRoom(6, "THE U-BEND");
+    await shift();
+    const slivers = async () => (await Promise.all([4, 5, 6, 7].map(thing))).filter((t) => t.alive).length;
+    await g.walkTo(96);
+    await g.walkTo(64);
+    await g.down("F");
+    await until(async () => (await slivers()) === 0, 200);
+    await g.up("F");
+    if ((await slivers()) !== 0) throw new Error("the U-Bend's Slivers lived");
+    await mark("ubend");
+    await g.walkTo(30);
+    await g.jump("L", 6);
+    await g.walkTo(18);
+    await g.jump("L", 12);
+    await shift();
+    await g.walkTo(12);
+    await g.jump("R", 8);
+    await g.walkTo(18);
+    await g.jump("L", 12);
+    await cross("L", 7); await settle();
+    // 8 OVERFLOW: the sump floods the walkway on the beat, in the Red. Down
+    // onto the walkway as the flood falls, over the gap onto the first depth
+    // post, and wait there for the next; along the welded plates onto the
+    // second, and over the gap onto the shelf and out.
+    await expectRoom(7, "OVERFLOW");
+    await beatTurns(0);
+    await g.walkTo(100);
+    await g.jump("L", 18);
+    await frameRate("the sump flooding the walkway");
+    await beatTurns(0);
+    await g.walkTo(66);
+    await mark("overflow");
+    await g.walkTo(52);
+    await g.jump("L", 8);
+    await g.walkTo(46);
+    await g.jump("L", 18);
+    await g.jump("L", 20);
+    await cross("L", 8); await settle();
+    // 9 THE PLUGHOLE: a pack of charges on the bank; into the Blue, where
+    // Slivers wake over the dry basin; across it and down the plughole while
+    // the plug's drawn up, onto the crate under it; back to the Red there,
+    // out of the Drill Sergeant's fire, a charge lobbed at it, and through the
+    // crystal to THE CAGE.
+    await expectRoom(8, "THE PLUGHOLE");
+    await g.walkTo(108);
+    await shift();
+    await g.down("F");
+    await until(async () => !(await thing(6)).alive && !(await thing(7)).alive && !(await thing(8)).alive, 300);
+    await g.up("F");
+    if ((await thing(6)).alive || (await thing(7)).alive || (await thing(8)).alive) throw new Error("the Plughole's Slivers lived");
+    await mark("plughole_bank");
+    await frameRate("the plug dropping into the plughole");
+    await beatTurns(0);
+    await g.down("L");
+    for (let i = 0; i < 80; i++) { const s = await g.st(); if (s.y > 64 || s.dead) break; await g.gf(1); }
+    await g.up("L");
+    if ((await g.land()).y !== 128) throw new Error("Ash missed the Plughole's crate");
+    await shift();
+    await mark("plughole");
+    await g.tap("G", 2); await g.gf(40);
+    await dead(4, "the Plughole");
+    await g.walkTo(56);
+    await g.down("L");
+    await rideCage(4);
+    await g.up("L");
+    await g.gf(20); await mark("sector4");
+    await until(async () => (await beeb.peek("room_sector")) === 4 && (await beeb.peek("blackout")) === 0, 200);
     await expectRoom(0, "THE END, FOR NOW");
     await g.gf(25);
 } catch (e) {
