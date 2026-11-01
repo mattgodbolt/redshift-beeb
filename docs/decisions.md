@@ -396,3 +396,80 @@ Matt was away is marked *provisional* until reviewed.
     - The cage ride darkens the room from the top down, a row a frame, as
       the cage goes down the shaft.
 
+46. **2026-11-01: machinery on a beat, and switches.** The Sector 2
+    newcomer playtest found five rooms named for machines that did nothing.
+    Now a room's tiles can move:
+    - **Machinery** is tiles that become other tiles on the room's beat,
+      and back on the next. The art says which (`beat=<key>` in
+      `gfx/tiles.txt`), and the room how long each way holds (`beat
+      <frames> [<frames>]` in `rooms/rooms.txt`). A ram and its slot become
+      each other, so a ram drawn shut opens as one drawn open shuts; a
+      turntable's deck turns away and back.
+    - **A switch** is a thing: a lever, thrown by a shot or a touch, or a
+      weigh plate, by standing on it. It changes the room's tiles that say
+      `switch=<key>` for as long as Ash is in the room, and with arg 2 it
+      stops the beat too, the machinery as drawn. Every switch in a room
+      throws the same tiles. Thrown, it loses its white, which marks what
+      matters, and bolts pass it.
+    - What a tile becomes has its own flags, as any tile has: a shut ram is
+      solid and kills, an open gate is air, and machinery can belong to a
+      phase as a block does. Machinery that closes on Ash kills them,
+      whatever it is.
+    - `tools/mkrooms.py` works out every look that changes, the machine's
+      own and its neighbours' drawn against it, and puts them in the room's
+      record after the map as parts: rectangles of cells, each with its
+      looks both ways. The game copies a part's looks into the map, and
+      draws just the parts that changed, each composed with whatever's in it
+      as a moving thing's rectangle is, so nothing flickers.
+    - Decision 30 holds: a death reads the room again, so the machinery is
+      as drawn and the switch unthrown, a room always as it was entered.
+    - The level editor shows a room on the beat and thrown, dashes the
+      parts, edits the beat, and refuses what `mkrooms.py` refuses. Its
+      check draws every room in every state its machinery has, pixel for
+      pixel against `render()`.
+
+    Calls made in building it (*provisional*):
+    - The art, not the room, says what a tile becomes, so a room is still
+      drawn with keys alone. A room has one beat and one switch.
+    - The build refuses what the game couldn't do: a cell that both the
+      beat and the switch change, machinery that's breakable or becomes
+      it, a breakable tile whose look the machinery changes (either would
+      undo a blast), and more parts than the game's list holds.
+    - The beat runs after the things each frame, so a switch that stops it
+      on the frame it would turn leaves it nothing to do, and a frame lists
+      each part once at most.
+    - Machinery moving and a switch thrown make the same short clank on the
+      noise channel, the least of its sounds, so a blast or a death has it.
+47. **2026-11-01: the Marshalling Yard's machines work, its Blue isn't
+    safe, and what breaks looks it.** A level pass from the Sector 2
+    newcomer playtest:
+    - The machines (decision 46). The TURNTABLE's deck turns end on to the
+      line on the beat, leaving the pit open but for the stub on its king
+      post. The WEIGHBRIDGE's weigh plate rolls up a shutter to the siding.
+      DEAD MAN'S HANDLE's handle is a lever, shot from the ledge, that
+      stops the press over the way down; the press can be timed instead.
+      CRUSHER'S MOUTH's jaw comes down over the beam on the beat, and a
+      press before the cage opens only while the jaw is shut. The CRANE
+      GANTRY's loads stay still.
+    - The Blue isn't a safe mode. SIDING FOUR has crystal on its middle
+      truck and Slivers past the barricade. DEAD MAN'S HANDLE has crystal
+      on the floor before each sergeant and Slivers in its air. CRUSHER'S
+      MOUTH's beam is a Blue span, a girder, then Red plates, under a jaw
+      too low to jump either with, so the finale needs both phases and a
+      shift on the girder, in time with the jaw; Slivers wake when you
+      shift, and crystal lies before the cage.
+    - CRUSHER'S MOUTH has no sergeant. A lob comes down about ten cells
+      off, and no crate there could be that far from one, but every
+      sergeant must die to a lob from a crate and to a roll (decision 41).
+      The press guards the cage instead.
+    - What breaks looks it: the jammed ore carts are drawn in the cracked
+      wall's look, solid with black cracks and no lit edges, where they
+      looked like hoppers hung from the roof. Trucks, lit along their rims,
+      are what you stand on.
+    - Every room has a start where a player comes in, so a test disc
+      (`make ROOM=n`) starts there, not in brickwork or the next room.
+    - A Drill Sergeant's clock starts short of its warning, and goes round
+      short of it while Ash is out of its sights, so it never fires at
+      someone who has just come level with it, landing or shifting, without
+      warning them first: landing in the SIGNAL BOX's box put Ash in its
+      fire at once. (Round, not held, since its ghost shimmers by it.)

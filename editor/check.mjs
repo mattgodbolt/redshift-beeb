@@ -4,7 +4,8 @@
 //   node editor/check.mjs [rooms.txt]
 //
 // - rooms.txt survives a load and a save byte for byte, and rooms written afresh read back the same;
-// - every room draws, in both phases, pixel for pixel as mkrooms.py's render() draws it;
+// - every room draws, in both phases and every state its machinery has (on the beat, the switch thrown,
+//   both: decision 46), pixel for pixel as mkrooms.py's render() draws it;
 // - the editor finds problems in just the rooms that mkrooms.py (or gfxlib's reader) refuses;
 // - it counts the looks shared and each sector's own as gfxlib's Looks does (decision 43);
 // - the editor's copy of THING_TYPES matches mkrooms.py's.
@@ -47,11 +48,17 @@ mode = sys.argv[2]
 if mode == 'ghosts':
     print(json.dumps({s.name: g.hollow(s.pixels) for s in g.read_sprites(ghosts=False)}))
 elif mode == 'types':
-    print(json.dumps([m.THING_TYPES, m.THING_BOX]))
+    print(json.dumps([m.THING_TYPES, m.THING_BOX, list(m.SWITCH_THINGS), [g.MAX_PARTS, g.PART_W, g.PART_CELLS]]))
 elif mode == 'render':
+    # Each room as drawn, and in each state of its machinery that changes its map.
     tiles = g.read_tiles()
-    print(json.dumps([[base64.b64encode(m.render(r, tiles, p, scale=1).tobytes()).decode() for p in (0, 1)]
-                      for r in g.read_rooms(sys.argv[3])]))
+    out = []
+    for r in g.read_rooms(sys.argv[3]):
+        drawn = g.machine_map(r, tiles)
+        states = [s for s in g.STATES if s == (0, 0) or g.machine_map(r, tiles, *s) != drawn]
+        out.append([[f'{b}{t}'] + [base64.b64encode(m.render(r, tiles, p, scale=1, state=(b, t)).tobytes()).decode()
+                                   for p in (0, 1)] for b, t in states])
+    print(json.dumps(out))
 elif mode == 'looks':
     lks = g.Looks(g.read_tiles(), g.read_rooms(sys.argv[3]))
     print(json.dumps([len(lks.shared), {s: len(own) for s, own in lks.own.items()}]))
@@ -81,7 +88,8 @@ function skip(what, why) {
 // What a room means, as against how it's written.
 const meaning = doc => JSON.stringify(doc.rooms.map(r => [
   r.id, r.name.trim() || r.id.toUpperCase(), r.sector, r.exits, r.start, r.colours.map(c => [c.r, c.b]),
-  r.bands.map(b => [b.line, b.logical, b.r, b.b]), r.map, r.things.map(t => [t.type, t.x, t.y, t.args]),
+  r.bands.map(b => [b.line, b.logical, b.r, b.b]), r.beat && [r.beat[0], r.beat[r.beat.length - 1]], r.map,
+  r.things.map(t => [t.type, t.x, t.y, t.args]),
 ]));
 function firstDiff(a, b) {
   const x = a.split('\n'), y = b.split('\n');
@@ -108,20 +116,31 @@ function compareDrawing(file, doc, label) {
   if (res.error) return skip(`${label}: drawing against render()`, res.error);
   const want = JSON.parse(res.out);
   check(want.length === doc.rooms.length, `${label}: mkrooms.py reads ${want.length} rooms, the editor ${doc.rooms.length}`);
-  doc.rooms.forEach((r, k) => [0, 1].forEach(phase => {
-    const buf = RS.renderRoom(r, tileMap, phase, new Uint8ClampedArray(RS.WIDTH * RS.LINES * 4));
-    const ref = Buffer.from(want[k][phase], 'base64');
-    let bad = 0, first = -1;
-    for (let i = 0, j = 0; i < ref.length; i += 3, j += 4) {
-      if (ref[i] !== buf[j] || ref[i + 1] !== buf[j + 1] || ref[i + 2] !== buf[j + 2]) {
-        bad++;
-        if (first < 0) first = i / 3;
-      }
+  const STATE_NAMES = {'00': '', '10': ', on the beat', '01': ', the switch thrown', '11': ', on the beat and the switch thrown'};
+  doc.rooms.forEach((r, k) => {
+    // (The states the editor's map changes in, as mkrooms.py's does: machineMap against machine_map.)
+    const drawn = JSON.stringify(RS.machineMap(r, tileMap));
+    const mine = RS.STATES.filter(([b, t]) => (!b && !t) || JSON.stringify(RS.machineMap(r, tileMap, [b, t])) !== drawn)
+      .map(([b, t]) => `${b}${t}`);
+    check(JSON.stringify(mine) === JSON.stringify(want[k].map(s => s[0])),
+      `${label}: ${r.id}'s machinery has the states render() has: ${mine.join(' ')}`);
+    for (const [state, ...phases] of want[k]) {
+      [0, 1].forEach(phase => {
+        const buf = RS.renderRoom(r, tileMap, phase, new Uint8ClampedArray(RS.WIDTH * RS.LINES * 4), [+state[0], +state[1]]);
+        const ref = Buffer.from(phases[phase], 'base64');
+        let bad = 0, first = -1;
+        for (let i = 0, j = 0; i < ref.length; i += 3, j += 4) {
+          if (ref[i] !== buf[j] || ref[i + 1] !== buf[j + 1] || ref[i + 2] !== buf[j + 2]) {
+            bad++;
+            if (first < 0) first = i / 3;
+          }
+        }
+        check(ref.length === RS.WIDTH * RS.LINES * 3 && !bad,
+          `${label}: ${r.id} in the ${phase ? 'Blue' : 'Red'} Phase${STATE_NAMES[state]} draws as render() draws it`,
+          `${bad} pixels differ, the first at ${first % RS.WIDTH}, ${Math.floor(first / RS.WIDTH)}`);
+      });
     }
-    check(ref.length === RS.WIDTH * RS.LINES * 3 && !bad,
-      `${label}: ${r.id} in the ${phase ? 'Blue' : 'Red'} Phase draws as render() draws it`,
-      `${bad} pixels differ, the first at ${first % RS.WIDTH}, ${Math.floor(first / RS.WIDTH)}`);
-  }));
+  });
 }
 
 // The editor's errors against mkrooms.py's verdict, which is the one that counts: with tiles.txt, or
@@ -168,9 +187,12 @@ compareLooks(roomsFile, doc, label);
 const types = py('types');
 if (types.error) skip('THING_TYPES', types.error);
 else {
-  const [list, boxes] = JSON.parse(types.out);
+  const [list, boxes, switches, parts] = JSON.parse(types.out);
   check(JSON.stringify(list) === JSON.stringify(RS.THING_TYPES), `THING_TYPES matches mkrooms.py's: ${list.join(' ')}`);
   check(JSON.stringify(boxes) === JSON.stringify(RS.THING_BOX), "THING_BOX matches mkrooms.py's");
+  check(JSON.stringify(switches) === JSON.stringify(RS.SWITCH_THINGS), `SWITCH_THINGS matches mkrooms.py's: ${switches.join(' ')}`);
+  check(JSON.stringify(parts) === JSON.stringify([RS.MAX_PARTS, RS.PART_W, RS.PART_CELLS]),
+    `MAX_PARTS, PART_W and PART_CELLS match gfxlib's: ${parts.join(' ')}`);
 }
 
 const ghosts = py('ghosts');
@@ -184,9 +206,13 @@ else {
 // --- Made-up rooms, for what the real ones don't have yet -----------------------------------------
 
 // Every tile, split between alpha (Sector 2) and gamma (Sector 3): each is drawn, and each is one
-// sector's own, so the two sectors' looks stay within what the game can number (decision 43).
+// sector's own, so the two sectors' looks stay within what the game can number (decision 43). The
+// split is where the looks they'd own (a tile's own, its variants and alts) come out about even.
 const keys = tiles.map(t => t.key).join('');
-const half = Math.ceil(keys.length / 2);
+const owned = tiles.map((t, i) => (i === 0 || t.shared ? 0
+  : 1 + t.variants.length + Object.values(t.alts).reduce((n, list) => n + list.length, 0)));
+let half = 0;
+for (let sum = 0; half < tiles.length && 2 * (sum + owned[half]) <= owned.reduce((a, b) => a + b, 0); half++) sum += owned[half];
 const keysOf = n => (n === 3 ? keys.slice(0, half) : ' ' + keys.slice(half));
 const row = (k, n) => {
   const ks = keysOf(n);
@@ -291,9 +317,48 @@ for (const [what, text] of Object.entries(broken)) compareVerdict(text, what);
 // shared ones (decision 43).
 {
   const art = Array(8).fill('.1.1.1.1').join('\n');
-  const big = `${read('gfx/tiles.txt')}\ntile 7 big\n${art}\n` + `alt 7 base\n${art}\n`.repeat(RS.MAX_LOOKS - 1);
-  compareVerdict(one({}) + one({head: ['sector 2'], map: blankMap.map((l, k) => (k ? l : '7'))}).replace('solo', 'duo'),
+  const big = `${read('gfx/tiles.txt')}\ntile é big\n${art}\n` + `alt é base\n${art}\n`.repeat(RS.MAX_LOOKS - 1);
+  compareVerdict(one({}) + one({head: ['sector 2'], map: blankMap.map((l, k) => (k ? l : 'é'))}).replace('solo', 'duo'),
     "a sector's own looks past what fits", big);
+}
+
+// Machinery (decision 46): each of these breaks one of its rules, but for the first few, which keep
+// them. The ram (") and its slot (,) move on the beat, the turntable's deck (7) goes on it, and the
+// gate (`) opens when a switch is thrown.
+{
+  const at = rows => blankMap.map((l, k) => rows[k] ?? l);
+  const floor = '_'.repeat(RS.MAP_W);
+  const art = Array(8).fill('.1.1.1.1').join('\n');
+  const realTiles = read('gfx/tiles.txt');
+  compareVerdict(one({head: ['beat 20 10'], map: at({8: '  """', 9: '  ,,,', 10: '  ,,,', 21: floor})}),
+    'a ram on a beat');
+  compareVerdict(one({head: ['beat 20'], map: at({17: '  7777', 18: floor}),
+    tail: ['thing lever 10 16 2']}), 'a deck on a beat, and a lever that stops it');
+  compareVerdict(one({map: at({15: '    `', 16: '    `', 17: '    `', 18: floor}), tail: ['thing plate 8 17']}),
+    'a gate, and a plate that opens it');
+  const machineBroken = {
+    'a beat line with no frames': one({head: ['beat']}),
+    'a beat of 0 frames': one({head: ['beat 0']}),
+    'a beat of 256 frames the other way': one({head: ['beat 10 256']}),
+    'a beat with three numbers': one({head: ['beat 1 2 3']}),
+    'a ram with no beat': one({map: at({8: '  """', 9: '  ,,,', 21: floor})}),
+    'a gate with nothing to throw it': one({map: at({17: '    `', 18: floor})}),
+    'a gate with only a cage': one({map: at({17: '    `', 18: floor}), tail: ['thing exit 10 15']}),
+    // (Each deck cell is a part, with the air under it, which loses its ceiling.)
+    'nine parts': one({head: ['beat 9'], map: at({10: '7 7 7 7 7 7 7 7 7', 21: floor})}),
+    'the beat and the switch changing one cell': one({head: ['beat 9'], map: at({17: '`t7', 18: floor}),
+      tail: ['thing lever 10 16']}),
+  };
+  for (const [what, text] of Object.entries(machineBroken)) compareVerdict(text, what);
+  // And what the art can't say: a tile that becomes one that isn't there, machinery that breaks, a tile
+  // that says both, and a breakable tile whose look a gate changes.
+  const plain = one({});
+  compareVerdict(plain, "a tile that becomes one that isn't there", `${realTiles}\ntile é odd beat=ñ\n${art}\n`);
+  compareVerdict(plain, 'machinery that a grenade breaks', `${realTiles}\ntile é odd solid breakable beat=space\n${art}\n`);
+  compareVerdict(plain, 'a tile on the beat and thrown by a switch', `${realTiles}\ntile é odd beat=space switch=space\n${art}\n`);
+  compareVerdict(plain, 'a tile on the beat twice over', `${realTiles}\ntile é odd beat=space beat=,\n${art}\n`);
+  compareVerdict(one({map: at({17: '`é', 18: floor}), tail: ['thing lever 10 16']}),
+    "a breakable tile's look changed by a gate", `${realTiles}\ntile é crumbly solid breakable\n${art}\nvariant é left\n${art.replace(/1/g, '2')}\n`);
 }
 function compareVerdictOk(text) {
   return RS.validate(RS.parseRooms(text), tiles).filter(p => p.level === 'error').length === 0;

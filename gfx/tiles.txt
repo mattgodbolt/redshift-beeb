@@ -26,6 +26,13 @@
 # blue (only there in that phase: out of phase it's drawn as a dotted
 # outline, and it's neither solid nor a hazard), and shared (below).
 #
+# Machinery (decision 46): beat=<key> makes a tile become that one on its
+# room's beat, and come back on the next ("space" for the empty tile), and
+# switch=<key> makes it become that one once the room's switch is thrown,
+# for as long as Ash is in the room. What it becomes is drawn for where it
+# is, as everything is, and so are its neighbours. Machinery can't be
+# breakable, nor become it: a blast would come undone.
+#
 # A tile's variants are its looks for where it is, chosen when the rooms
 # are built (gfxlib.resolve), so a room is drawn with just the keys:
 #   up down left right   those sides are open: a solid tile's side is open
@@ -1369,48 +1376,50 @@ variant C right
 ..111...
 ........
 
-# Ore carts jammed together: two by two, one crumpled cart, the next one's
-# wheels on its rim. A grenade brings the whole pile down. No lit edges,
-# and split by a black crack, as the cracked wall is.
+# Ore carts jammed together, two by two: two crushed tubs, one on the other,
+# their rims' rivets showing, split by a black crack that runs through both.
+# A grenade brings the whole pile down. It's the cracked wall's look, solid
+# with black cracks and no lit edges, so it reads as what breaks; a truck,
+# lit along its rim, is what you stand on (decision 47).
 tile & jammed solid breakable
 11111111
 1.1.1.1.
-.1111111
-.1111111
-.1.11111
-..111111
-..111111
-..11.111
+11111111
+11111111
+11111111
+11111111
+1111111.
+......1.
 
 variant & tr
-11111111
-1.1.1.11
+1111.11.
+1.1.1.1.
+111.111.
+11.1111.
 1.11111.
-.111111.
-.11.111.
-1.1111..
-.11111..
-.11.11..
+.1.1111.
+111.111.
+11111...
 
 variant & bl
-...1111.
-...11111
-....111.
-..111...
-.1...1..
-.1.1.1..
-.1...1..
-..111...
+11111.11
+1.1..1.1
+111.1111
+11.11111
+111.1111
+1111.111
+111.1111
+........
 
 variant & br
-11111...
-.1111...
-1111....
-..111...
-.1...1..
+1111111.
 .1.1.1..
-.1...1..
-..111...
+11111.1.
+11111.1.
+1111.11.
+111.111.
+111.111.
+........
 
 # Signal-box glazing: panes with a glint, in a frame.
 tile F window
@@ -1739,3 +1748,138 @@ variant V ceiling
 ..21..21
 ..23..23
 ...3...3
+
+# --- Machinery (decision 46): tiles that move on their room's beat, or once
+# --- its switch is thrown (the header says how).
+
+# A ram: a crusher's jaw, or a press, of hazard-striped steel, coming out of
+# its housing (stripes too) with teeth on its open end. Solid, and it kills
+# what it closes on. It and its slot become each other on the beat, so a
+# ram drawn shut opens while one drawn open shuts: two can take turns.
+tile " ram solid hazard beat=,
+22112211
+21122112
+11221122
+12211221
+22112211
+21122112
+11221122
+12211221
+
+variant " down
+22112211
+21122112
+11111111
+.2111211
+.211.211
+..21..21
+..23..23
+...3...3
+
+variant " up
+...3...3
+..23..23
+..21..21
+.211.211
+.2111211
+11111111
+21122112
+12211221
+
+# The ram's slot: where it comes on the beat, between its guides (on the
+# slot's outer sides, lit on their left), which show where it will be.
+tile , ramslot beat="
+........
+........
+........
+........
+........
+........
+........
+........
+
+variant , left+right
+21....21
+2.....2.
+21....21
+21....21
+21....21
+2.....2.
+21....21
+21....21
+
+variant , left
+21......
+2.......
+21......
+21......
+21......
+2.......
+21......
+21......
+
+variant , right
+......21
+......2.
+......21
+......21
+......21
+......2.
+......21
+......21
+
+# The turntable's deck: rails on a plate girder, lightened with holes. On
+# the beat it turns end on to the line and is gone, but for the middle over
+# its king post (track), and the pit's open.
+tile 7 deck solid beat=space
+22222222
+11111111
+.1.1.1.1
+........
+11111111
+1.11.11.
+11111111
+.1.1.1.1
+
+variant 7 left
+.2222222
+21111111
+2.1.1.1.
+........
+21111111
+21.11.11
+21111111
+.1.1.1.1
+
+variant 7 right
+2222222.
+1111111.
+.1.1.1..
+........
+1111111.
+1.11.11.
+1111111.
+.1.1.1..
+
+# A gate: a shutter of slats between its runners, that rolls up out of the
+# way once the room's switch is thrown. (Bars with a rail across read as a
+# ladder.) Its top is its drum, dithered, not a lip.
+tile ` gate solid switch=space
+21111111
+2......1
+21111111
+21111111
+2......1
+21111111
+21111111
+2......1
+
+variant ` up
+.212121.
+21212121
+.111111.
+21111111
+2......1
+21111111
+21111111
+2......1

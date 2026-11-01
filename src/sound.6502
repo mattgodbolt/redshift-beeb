@@ -117,8 +117,9 @@ su_ptr = map_row                    ; (fixed zero page: not drawing now)
 \ The effects (sound_play's A).
 SFX_FIRE = 0 : SFX_DIE = 1 : SFX_BUZZ = 2 : SFX_PING = 3
 SFX_BOOM = 4 : SFX_TAKE = 5 : SFX_ZAP = 6 : SFX_SHIFT_RED = 7 : SFX_SHIFT_BLUE = 8
-SFX_FALL = 9 : SFX_LIFE = 10
+SFX_FALL = 9 : SFX_LIFE = 10 : SFX_CLANK = 11
 
+.sound_clank : PHA : LDA #SFX_CLANK : JMP play_it
 .sound_fire  : PHA : LDA #SFX_FIRE : JMP play_it
 .sound_die   : PHA : LDA #SFX_DIE : JMP play_it
 .sound_buzz  : PHA : LDA #SFX_BUZZ : JMP play_it
@@ -200,9 +201,15 @@ ENDMACRO
     TONE 1, 190 : TONE 1, 95 : TONE 9, 95 : TONE 1, 190 : TONE 1, 95 : TONE 4, 95
     TONE 1, 63 : TONE 3, 63 : TONE 6, 63 : TONE 9, 63 : TONE 12, 63
     END_SFX
+\ Machinery moving, a switch thrown: a short metallic thud, the least of the
+\ noise's sounds, so a blast or a death always has it.
+.sfx_clank
+    EQUB V_NOISE + &10
+    NOISE 2, 1 : NOISE 5, 2 : NOISE 9, 2 : NOISE 13, 2
+    END_SFX
 .sfx_lo EQUB LO(sfx_fire), LO(sfx_die), LO(sfx_buzz), LO(sfx_ping), LO(sfx_boom)
         EQUB LO(sfx_take), LO(sfx_zap), LO(sfx_shift_red), LO(sfx_shift_blue), LO(sfx_fall)
-        EQUB LO(sfx_life)
+        EQUB LO(sfx_life), LO(sfx_clank)
 .sfx_hi EQUB HI(sfx_fire), HI(sfx_die), HI(sfx_buzz), HI(sfx_ping), HI(sfx_boom)
         EQUB HI(sfx_take), HI(sfx_zap), HI(sfx_shift_red), HI(sfx_shift_blue), HI(sfx_fall)
-        EQUB HI(sfx_life)
+        EQUB HI(sfx_life), HI(sfx_clank)

@@ -99,8 +99,10 @@ The rules, as Morrell's harness manual gives them:
 - **Rooms:** ENGINE SHED, SIGNAL BOX, TURNTABLE, WEIGHBRIDGE, SIDING FOUR,
   CRANE GANTRY, BUFFER STOPS, DEAD MAN'S HANDLE, CRUSHER'S MOUTH.
 - **Hazards and enemies:** Red barricades everywhere, so going round costs
-  cells; torn rail ends as spikes; walls of jammed ore carts for grenades.
-  Trundlers in numbers, Drill Sergeants in the signal boxes, Gadflies overhead.
+  cells; torn rail ends as spikes; walls of jammed ore carts for grenades;
+  machinery that still runs: a turntable, a weighbridge, presses and the
+  crusher's jaw. Trundlers in numbers, Drill Sergeants in the signal boxes,
+  Gadflies overhead, and Slivers where the crystal has spread.
 
 ### Sector 3: THE SUMP
 

@@ -13,6 +13,10 @@
 \ a frame. A rectangle too big for the buffer is drawn on the screen
 \ itself, which can flicker; things are small, so it's rare.
 \
+\ Machinery that moved (machines.6502) is drawn the same way, first: each
+\ part's rectangle grows to take in what it touches, and is composed with
+\ it, so a ram that comes down by a thing doesn't wipe it for a moment.
+\
 \ A thing's position: x in 2-pixel steps, so its sprite is one of two
 \ versions (0, or 2 pixels on: gfx.6502), y in lines.
 \ ***************************************************************************
@@ -85,21 +89,47 @@ ZA_AUTO1 rrow5                  ; the row being composed, << 5 (back_look's)
     JMP where
 .where_done
 
+    \ The machinery's parts that moved, each with whatever it touches.
+.parts
+    LDX parts_n : BEQ parts_done
+    DEX : STX parts_n
+    LDA parts_c0,X : STA rc0
+    LDA parts_c1,X : STA rc1
+    LDA parts_r0,X : STA rr0
+    LDA parts_r1,X : STA rr1
+    JSR none_in
+    JSR compose
+    JMP parts
+.parts_done
+
     \ Each pending thing's rectangle in turn.
     LDA #0 : STA ri
 .each
     LDX ri
-    LDA obj_pend,X : JEQ next_rect
+    LDA obj_pend,X : BEQ next_rect
     LDA f_c0,X : STA rc0
     LDA f_c1,X : STA rc1
     LDA f_r0,X : STA rr0
     LDA f_r1,X : STA rr1
+    JSR none_in
+    LDX ri : INC obj_in,X
+    JSR compose
+.next_rect
+    INC ri : LDA ri : CMP #NOBJ : BNE each
+    RTS
+
+\ Nothing in the rectangle yet (obj_in).
+.none_in
     LDY #NOBJ - 1
     LDA #0
 .clear_in
     STA obj_in,Y
     DEY : BPL clear_in
-    INC obj_in,X
+    RTS
+
+\ The rectangle (rc0-rc1, rr0-rr1, and what's in it: obj_in) grown to take
+\ in everything it touches, and drawn: everything in it is shown where it is.
+.compose
 .grow
     LDA #0 : STA rgrew
     LDX #NOBJ - 1
@@ -144,8 +174,6 @@ ZA_AUTO1 rrow5                  ; the row being composed, << 5 (back_look's)
     LDA n_r1,X : STA o_r1,X : STA f_r1,X
 .not_in
     DEX : BPL done_in
-.next_rect
-    INC ri : LDA ri : CMP #NOBJ : JNE each
     RTS
 
 \ The footprint (f_*, X) takes in where thing X was drawn (o_*).

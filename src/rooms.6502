@@ -25,7 +25,8 @@
     JMP rd_byte
 }
 
-\ Read room A: its name, exits, colours and bands, and its map unpacked.
+\ Read room A: its name, exits, colours and bands, its map unpacked, and its
+\ machinery as drawn (machines.6502).
 .load_room
 {
     ZA_AUTO2 lr_dst
@@ -100,7 +101,7 @@
 .check
     LDA lr_dst : CMP #LO(map + MAP_W * MAP_H) : BNE code
     LDA lr_dst+1 : CMP #HI(map + MAP_W * MAP_H) : BNE code
-    RTS
+    JMP mach_load                   ; (the machinery follows)
 .advance
     INC lr_dst : BNE adv_done
     INC lr_dst+1

@@ -71,12 +71,12 @@ check: $(TARGET)
 	node editor/check.mjs > build/editor-check.txt || { cat build/editor-check.txt; exit 1; }
 
 # Always from a clean tree, so the stamp names the commit the disc holds.
-# The whole of Sector 1, played to the Engine Shed (tools/playthrough.mjs).
+# Sectors 1 and 2, played through the cage into Sector 3 (tools/playthrough.mjs).
 playthrough: $(TARGET)
 	node tools/playthrough.mjs
 
 # The README's screenshots, from a playthrough.
-README_SHOTS = title landing pump_red pump_blue jar tanks hut skip engine signal turntable crane
+README_SHOTS = title landing pump_red pump_blue jar tanks hut skip engine signal turntable weighbridge handle jaw
 readme-shots: $(TARGET)
 	node tools/playthrough.mjs --shots build/shots
 	for n in $(README_SHOTS); do cp build/shots/$$n.png docs/media/; done

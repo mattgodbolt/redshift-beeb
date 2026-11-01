@@ -11,12 +11,20 @@
 # colours <c1> <c2> <c3>      logical colours 1-3 at the top of the room
 # band <line> <logical> <c>   from playfield line 0-175 down, logical 1-3
 #                             shows colour c (at most 8; 2 lines apart)
+# beat <frames> [<frames>]    the room's machinery (tiles that say beat= in
+#                             gfx/tiles.txt) as drawn for the first, in game
+#                             frames (25 a second), then the other way for
+#                             the second (the first if there's none); 1-255
 # map                         then 22 lines of up to 32 tiles (gfx/tiles.txt)
 # thing <type> <x> <y> [arg]  an enemy or pickup: its top-left, in tiles;
 #                             arg 1 faces it left. Types: sentry drone
-#                             crawler shard cell grenades life exit. An exit
-#                             is the cage: it takes you down (exits down=)
-#                             to the next sector.
+#                             crawler shard cell grenades life exit lever
+#                             plate. An exit is the cage: it takes you down
+#                             (exits down=) to the next sector. A lever (shot
+#                             or touched) or a plate (stood on) is a switch:
+#                             it changes the room's tiles that say switch=,
+#                             and with arg 2 (add 1 to face it left) stops
+#                             its beat too.
 #
 # A colour is black red green yellow blue magenta cyan white: the Red Phase's.
 # The Blue Phase's is its opposite (red-blue, yellow-cyan, magenta-green)
@@ -353,6 +361,7 @@ thing cell 20 13
 room signal
 name SIGNAL BOX
 exits left=- right=turntable up=- down=-
+start 0 17
 colours magenta/blue cyan white
 band 40 2 red/blue
 band 48 2 cyan/yellow
@@ -386,7 +395,9 @@ thing grenades 14 13
 room turntable
 name TURNTABLE
 exits left=- right=- up=- down=weighbridge
+start 0 17
 colours magenta/blue yellow white
+beat 75 50
 map
 ################################
 ################################
@@ -406,17 +417,17 @@ map
                        P       #
                        P       #
                        P       #
-ttttttt  tttttttttt  tttttttPPP#
-#######   ========   #######   #
+ttttttt777777tt777777tttttttPPP#
+#######      99      #######   #
 #######rrrrrr99rrrrrr#######   #
 ############################   #
-thing crawler 10 16
-thing shard 12 16
-thing shard 16 15
+thing shard 26 14
+thing shard 29 12
 
 room weighbridge
 name WEIGHBRIDGE
 exits left=siding right=- up=- down=-
+start 28 2
 colours red cyan white
 map
 ############################   #
@@ -427,27 +438,29 @@ map
 ###########################    #
 ###########################    #
 ###########################    #
-################### FF00FF     #
-################### FF00FF     #
-#         &&        FFFFFF     #
-#         &&        FFFFFF     #
-#         &&         L  L      #
-#         && xxx               #
-#  tttttttttttttttt            #
-   ################            #
-   ################ CCC        #
-   ################ CCC        #
+###################`FF00FF     #
+###################`FF00FF     #
+#         &&       `FFFFFF     #
+#         &&       `FFFFFF     #
+#         &&       ` L  L      #
+#         && xxx   `           #
+#  tttttttttttttttt`           #
+   ################`           #
+   ################`CCC        #
+   ################`CCC  xx    #
 ttttttttttttttttttzzzzzzzztttttt
 ################################
 ################################
 ################################
 thing crawler 13 12
 thing crawler 5 12
-thing grenades 26 17
+thing plate 23 17
+thing grenades 29 17
 
 room siding
 name SIDING FOUR
 exits left=- right=- up=- down=gantry
+start 30 17
 colours magenta/blue yellow white
 map
 ################################
@@ -465,7 +478,7 @@ map
 #   P !                    !   #
 #   P !                    !   #
 #   P !                    !   #
-#   P !                    !
+#   P !       xxxx         !
 #     !CCCC   CCCC   CCCC  !
 #     !CCCCrrrCCCCrrrCCCC  !
 #   tttttttttttttttttttttttttttt
@@ -476,10 +489,13 @@ thing crawler 15 14
 thing crawler 8 14 1
 thing drone 1 15
 thing cell 9 15
+thing shard 1 15
+thing shard 3 16
 
 room gantry
 name CRANE GANTRY
 exits left=- right=buffers up=- down=-
+start 1 2
 colours red yellow white
 map
 #   ############################
@@ -511,6 +527,7 @@ thing cell 11 13
 room buffers
 name BUFFER STOPS
 exits left=- right=- up=- down=handle
+start 0 17
 colours magenta/blue cyan white
 map
 ################################
@@ -543,26 +560,28 @@ thing cell 16 17
 room handle
 name DEAD MAN'S HANDLE
 exits left=- right=- up=- down=crusher
+start 30 2
 colours red cyan white
+beat 40 24
 map
 ##############################
 ##############################
 ##############################
 #########
+#
+#
+#
 ####
-####
-####
-####
-#                 tttttttttttttt
-#       L      L        L      #
-#          .                   #
-#          .                   #
-#          .                   #
-#          .                   #
-#   FFFF   .               FFFF#
-#   FFFF   .               FFFF#
-#   FFFF   .    CCC        FFFF#
-#   FFFF   .    CCC        FFFF#
+####              tttttttttttttt
+#zzz    L      L        L      #
+#zzz                           #
+#zzz                           #
+#zzz                           #
+#,,,                           #
+#,,,FFFF                   FFFF#
+#,,,FFFF                   FFFF#
+#,,,FFFF        CCC        FFFF#
+#,,,xxxxxx      CCC    xxxxFFFF#
 #   ttttttttttttttttttttttttttt#
 #   ############################
 #   ############################
@@ -570,38 +589,42 @@ map
 thing sentry 5 16
 thing sentry 28 16 1
 thing grenades 22 7
+thing lever 2 5 2
+thing shard 8 11
+thing shard 13 12
 
 room crusher
 name CRUSHER'S MOUTH
 exits left=- right=- up=- down=s3end
+start 1 2
 colours red yellow white
+beat 64 36
 map
 #   ############################
 #   ############################
 #   ############################
-#    L   zzzzzzzz     L    L   #
-#        zzzzzzzz              #
-#        zzzzzzzz              #
-#        VVVVVVVV              #
-#                              #
-#                              #
-#                              #
-#                              #
-tttttt                         #
-######============             #
-######                         #
-######                         #
-######
-######           CCC
-######VVVVVVVVVVVCCC
-######zzzzzzzzzzzzttttttttttttt#
-######zzzzzzzzzzzz##############
-######zzzzzzzzzzzz##############
-######zzzzzzzzzzzz##############
-thing crawler 12 10
-thing crawler 23 16 1
-thing sentry 28 16 1
+#    L  zzzzzzzzzz      zzz  L #
+#       zzzzzzzzzz      zzz    #
+#       zzzzzzzzzz      zzz    #
+#       zzzzzzzzzz      zzz    #
+#       ,,,,,,,,,,      zzz    #
+#       ,,,,,,,,,,      zzz    #
+#       ,,,,,,,,,,      zzz    #
+#       ,,,,,,,,,,      zzz    #
+tttttt                  """    #
+######==bbbb==PPPP===   """    #
+######                  """    #
+######                  """    #
+######                  """
+######               CCC"""
+######VVVVVVVVVVVVVVVCCC"""xxx
+######zzzzzzzzzzzzzzztttttttttt#
+######zzzzzzzzzzzzzzz###########
+######zzzzzzzzzzzzzzz###########
+######zzzzzzzzzzzzzzz###########
 thing exit 30 15
+thing shard 20 4
+thing shard 21 8
 
 room s3end
 name THE END, FOR NOW

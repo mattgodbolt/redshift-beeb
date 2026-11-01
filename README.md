@@ -79,26 +79,34 @@ THE LEACH WORKS, where Ash starts, teaches one thing a room:
 <tr><td><img src="docs/media/engine.png" alt="The Engine Shed"></td>
 <td><img src="docs/media/signal.png" alt="The Signal Box"></td></tr>
 <tr><td><img src="docs/media/turntable.png" alt="The Turntable, in the Blue Phase"></td>
-<td><img src="docs/media/crane.png" alt="The Crane Gantry"></td></tr>
+<td><img src="docs/media/weighbridge.png" alt="The Weighbridge, its gate open"></td></tr>
+<tr><td><img src="docs/media/handle.png" alt="Dead Man's Handle, the handle thrown"></td>
+<td><img src="docs/media/jaw.png" alt="Crusher's Mouth: under the jaw, in the Blue Phase"></td></tr>
 </table>
 
 The ore railway's hub, and the machines' home ground. Red barricades
-everywhere, so going round costs cells:
+everywhere, so going round costs cells, and machinery that moves on the
+beat, or when Ash throws a switch:
 
 1. **ENGINE SHED.** Trundlers in numbers, around an engine on its running
    gear.
 2. **SIGNAL BOX.** A Drill Sergeant up in its box, and an ore truck to
    throw from.
-3. **TURNTABLE.** Torn rails as spikes, and a welded hatch to drop through
-   in the Blue.
-4. **WEIGHBRIDGE.** Jammed ore carts that only a grenade moves.
-5. **SIDING FOUR.** Truck to truck over the spike gaps.
+3. **TURNTABLE.** Its deck turns end on to the line and back, over a pit of
+   torn rails; Slivers beyond the barricade, and a welded hatch to drop
+   through in the Blue.
+4. **WEIGHBRIDGE.** A weigh plate that opens the gate to the siding, and
+   jammed ore carts that only a grenade moves.
+5. **SIDING FOUR.** Truck to truck over the spike gaps, crystal on the
+   middle one, and Slivers past the barricade.
 6. **CRANE GANTRY.** Gadflies under the hanging loads.
 7. **BUFFER STOPS.** Both phases in turn: the Blue for the spans, the Red
    for the plates.
-8. **DEAD MAN'S HANDLE.** A truck between two sergeants.
-9. **CRUSHER'S MOUTH.** A beam between the jaws, and the cage down to Sector
-   3, which is as far as the game goes for now.
+8. **DEAD MAN'S HANDLE.** A truck between two sergeants, and a press over
+   the way down. Shoot the handle and it stops.
+9. **CRUSHER'S MOUTH.** A beam under the jaw, which needs both phases and
+   good timing, a press that opens only while the jaw is shut, and the cage
+   down to Sector 3, which is as far as the game goes for now.
 
 ## The idea
 

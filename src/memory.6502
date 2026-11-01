@@ -96,6 +96,21 @@ MAXEV = 8                   ; palette changes in a room, below its top
 .cage_go    SKIP 1          ; the player stepped into the cage this frame
 .at_start   SKIP 1          ; change_room: put the player at the room's start
 .things_ptr SKIP 2          ; its things (in its record)
+\ Its machinery and switches (machines.6502).
+.mach_ptr   SKIP 2          ; the machinery, in its record after the map
+.beat_len   SKIP 2          ; frames as drawn, and the other way (0: no beat)
+.beat_t     SKIP 1          ; frames left this way
+.beat_on    SKIP 1          ; 0 as drawn, 1 the other way
+.beat_stop  SKIP 1          ; non-zero: a switch stopped the beat
+.sw_thrown  SKIP 1          ; non-zero: the switch is thrown
+.sw_stops   SKIP 1          ; non-zero: throwing it stops the beat
+\ The parts of it to draw again this frame (render.6502): their rectangles,
+\ in byte columns and character rows, ends exclusive.
+.parts_n    SKIP 1
+.parts_c0   SKIP MAX_PARTS
+.parts_c1   SKIP MAX_PARTS
+.parts_r0   SKIP MAX_PARTS
+.parts_r1   SKIP MAX_PARTS
 
 \ The things on screen (render.6502): the player, shots, enemies,
 \ explosions. Drawn in slot order, so later slots are on top.

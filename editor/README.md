@@ -13,5 +13,6 @@ http://localhost:8000/editor/. It reads `gfx/tiles.txt`, `gfx/sprites.txt`,
 
 `node editor/check.mjs` checks it against the real files and
 `tools/mkrooms.py`: `rooms.txt` must survive a load and a save byte for byte,
-every room must draw exactly as `render()` does, and the editor must find
+every room must draw exactly as `render()` does, in both phases and every
+state its machinery has (on the beat, thrown), and the editor must find
 problems in just the rooms that `mkrooms.py` refuses.
