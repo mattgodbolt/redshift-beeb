@@ -1149,6 +1149,87 @@ Matt was away is marked *provisional* until reviewed.
       page of the story's words. They hold twice `WORDS_TIME` now, and a
       key still turns them.
     - **The phase word** comes off the status bar once the Hinge is shut.
+60. **2026-11-01: Sector 5, INSIDE THE PRISM** (*provisional*; after 61,
+    which landed while it was built). A level agent built the eight rooms between Bore Nine's
+    cage and THE HINGE, with no change to the engine, held to what the
+    playtests taught (decisions 35, 41, 44, 45, 47, 49 and 51 to 57). Bore
+    Nine's cage brings Ash into FIRST FACET at its start; THE DARK FRINGE
+    leaves in the Red onto THE HINGE's ledge, edge to edge, behind the
+    pillar that shields it from the gun, so the fight begins as it did from
+    the cage. The Hinge's start stays on its ledge, for a test disc.
+    - **The Prism's floors.** No rock: the walls are the Prism's white face
+      in both phases (decision 58), and the floors are the Red's blocks and
+      the Blue's over white spikes. A run of one phase's blocks holds Ash in
+      that phase only; where it meets the other's, a seam, Ash's box stands
+      on both, so a seam holds Ash in either and is the place to shift. A
+      run of two to four of the other phase's blocks is hopped from a run of
+      take-offs; one of seven or more can't be, and each room has one of
+      each phase's, so each needs both phases.
+    - **The pulse** (decision 46's machinery). On a room's beat a block of
+      the Red's becomes the Blue's (`ρ`) and one of the Blue's the Red's
+      (`β`), flickering first. Drawn as the blocks (`as=`), they cost no
+      looks, and a seam between the two stays a seam through the turn.
+    - **True angles, and light.** The Prism's face cut at 45 degrees along
+      its lattice's facet lines (`α ε ι ο`) cuts rooms' corners, hangs the
+      refractor and saws SPECTRUM WALK's roof; it's solid, so it stays out
+      of Ash's reach. Rays in the body colour (`κ λ ν`) cross the back wall,
+      taking each band's colour: the beam the refractor bends, the beam
+      reflected at the critical angle, two waves out of step, two beams
+      brought to a focus. Scenery, so they sit back.
+    - **A room an idea**, each needing both phases from the phase a player
+      normally comes in with:
+      - FIRST FACET, the lesson: the Blue's floor meets the Red's at a seam,
+        with the cell on it. A wall of the Red's stops the Red at the way
+        in; two Slivers wake over the floor in the Blue; a Trundler holds
+        the way out, a step up from the Red's floor, where it can't come
+        down to Ash and a standing bolt meets it.
+      - THE REFRACTOR: the pulse. Between the Red's floor and the Blue's,
+        the middle turns phase half by half; cross it a half at a time,
+        waiting on the seam between the halves.
+      - CRITICAL ANGLE: a Gadfly between two walls of the Red's that hang
+        two rows short of the Blue's floor. Walk under its ghost in the
+        Blue; shoot it under either wall in the Red, where it can't come.
+        A wall of the Blue's at the way out.
+      - DOUBLE IMAGE: two bays, each the other's image. The Red's has a
+        Drill Sergeant, lobbed from the block at the way in, where its
+        charges lie, or rolled at along the Red's floor; the Blue's has the
+        swarm where the sergeant would stand, met from the pillar between.
+      - SPECTRUM WALK: runs of each phase's blocks, the other's hopped, two
+        runs too long to hop, and a Trundler on the last. The bands are
+        thin, the spectrum.
+      - INTERFERENCE: the whole floor turns phase on the beat, run by run.
+        Across it in the Red to an island, for its cell; through the Red's
+        wall in the Blue; across again in the Blue, through the Blue's.
+      - FOCAL LENGTH: the swarm hangs over the Prism's floor, where the
+        beams meet, still while Ash is in the Red. A shift beside it is
+        refused: shift at the floor's far end, and it comes in a line. A
+        Trundler on the Red's floor, shot crouching from the step at the
+        way in, where it can't come.
+      - THE DARK FRINGE: the Hinge's fight before the Hinge, under bands
+        that go black. The swarm over the Blue's floor; a pillar of the
+        Prism's out of a sergeant's fire, to lob from; the Red's floor to
+        roll along; and the way into the Hinge.
+    - **Cells** are few: one on FIRST FACET's seam and one on
+      INTERFERENCE's island. Each room takes one or two shifts, and a
+      careful player comes to the Hinge with some left, where the fight
+      tops them up (decision 58).
+
+    Calls made in building it (*provisional*):
+    - A room can't set a thing's phase, so each enemy is in its own, as
+      decision 11 has it: the Red's machines and the Blue's Slivers.
+    - The Prism's face has a look for each corner of its two by two
+      lattice, so its cells don't pack into runs as brick does: the walls
+      are thin and the rooms open halls, to keep the sector's file small.
+    - Slivers are in four rooms, where where Ash shifts or stands decides
+      the fight; THE REFRACTOR and INTERFERENCE have no enemy, as Echo
+      Gallery has none, their floors being the idea.
+    - No pit reaches a room's edge under its way out: a jump from the last
+      lip carried Ash out of the room mid-air before they fell. Each way
+      out stands on the Prism's floor.
+    - The playthrough plays all eight from Bore Nine's cage into the Hinge,
+      checks both sergeants die and both cells are taken, tries a shift
+      under FOCAL LENGTH's swarm and fails if it isn't refused, and times
+      the frames across both rooms' pulse.
 
 62. **2026-11-05: the Hinge's design pass: a plate that reads, armour that
     answers, a gun for the pillar, and lamps that stay out**

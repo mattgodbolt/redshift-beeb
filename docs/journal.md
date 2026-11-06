@@ -798,6 +798,50 @@ shift again. Three lamps in its visor, three rounds, each faster.
 - The playthrough now plays on from Bore Nine's cage: three rounds, the
   fold, the dark, the words and a new game, on the B and the Master.
 
+## 2026-11-01: Sector 5, inside the Prism
+
+The game is whole: the eight rooms between Bore Nine's cage and THE HINGE
+are built (decision 60), and THE DARK FRINGE walks onto the Hinge's ledge.
+
+Past Bore Nine there's no rock to build with, so the sector is built of
+the two phases themselves. Its floors are the Red's blocks and the Blue's
+over white spikes, and where one meets the other a seam holds Ash in
+both: the Hinge's walkway, taught a piece at a time. FIRST FACET is one
+seam; THE REFRACTOR's middle turns phase on the beat, so the seam carries
+Ash across; SPECTRUM WALK's short runs are hopped in either phase; and
+INTERFERENCE turns the whole floor, run by run, crossed once in each
+phase. Between them, CRITICAL ANGLE's Gadfly hangs between two walls of
+the Red's, DOUBLE IMAGE has a sergeant in one bay and the swarm in its
+image, FOCAL LENGTH's swarm refuses the obvious place to shift, and THE
+DARK FRINGE is the Hinge's own fight, under bands gone black.
+
+The engine needed nothing new. The pulse is two machinery tiles drawn as
+the blocks. The Prism got its true angles, its face cut along its own
+facet lines, and rays of light on the back wall that change colour band
+by band: the beam the refractor bends, one reflected, two waves, two
+beams meeting at a focus.
+
+- The searches over Ash's movement caught two ways round the rooms before
+  anyone played them. A gap of six blocks could be jumped from its very
+  lip, so a run that has to be crossed in its own phase is seven. And a
+  pit that ran out to the room's edge let a jump from the far lip carry
+  Ash out of the room in mid-air, past the run they were meant to shift
+  for: every way out stands on the Prism's floor now.
+- The Dark Fringe's pillar held its swarm behind it at Ash's height, out of
+  any bolt's reach, until Ash climbed into them: the swarm waits on the
+  near side now, far enough from the way in to be met.
+- FOCAL LENGTH's Trundler rolled under the step at the way in, where a
+  standing bolt passes over it: it's shot crouching from the step, as the
+  Pickle Jar's is, where it can't come.
+- FIRST FACET's Trundler holds the way out a step up, as the Outfall's
+  does, where it first patrolled the Red's floor up to the seam the lesson
+  is about. Three rooms lost their Slivers, so the swarm is where it makes
+  Ash choose.
+- Scripted deaths in every room brought Ash back where they came in, and
+  alive there while firing into the room.
+- The playthrough plays all eight from the cage into the Hinge, the fight
+  and the ending, on the B and the Master, without losing a life.
+
 ## 2026-11-05: the Hinge, a second look
 
 A newcomer beat the Hinge and called it learnable, but only after many

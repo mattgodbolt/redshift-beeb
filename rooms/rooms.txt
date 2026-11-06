@@ -1196,7 +1196,7 @@ thing cell 5 6
 
 room bore
 name BORE NINE
-exits left=- right=- up=- down=hinge
+exits left=- right=- up=- down=facet
 start 28 2
 colours red yellow white
 map
@@ -1229,6 +1229,295 @@ thing shard 0 15
 thing shard 1 16
 thing shard 0 17
 
+# INSIDE THE PRISM (Sector 5, decision 60): past Bore Nine the rock stops.
+# White walls in both phases, banded in the colours the Prism splits light
+# into, and floors of the Red's blocks and the Blue's over white spikes:
+# where one meets the other, a seam, holds Ash in both. Eight rooms to THE
+# HINGE, each teaching one more thing it asks.
+room facet
+name FIRST FACET
+sector 5
+exits left=- right=refractor up=- down=-
+start 1 15
+colours red/blue white white
+band 64 1 magenta/cyan
+band 128 1 yellow/blue
+map
+ϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟϟα                    εϟϟϟϟϟ
+ϟϟϟϟα                      εϟϟϟϟ
+ϟϟϟαR                       εϟϟϟ
+ϟϟα R                        εϟϟ
+ϟα  R                         εϟ
+ϟ   R                          ϟ
+ϟ   R                          ϟ
+ϟ   R                          ϟ
+ϟ   R                          ϟ
+ϟ   R                          ϟ
+ϟ   R                          ϟ
+ϟ   R                           
+ϟ   R                           
+ϟ   R                           
+ϟ   R                 ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟϟBBBBBBBBRRRRRRRRRϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟϟ                 ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟϟ                 ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟϟ                 ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟϟ                 ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟϟ^^^^^^^^^^^^^^^^^ϟϟϟϟϟϟϟϟϟϟ
+thing crawler 26 13 1
+thing shard 19 13
+thing shard 25 11
+thing cell 12 15
+
+room refractor
+name THE REFRACTOR
+exits left=- right=critical up=- down=-
+start 0 14
+colours yellow/cyan white white
+band 44 1 red/blue
+band 88 1 yellow/cyan
+band 132 1 red/blue
+beat 50 50
+map
+ϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟ
+ϟ         εϟϟϟϟϟϟϟϟϟϟα         ϟ
+ϟ          εϟϟϟϟϟϟϟϟα          ϟ
+ϟκκκκκκκκκκκεϟϟϟϟϟϟακκκκκκκκκκκϟ
+ϟ            εϟϟϟϟαλ           ϟ
+ϟ             εϟϟα  λ          ϟ
+ϟ              εα    λ         ϟ
+ϟ                     λ        ϟ
+ϟ                      λ       ϟ
+ϟ                       λ      ϟ
+ϟ                        λ     ϟ
+ϟ                         λ    ϟ
+                           λ   ϟ
+                                
+                                
+ϟϟϟ                             
+ϟϟϟRRRRRRRβββββββρρρρρρρBBBBBBBB
+ϟϟϟ                            ϟ
+ϟϟϟ                            ϟ
+ϟϟϟ                            ϟ
+ϟϟϟ                            ϟ
+ϟϟϟ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ϟ
+
+room critical
+name CRITICAL ANGLE
+exits left=- right=double up=- down=-
+start 0 15
+colours magenta/blue white white
+band 32 1 red/cyan
+band 64 1 magenta/blue
+band 96 1 yellow/cyan
+band 128 1 magenta/blue
+map
+ϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟ
+ϟ   Rλ            νλ    R    B ϟ
+ϟ   R λ          ν  λ   R    B ϟ
+ϟ   R  λ        ν    λ  R    B ϟ
+ϟ   R   λ      ν      λ R    B ϟ
+ϟ   R    λ    ν        λR    B ϟ
+ϟ   R     λ  ν          R    B ϟ
+ϟ   R      λν           R    B ϟ
+ϟ   R                   R    B ϟ
+ϟ   R                   R    B ϟ
+ϟ   R                   R    B ϟ
+ϟ   R                   R    B ϟ
+ϟ   R                   R    B ϟ
+    R                   R    B  
+                             B  
+                             B  
+ϟϟϟϟBBBBBBBBBBBBBBBBBBBBϟϟϟϟϟϟϟϟ
+ϟϟϟϟ                    ϟϟϟϟϟϟϟϟ
+ϟϟϟϟ                    ϟϟϟϟϟϟϟϟ
+ϟϟϟϟ                    ϟϟϟϟϟϟϟϟ
+ϟϟϟϟ                    ϟϟϟϟϟϟϟϟ
+ϟϟϟϟ^^^^^^^^^^^^^^^^^^^^ϟϟϟϟϟϟϟϟ
+thing drone 14 13
+
+room double
+name DOUBLE IMAGE
+exits left=- right=spectrum up=- down=-
+start 0 15
+colours red/cyan white white
+band 88 1 yellow/blue
+map
+ϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟα                        εϟϟϟ
+ϟϟα                          εϟϟ
+ϟα                            εϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                 ϟϟ           ϟ
+                  ϟϟ            
+   ϟϟϟ            ϟϟ      BBB   
+   ϟϟϟ            ϟϟ      BBB   
+ϟϟϟϟϟϟRRRRRRRRRRRRϟϟBBBBBBBBBBϟϟ
+ϟϟϟϟϟϟ            ϟϟ          ϟϟ
+ϟϟϟϟϟϟ            ϟϟ          ϟϟ
+ϟϟϟϟϟϟ            ϟϟ          ϟϟ
+ϟϟϟϟϟϟ            ϟϟ          ϟϟ
+ϟϟϟϟϟϟ^^^^^^^^^^^^ϟϟ^^^^^^^^^^ϟϟ
+thing sentry 16 14 1
+thing grenades 4 13
+thing shard 27 12
+thing shard 29 13
+thing shard 30 11
+
+room spectrum
+name SPECTRUM WALK
+exits left=- right=interference up=- down=-
+start 0 15
+colours red/blue white white
+band 22 1 magenta/cyan
+band 44 1 yellow/blue
+band 66 1 red/cyan
+band 88 1 magenta/blue
+band 110 1 yellow/cyan
+band 132 1 red/blue
+band 154 1 magenta/cyan
+map
+ϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟ
+ϟαεαεαεαεαεαεαεαεαεαεαεαεαεαεαεϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+                                
+                                
+                                
+ϟϟBBBRRRBBBBBBBRRBBBRRRRRRRϟϟϟϟϟ
+ϟϟ                         ϟϟϟϟϟ
+ϟϟ                         ϟϟϟϟϟ
+ϟϟ                         ϟϟϟϟϟ
+ϟϟ                         ϟϟϟϟϟ
+ϟϟ^^^^^^^^^^^^^^^^^^^^^^^^^ϟϟϟϟϟ
+thing crawler 24 14 1
+
+room interference
+name INTERFERENCE
+exits left=- right=focal up=- down=-
+start 0 15
+colours magenta/blue white white
+band 40 1 yellow/cyan
+band 80 1 magenta/blue
+band 120 1 yellow/cyan
+beat 36 36
+map
+ϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟ
+ϟ               R             Bϟ
+ϟ               R             Bϟ
+ϟ               R             Bϟ
+ϟνλ  νλ  νλ  νλ Rνλ  νλ  νλ  νBϟ
+ϟ  λν  λν  λν  λR  λν  λν  λν Bϟ
+ϟ               R             Bϟ
+ϟ               R             Bϟ
+ϟ  νλ  νλ  νλ  νR  νλ  νλ  νλ Bϟ
+ϟλν  λν  λν  λν Rλν  λν  λν  λBϟ
+ϟ               R             Bϟ
+ϟ               R             Bϟ
+ϟ               R             B 
+                R             B 
+                R             B 
+                R            ϟϟϟ
+ϟϟϟρρρρββββρρρρϟϟββββρρρρββββϟϟϟ
+ϟϟϟ            ϟϟ            ϟϟϟ
+ϟϟϟ            ϟϟ            ϟϟϟ
+ϟϟϟ            ϟϟ            ϟϟϟ
+ϟϟϟ            ϟϟ            ϟϟϟ
+ϟϟϟ^^^^^^^^^^^^ϟϟ^^^^^^^^^^^^ϟϟϟ
+thing cell 15 15
+
+room focal
+name FOCAL LENGTH
+exits left=- right=fringe up=- down=-
+start 0 14
+colours yellow/blue white white
+band 56 1 red/cyan
+band 104 1 magenta/blue
+band 136 1 yellow/cyan
+map
+ϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟ
+ϟλ                     ν       ϟ
+ϟ λ                   ν        ϟ
+ϟ  λ                 ν         ϟ
+ϟ   λ               ν          ϟ
+ϟ    λ             ν           ϟ
+ϟ     λ           ν            ϟ
+ϟ      λ         ν             ϟ
+ϟ       λ       ν              ϟ
+ϟ        λ     ν               ϟ
+ϟ             ν                ϟ
+ϟ                              ϟ
+                               ϟ
+                                
+                                
+ϟϟϟ                             
+ϟϟϟRRRRRRRϟϟϟϟϟϟϟϟϟϟϟϟϟϟBBBBBBBϟ
+ϟϟϟ                            ϟ
+ϟϟϟ                            ϟ
+ϟϟϟ                            ϟ
+ϟϟϟ                            ϟ
+ϟϟϟ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ϟ
+thing crawler 20 14 1
+thing shard 11 13
+thing shard 13 11
+thing shard 14 13
+thing shard 12 9
+
+room fringe
+name THE DARK FRINGE
+exits left=- right=hinge up=- down=-
+start 0 15
+colours red/blue white white
+band 24 1 black/black
+band 48 1 magenta/cyan
+band 72 1 black/black
+band 96 1 red/blue
+band 120 1 black/black
+band 144 1 magenta/cyan
+map
+ϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                              ϟ
+ϟ                               
+             ϟϟ                 
+             ϟϟ                 
+             ϟϟ             ϟϟϟϟ
+ϟϟBBBBBBBBBBBϟϟRRRRRRRRRRRϟϟϟϟϟϟ
+ϟϟ           ϟϟ           ϟϟϟϟϟϟ
+ϟϟ           ϟϟ           ϟϟϟϟϟϟ
+ϟϟ           ϟϟ           ϟϟϟϟϟϟ
+ϟϟ           ϟϟ           ϟϟϟϟϟϟ
+ϟϟ^^^^^^^^^^^ϟϟ^^^^^^^^^^^ϟϟϟϟϟϟ
+thing sentry 26 14 1
+thing shard 9 13
+thing shard 11 12
+
 # THE HINGE (decision 58), at the Prism's focus: the Drill Sergeant the
 # size of a house in the Red, the crystal bloom in the Blue, one heart. Its
 # gun's two muzzles cover the walkway, a patchwork of the Red's and the
@@ -1236,10 +1525,9 @@ thing shard 0 17
 # pillar or the Red block at its foot reaches the plate (decision 62). Its
 # core is shot from the walkway in the Blue, through the crack. The ledge,
 # behind the pillar, is out of the gun's reach. A column of air keeps it off
-# the right wall. Bore Nine's cage brings Ash in on the ledge.
+# the right wall. Ash comes in from THE DARK FRINGE onto the ledge.
 room hinge
 name THE HINGE
-sector 5
 exits left=- right=- up=- down=-
 start 2 14
 colours red/blue white white
@@ -1263,9 +1551,9 @@ map
 ϟ                     ՀԼԺԼԺԼԺ ϟϟ
 ϟ                     ՌՒԸՒԸՒԸ ϟϟ
 ϟ                     ԾՒԸՒԸՒԸ ϟϟ
-ϟ        ϟϟ           ՀՒԸՒԸՒԸ ϟϟ
-ϟ        ϟϟ           ՂქԸՒԸՒԸ ϟϟ
-ϟ        ϟϟ           ՃყԸՒԸՒԸ ϟϟ
+         ϟϟ           ՀՒԸՒԸՒԸ ϟϟ
+         ϟϟ           ՂქԸՒԸՒԸ ϟϟ
+         ϟϟ           ՃყԸՒԸՒԸ ϟϟ
 ϟϟϟϟϟRRBBϟϟRRBBRRBB   ՊՋՋՋՋՋՋϟϟϟ
 ϟϟϟϟϟ    ϟϟ           ϟϟϟϟϟϟϟϟϟϟ
 ϟϟϟϟϟ    ϟϟ           ϟϟϟϟϟϟϟϟϟϟ

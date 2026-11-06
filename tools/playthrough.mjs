@@ -854,22 +854,160 @@ try {
     await until(async () => (await beeb.peek("room_sector")) === 5 && (await beeb.peek("blackout")) === 0, 200);
     await g.land();
 
-    // --- Sector 5: THE HINGE ------------------------------------------------
+    // --- Sector 5: Inside the Prism ----------------------------------------
 
-    // The Drill Sergeant the size of a house in the Red, the crystal bloom in
-    // the Blue, one heart. Into the Red on the ledge, which the pillar shields
-    // from its gun; up onto the pillar, and two charges lobbed at the plate,
-    // which dent it and crack it, crouching under the upper muzzle's shots
-    // (decision 62). Into the Blue on the pillar, where the crystal's cracked
-    // open on the core; across onto the Blue's block, and the core shot
-    // through the crack. Back up onto the pillar, level with the Slivers the
-    // bloom sheds, to clear them, and into the Red for the next round. The
-    // second round's charges go from the pillar's foot, under the lower
-    // muzzle, and its shift from the seam beside it. Three bolts in the core,
-    // and the Hinge folds shut.
-    await expectRoom(0, "THE HINGE");
+    // A shift that has to happen: the playthrough fails if it's refused.
+    const shiftTo = async (ph, where) => {
+        await shift();
+        if ((await g.st()).phase !== ph) throw new Error(`the shift in ${where} was refused`);
+    };
+    // The beat just turned to on (0 or 1), and a walk to x before it turns.
+    const onBeat = async (on, x) => { await beatTurns(on); await g.walkTo(x); };
+
+    // 1 FIRST FACET, the lesson: Bore Nine's cage brings Ash in, in the Blue,
+    // where two Slivers wake. Along the Blue's floor to the seam where it
+    // meets the Red's, for the cell there; back to the Red on the seam, and
+    // the Trundler on the step at the way out shot from it; up the step.
+    await expectRoom(0, "FIRST FACET");
+    if ((await beeb.peek("room_sector")) !== 5) throw new Error("the First Facet isn't in Sector 5");
+    await face("R");
+    await fight("the First Facet's Slivers", 5, 6);
+    await g.walkTo(48);
+    if (await alive(7)) throw new Error("the First Facet's cell wasn't taken");
+    await mark("facet");
+    await shiftTo(0, "the First Facet");
+    await face("R");
+    if (!(await fireUntilDead(4, 200))) throw new Error("the First Facet's Trundler lived");
+    await g.walkTo(82);
+    await g.jump("R", 10);
+    await cross("R", 1); await settle();
+    // 2 THE REFRACTOR: the Prism's pulse turns the middle of the floor from
+    // one phase to the other on the beat, flickering first. Along the Red's
+    // floor; over the middle a half at a time, on the seam between its halves
+    // as it turns; into the Blue on the seam at its end.
+    await expectRoom(1, "THE REFRACTOR");
+    await g.walkTo(36);
+    await frameRate("the refractor's floor turning");
+    await onBeat(1, 64);
+    await mark("refractor");
+    await onBeat(0, 92);
+    await shiftTo(1, "the Refractor");
+    await cross("R", 2); await settle();
+    // 3 CRITICAL ANGLE: a Gadfly between two walls of the Red's that hang
+    // short of the floor. Under its ghost along the Blue's floor; into the
+    // Red behind the second wall, where it can't come, and shoot it under the
+    // wall; out through the Blue's wall.
+    await expectRoom(2, "CRITICAL ANGLE");
+    await g.walkTo(104);
+    await shiftTo(0, "the Critical Angle");
+    await face("L");
+    await mark("critical");
+    if (!(await fireUntilDead(4, 300))) throw new Error("the Critical Angle's Gadfly lived");
+    await cross("R", 3); await settle();
+    // 4 DOUBLE IMAGE: the Red's bay with a Drill Sergeant, the Blue's with the
+    // swarm. Up onto the block at the way in for its charges, and one lobbed
+    // at the sergeant; up the pillar behind it, into the Blue there, and the
+    // swarm; over the block's image, and out.
+    await expectRoom(3, "DOUBLE IMAGE");
+    await g.walkTo(2);
+    await g.jump("R", 8);
+    await g.walkTo(18);
+    await face("R");
+    await mark("double");
+    await g.tap("G", 2); await g.gf(40);
+    await dead(4, "Double Image");
+    await g.walkTo(66);
+    await g.jump("R", 10);
+    if ((await g.st()).y !== 72) throw new Error("Ash missed Double Image's pillar");
+    await shiftTo(1, "Double Image");
+    await face("R");
+    await fight("Double Image's swarm", 6, 7, 8);
+    await g.walkTo(94);
+    await g.jump("R", 14);
+    await cross("R", 4); await settle();
+    // 5 SPECTRUM WALK: runs of each phase's blocks, the other's hopped. Along
+    // the Blue's runs, hopping the Red's; into the Red on the seam before the
+    // last run, its Trundler off; shoot it.
+    await expectRoom(4, "SPECTRUM WALK");
+    await g.walkTo(16);
+    await g.jump("R", 16);
+    await g.walkTo(54);
+    await g.jump("R", 12);
+    await mark("spectrum");
+    await g.walkTo(76);
+    await until(async () => (await thing(4)).x >= 92, 300);
+    await shiftTo(0, "the Spectrum Walk");
+    await face("R");
+    if (!(await fireUntilDead(4, 200))) throw new Error("the Spectrum Walk's Trundler lived");
+    await cross("R", 5); await settle();
+    // 6 INTERFERENCE: the whole floor turns phase on the beat, run by run.
+    // Across in the Red, a run at a time, to the island for its cell; into
+    // the Blue at the Red's wall there; across again in the Blue, up onto the
+    // far ledge, and back to the Red at the Blue's wall.
+    await expectRoom(5, "INTERFERENCE");
+    await g.walkTo(8);
+    await frameRate("the interference's floor turning");
+    await onBeat(0, 24); await onBeat(1, 40); await onBeat(0, 58);
+    if (await alive(4)) throw new Error("the Interference's cell wasn't taken");
+    await mark("interference");
+    await shiftTo(1, "the Interference");
+    await onBeat(0, 80); await onBeat(1, 96); await onBeat(0, 110);
+    await g.jump("R", 6);
+    await shiftTo(0, "the Interference's far ledge");
+    await cross("R", 6); await settle();
+    // 7 FOCAL LENGTH: the swarm hangs over the Prism's floor, still in the
+    // Red. The Trundler, shot crouching from the step at the way in, where it
+    // can't come; along under the swarm's ghosts, where a shift is refused,
+    // to the floor's far end; into the Blue there, and the swarm comes in a
+    // line.
+    await expectRoom(6, "FOCAL LENGTH");
+    await g.walkTo(4);
+    await face("R");
+    if (!(await fireUntilDead(4, 300, true))) throw new Error("the Focal Length's Trundler lived");
+    await g.walkTo(50);
+    await shift();
+    if ((await g.st()).phase !== 0) throw new Error("a shift under the Focal Length's swarm wasn't refused");
+    await mark("focal");
+    await g.walkTo(86);
+    await shiftTo(1, "the Focal Length");
+    await face("L");
+    await fight("the Focal Length's swarm", 5, 6, 7, 8);
+    await cross("R", 7); await settle();
+    // 8 THE DARK FRINGE: the Hinge's fight before the Hinge, and the bands go
+    // dark. The Slivers from the way in, along the Blue's floor; up the
+    // pillar; into the Red there, out of the sergeant's fire, and a charge
+    // lobbed at it; along the Red's floor and up the step.
+    await expectRoom(7, "THE DARK FRINGE");
+    await face("R");
+    await fight("the Dark Fringe's Slivers", 5, 6);
+    await g.walkTo(42);
+    await g.jump("R", 8);
+    if ((await g.st()).y !== 80) throw new Error("Ash missed the Dark Fringe's pillar");
+    await shiftTo(0, "the Dark Fringe");
+    await face("R");
+    await mark("fringe");
+    await g.tap("G", 2); await g.gf(40);
+    await dead(4, "the Dark Fringe");
+    await g.walkTo(104);
+    await g.jump("R", 10);
+    await cross("R", 8); await settle();
+
+    // 9 THE HINGE: the Drill Sergeant the size of a house in the Red, the
+    // crystal bloom in the Blue, one heart. In from the Dark Fringe, in the
+    // Red, onto the ledge, which the pillar shields from its gun; up onto the
+    // pillar, and two charges lobbed at the plate, which dent it and crack
+    // it, crouching under the upper muzzle's shots (decision 62). Into the
+    // Blue on the pillar, where the crystal's cracked open on the core;
+    // across onto the Blue's block, and the core shot through the crack.
+    // Back up onto the pillar, level with the Slivers the bloom sheds, to
+    // clear them, and into the Red for the next round. The second round's
+    // charges go from the pillar's foot, under the lower muzzle, and its
+    // shift from the seam beside it. Three bolts in the core, and the Hinge
+    // folds shut.
+    await expectRoom(8, "THE HINGE");
     if (!(await beeb.peek("hinge_on"))) throw new Error("the Hinge isn't in its room");
     if ((await g.st()).cells < 8 || (await beeb.peek("grenades")) < 9) throw new Error("the fight started short of cells or charges");
+    if ((await g.st()).phase !== 0) throw new Error("Ash came into the Hinge in the Blue");
     const round = async () => beeb.peek("hg_round");
     // The gun read off the screen: a muzzle lit, or its bolt still coming.
     const lit = async () => ((await beeb.peek("hg_warn")) & 3) !== 0;
@@ -893,7 +1031,6 @@ try {
         }
         if (low) await g.up("D");
     };
-    await shift();
     await g.walkTo(24); await g.jump("R", 12);
     if ((await g.st()).y !== 72) throw new Error("Ash missed the Hinge's pillar");
     let hingeFrames = 0, hingeVsyncs = 0;
@@ -939,7 +1076,7 @@ try {
     // The ending: the Hinge folds shut, a column at a time, the Prism goes
     // dark a facet at a time, the lamps come up white, and the words.
     if (!(await beeb.peek("hg_won"))) throw new Error("the Hinge's core took its last bolt, but it wasn't beaten");
-    await expectRoom(0, "THE HINGE");
+    await expectRoom(8, "THE HINGE");
     // (In VSyncs from the last bolt: the fold's columns, the facets, the dark
     // and the white, as src/endings.6502 times them.)
     await beeb.frames(40); await mark("hinge_fold");
