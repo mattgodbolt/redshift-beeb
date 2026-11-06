@@ -246,7 +246,8 @@ colour the Prism splits light into. For now the sector is its last room,
 both phases at once, and what it is depends on which phase you're standing
 in. Its floor is a patchwork of the Red's blocks and the Blue's, so every
 shift is also a choice of where you'll be standing. It warns before it
-fires. How it dies is for you to find out; the end of the story is behind
+fires, wherever you stand to fight it, and what you take from it stays
+taken when you fall. How it dies is for you to find out; the end of the story is behind
 it. The sector's other eight rooms come next.
 
 ## The idea

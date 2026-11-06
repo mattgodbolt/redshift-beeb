@@ -858,35 +858,65 @@ try {
 
     // The Drill Sergeant the size of a house in the Red, the crystal bloom in
     // the Blue, one heart. Into the Red on the ledge, which the pillar shields
-    // from its gun; up onto the pillar, over the gun's line, and two charges
-    // lobbed at the plate, which dent it and crack it. Into the Blue on the
-    // pillar, where the crystal's cracked open on the core; down onto the
-    // Blue's blocks, and the core shot through the crack, through the Slivers
-    // the bloom sheds in front of it. The swarm cleared, back up onto the
-    // pillar and into the Red for the next round. Three bolts in the core,
+    // from its gun; up onto the pillar, and two charges lobbed at the plate,
+    // which dent it and crack it, crouching under the upper muzzle's shots
+    // (decision 62). Into the Blue on the pillar, where the crystal's cracked
+    // open on the core; across onto the Blue's block, and the core shot
+    // through the crack. Back up onto the pillar, level with the Slivers the
+    // bloom sheds, to clear them, and into the Red for the next round. The
+    // second round's charges go from the pillar's foot, under the lower
+    // muzzle, and its shift from the seam beside it. Three bolts in the core,
     // and the Hinge folds shut.
     await expectRoom(0, "THE HINGE");
     if (!(await beeb.peek("hinge_on"))) throw new Error("the Hinge isn't in its room");
     if ((await g.st()).cells < 8 || (await beeb.peek("grenades")) < 9) throw new Error("the fight started short of cells or charges");
     const round = async () => beeb.peek("hg_round");
-    const slivers = () => alive(4, 5, 6, 7, 8, 9);
+    // The gun read off the screen: a muzzle lit, or its bolt still coming.
+    const lit = async () => ((await beeb.peek("hg_warn")) & 3) !== 0;
+    const coming = async () => {
+        const spr = (await beeb.read("obj_spr", 12)).slice(10), xs = (await beeb.read("obj_x", 12)).slice(10);
+        const x = (await g.st()).x;
+        return spr.some((s, i) => s !== 255 && xs[i] + 4 > x);
+    };
+    // A charge lobbed from where Ash stands, once no bolt is coming and the
+    // gun isn't about to fire, and a crouch under its shots while it flies.
+    const lob = async () => {
+        let litFor = 0;
+        await until(async () => { litFor = (await lit()) ? litFor + 1 : 0; return litFor < 4 && !(await coming()); }, 200);
+        await g.tap("G", 1);
+        let low = false;
+        for (let i = 0; i < 80; i++) {
+            const duck = (await lit()) || (await coming());
+            if (duck !== low) { await (duck ? g.down("D") : g.up("D")); low = duck; }
+            if ((await beeb.read("obj_spr", 12))[3] === 255 && !duck) break;
+            await g.gf(1);
+        }
+        if (low) await g.up("D");
+    };
     await shift();
     await g.walkTo(24); await g.jump("R", 12);
     if ((await g.st()).y !== 72) throw new Error("Ash missed the Hinge's pillar");
     let hingeFrames = 0, hingeVsyncs = 0;
     for (let r = 0; r < 3; r++) {
+        const foot = r === 1;
+        if (foot) { await g.walkTo(45); if ((await g.st()).y !== 96) throw new Error("Ash missed the pillar's foot"); }
         await face("R");
         if (r === 0) await mark("hinge_red");
-        await g.tap("G", 2); await g.gf(30);
+        await lob();
         if ((await beeb.peek("hg_plate")) !== 1) throw new Error(`the Hinge's plate wasn't dented in round ${r + 1}`);
         if (r === 0) await mark("hinge_dent");
-        await g.tap("G", 2); await g.gf(30);
+        await lob();
         if (!(await beeb.peek("hg_open"))) throw new Error(`the Hinge's plate didn't crack in round ${r + 1}`);
         if (r === 0) await mark("hinge_cracked");
+        if (foot) await g.walkTo(48);
         await shift();
         if ((await g.st()).phase !== 1) throw new Error(`the shift into the Blue was refused in round ${r + 1}`);
         if (r === 0) { await g.gf(14); await mark("hinge_blue"); }
-        await g.walkTo(46); await face("R");
+        if (!foot) {
+            await g.walkTo(40);
+            if ((await g.jump("R", 8)).y !== 96) throw new Error(`Ash missed the Blue's block in round ${r + 1}`);
+        }
+        await face("R");
         // (The frame rate while the core's shot through the swarm.)
         const f0 = await beeb.peek("frame"), v0 = await beeb.peek("vsyncs");
         await g.down("F");
@@ -896,10 +926,10 @@ try {
         hingeFrames += ((await beeb.peek("frame")) - f0) & 255; hingeVsyncs += ((await beeb.peek("vsyncs")) - v0) & 255;
         if ((await round()) <= r) throw new Error(`the Hinge's core wasn't hit in round ${r + 1}`);
         if (r === 2) break;
-        await fight("the Hinge's swarm", 4, 5, 6, 7, 8, 9);
         await face("R");
         await g.jump("L", 12);
         if ((await g.st()).y !== 72) throw new Error(`Ash missed the pillar going back in round ${r + 1}`);
+        await fight("the Hinge's swarm", 4, 5, 6, 7, 8, 9);
         await shift();
         if ((await g.st()).phase !== 0) throw new Error(`the shift back to the Red was refused in round ${r + 1}`);
         if (r === 0) await mark("hinge_ghosts");
