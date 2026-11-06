@@ -79,6 +79,7 @@ playthrough: $(TARGET)
 README_SHOTS = title landing pump_red pump_blue jar tanks hut skip engine signal turntable weighbridge siding crane handle jaw \
                outfall_red outfall_blue cistern boiler steam office sluice ubend overflow plughole \
                mother_red mother_blue face assay sorting chandelier split echo paydirt bore \
+               facet refractor critical double spectrum interference focal fringe \
                hinge_red hinge_blue
 readme-shots: $(TARGET)
 	node tools/playthrough.mjs --shots build/shots
