@@ -532,13 +532,13 @@ function parseGfx(text, fname) {
       const flags = words.slice(4), bad = flags.filter(f => !SPRITE_FLAGS.includes(f));
       if (bad.length) fail(where, `unknown sprite flags ${bad.join(' ')}`);
       // (ghost: gfxlib's ghost_sprite, as the game shows an enemy out of phase: its whole outline and a
-      // sparse diagonal fill, and a small thing's dark marks, its eyes; never white.)
+      // sparse diagonal fill, and a small thing's dark marks, its eyes; all in the body colour, never white.)
       const ghost = pixels.map((row, y) => row.map((c, x) => {
         if (!c) return 0;
         const edge = x === 0 || x === w - 1 || y === 0 || y === h - 1 ||
           !row[x + 1] || !row[x - 1] || !pixels[y + 1][x] || !pixels[y - 1][x];
         const on = edge || (w <= 8 && c === 1) || (x + y) % 4 === 0;
-        return on ? (c === 3 ? 2 : c) : 0;
+        return on ? 1 : 0;
       }));
       sprites.push({name: words[1], w, h, flags, pixels, hollow: hollow(pixels), ghost});
     }

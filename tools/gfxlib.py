@@ -260,8 +260,9 @@ def ghost_sprite(pixels, parity=0):
     and inside it a sparse diagonal fill that moves between the two
     parities (the game shows them in turn, so the ghost shimmers). A small
     thing keeps its dark marks too, its eyes, so its face reads. Never
-    white: colour 3 is drawn as 2, since white marks what can hurt you or
-    be taken."""
+    white, since white marks what can hurt you or be taken: it's all in the
+    body colour, 1, as a room may make 2 white too, as the Prism's do
+    (decision 63)."""
     h, w = len(pixels), len(pixels[0])
     out = [[0] * w for _ in range(h)]
     for y in range(h):
@@ -275,7 +276,7 @@ def ghost_sprite(pixels, parity=0):
             # and legs broken into diagonals (decision 57); its outline and
             # eyes read as a creature.)
             if edge or (w <= 8 and c == 1) or (x + y + 2 * parity) % 4 == 0:
-                out[y][x] = 2 if c == 3 else c
+                out[y][x] = 1
     return out
 
 

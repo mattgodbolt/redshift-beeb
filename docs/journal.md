@@ -873,3 +873,55 @@ And a slip in the last round cost the whole fight (decision 62).
   the pillar, where the Slivers come level with Ash: from the Blue's block
   they dive in over the bolt's line.
 
+## 2026-11-05: the last pass, and the end of the build
+
+A newcomer played Sector 5 and the Hinge cold, and the pass that followed
+is the build's last (decision 63). The Hinge had one hole left in what it
+taught: two charges cracked its plate, but in the Red a bolt on the crack
+sparked like a wall and the crack grew back, so it looked like a shield
+that regenerates, and try after try went on it. The fix is the one
+colour the Red never shows. While the plate's open, the band of colour over
+it pulses to the Blue's own colour for that band, and a bolt on the open
+plate sounds the shift into the Blue instead of ringing off. It's a few
+lines of the ending's own trick, a band's colour changed and the palette
+written again, and it costs no art.
+
+Then the Hinge got harder, now that it can be read: quicker guns, quicker
+shedding, a bigger swarm and a shorter crack, the last round's open window
+a slit for most of its time. The sector builds to it. CRITICAL ANGLE's
+Gadfly, which Ash used to walk under and shoot from behind a wall, guards a
+half of the floor that's the Red's; FOCAL LENGTH's swarm comes from both
+sides of wherever a shift can be made; and THE DARK FRINGE is the Hinge's
+fight in small, a pillar under a sergeant's fire to lob from, a swarm
+before it and a pair waiting under its face.
+
+- The gun's last round was to go faster too, and the playthrough found it
+  couldn't. At 28 frames between shots, a bolt at the pillar was still
+  coming when the muzzle lit again, so a player who ducks while it's lit,
+  as the game teaches, never stands up to lob. It stays at 32.
+- CRITICAL ANGLE's Gadfly flies at Ash's head, and for part of its bob it's
+  over a standing bolt, as every Gadfly in the game is. The room lets the
+  player choose when to step into the Red, with the Gadfly at the far wall,
+  so there's a floor's length to meet it, and the Blue behind to step back
+  into.
+- The first try at the Dark Fringe's second pair hid them behind the pillar
+  at its foot, and they rose up its face into Ash as Ash landed, over a
+  standing bolt. A crouched bolt meets them there, which decision 61 made
+  sure of, so they stayed: the room's crouch before the Hinge's.
+- A lob at the tower's sergeant from every x of the pillar kills it, and
+  the Red's floor under the tower is out of its line.
+- The Prism's rooms make colour 2 white, and a ghost drew its white as 2,
+  so the swarm's ghosts in the Red looked as live as the swarm. A ghost is
+  all in the body colour now, everywhere in the game.
+- The light rays are dotted, as the back wall's seams are, and sit back.
+- Scripted deaths in each changed room came back at the way in, in the
+  phase Ash came in with, clear of what killed them. The playthrough plays
+  the new routes on the B and the Master, through the Hinge and the ending,
+  without losing a life.
+
+That's the game: forty-five rooms in five sectors, from the Landing Zone's
+pad to the Hinge, a title page and its theme, the music of each sector in
+each phase, and two endings. It started as a brief for a game in the genre
+of Exolon that borrowed nothing from it, and every room, picture, tune and
+rule in it is its own.
+

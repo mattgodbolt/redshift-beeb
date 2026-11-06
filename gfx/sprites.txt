@@ -7,8 +7,9 @@
 # diagonal fill inside, and a sprite 8 wide or less its dark marks, its eyes,
 # too; the fill moved between the two, shown in turn out of
 # phase so the ghost shimmers: they're the next two sprites, SPR_<NAME> + 4
-# and + 8. A ghost is never white: its colour 3 is drawn as 2, since white
-# marks what can hurt or be taken). Widths are multiples of 4
+# and + 8. A ghost is never white, since white marks what can hurt or be
+# taken: it's drawn all in 1, the body colour, as a room may make 2 white
+# too, as the Prism's do). Widths are multiples of 4
 # (one MODE 1 byte). '.' is see-through; '1', '2' and '3' are logical
 # colours, so they take the band's colours as a sprite moves down the
 # screen. Colour 3 is white everywhere but a liquid's band, and it's what

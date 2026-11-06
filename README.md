@@ -1,8 +1,10 @@
 # REDSHIFT for the BBC Micro
 
 An original flip-screen run-and-gun game for the BBC Micro (a Model B
-with 16K of sideways RAM, or a Master 128), in 6502 assembly. It's whole:
-five sectors, a boss, and two endings.
+with 16K of sideways RAM, or a Master 128), in 6502 assembly. It's
+finished: forty-five rooms in five sectors, a boss, two endings, and the
+music for all of it, from the title page to THE END and round to a new
+game.
 
 > Kharon-4, 2189. The colony's deep mine broke into the Prism, an alien
 > engine that splits reality in two. The Red Phase is overrun by the
@@ -239,53 +241,46 @@ outline and its eyes.
 <table>
 <tr><td><img src="docs/media/facet.png" alt="First Facet: on the seam, in the Blue Phase"></td>
 <td><img src="docs/media/refractor.png" alt="The Refractor: on the seam as the floor turns"></td></tr>
-<tr><td><img src="docs/media/critical.png" alt="Critical Angle: behind the wall, the Gadfly beyond it"></td>
+<tr><td><img src="docs/media/critical.png" alt="Critical Angle: on the seam in the Red Phase, the Gadfly coming"></td>
 <td><img src="docs/media/double.png" alt="Double Image: on the block, the sergeant at the pillar"></td></tr>
 <tr><td><img src="docs/media/spectrum.png" alt="Spectrum Walk: hopping the Red's runs in the Blue"></td>
 <td><img src="docs/media/interference.png" alt="Interference: on the island between the two crossings"></td></tr>
 <tr><td><img src="docs/media/focal.png" alt="Focal Length: under the swarm, where a shift is refused"></td>
-<td><img src="docs/media/fringe.png" alt="The Dark Fringe: on the pillar, the sergeant at the way out"></td></tr>
+<td><img src="docs/media/fringe.png" alt="The Dark Fringe: on the pillar, the sergeant on its tower"></td></tr>
 <tr><td><img src="docs/media/hinge_red.png" alt="The Hinge in the Red Phase, from the pillar"></td>
 <td><img src="docs/media/hinge_blue.png" alt="The Hinge in the Blue Phase"></td></tr>
 </table>
 
-<<<<<<< HEAD
-Past Bore Nine the rock stops: white faces, true angles, and bands of every
-colour the Prism splits light into. For now the sector is its last room,
-**THE HINGE**, at the Prism's focus: the one thing in the mine that's in
-both phases at once, and what it is depends on which phase you're standing
-in. Its floor is a patchwork of the Red's blocks and the Blue's, so every
-shift is also a choice of where you'll be standing. It warns before it
-fires, wherever you stand to fight it, and what you take from it stays
-taken when you fall. How it dies is for you to find out; the end of the story is behind
-it. The sector's other eight rooms come next.
-=======
 Past Bore Nine the rock stops: white faces, true angles, rays of light,
 and bands of every colour the Prism splits light into. The floors are the
 Red's blocks and the Blue's over white spikes, so you shift to stay
 standing as much as to fight. Where one phase's blocks meet the other's,
-the seam holds you in both: that's where to shift.
+the seam holds you in both: that's where to shift. The sector gets harder
+room by room, all the way down.
 
 1. **FIRST FACET.** The lesson: the Blue's floor meets the Red's at a seam,
    with a cell on it. Two Slivers in the Blue, and a Trundler on the step
    at the way out.
 2. **THE REFRACTOR.** The Prism's pulse: the middle of the floor turns from
    one phase to the other on the beat, flickering first. Wait on the seam.
-3. **CRITICAL ANGLE.** A Gadfly between two walls of the Red's that hang
-   short of the floor: shoot it from under one, where it can't come.
+3. **CRITICAL ANGLE.** A Gadfly between two walls of the Red's, over a
+   floor that's half the Blue's and half the Red's. Cross the Red's half
+   under its fire, and take the cell there.
 4. **DOUBLE IMAGE.** Two bays, each the other's image: a Drill Sergeant in
    the Red's, the swarm in the Blue's.
 5. **SPECTRUM WALK.** Short runs of each phase's blocks: hop the other's.
 6. **INTERFERENCE.** The whole floor turns phase, run by run. Cross it once
    in each.
 7. **FOCAL LENGTH.** The swarm hangs where the beams meet, and won't let
-   you shift beside it. Choose where it comes from.
-8. **THE DARK FRINGE.** The light goes. A sergeant, a pillar, a swarm.
+   you shift beside it, and a pair of it waits at the far end. Wherever you
+   shift, it comes from both sides.
+8. **THE DARK FRINGE.** The light goes. A sergeant on a tower, level with
+   the pillar you have to climb, and a swarm on both sides of it.
 9. **THE HINGE**, at the Prism's focus: the one thing in the mine that's in
    both phases at once, and what it is depends on which phase you're
-   standing in. It warns before it fires. How it dies is for you to find
-   out; the end of the story is behind it.
->>>>>>> main
+   standing in. It warns before it fires, and what you take from it stays
+   taken when you fall. How it dies is for you to find out; the end of the
+   story is behind it.
 
 ## The idea
 

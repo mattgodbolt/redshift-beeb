@@ -863,6 +863,28 @@ try {
     };
     // The beat just turned to on (0 or 1), and a walk to x before it turns.
     const onBeat = async (on, x) => { await beatTurns(on); await g.walkTo(x); };
+    // A gun's bolt still coming at Ash, from the right.
+    const coming = async () => {
+        const spr = (await beeb.read("obj_spr", 12)).slice(10), xs = (await beeb.read("obj_x", 12)).slice(10);
+        const x = (await g.st()).x;
+        return spr.some((s, i) => s !== 255 && xs[i] + 4 > x);
+    };
+    // A charge lobbed from where Ash stands, under a gun read off the screen
+    // (lit: its warning shows): once no bolt is coming and it isn't about to
+    // fire, and a crouch under its shots while the charge flies.
+    const lobUnder = async (lit) => {
+        let litFor = 0;
+        await until(async () => { litFor = (await lit()) ? litFor + 1 : 0; return litFor < 4 && !(await coming()); }, 200);
+        await g.tap("G", 1);
+        let low = false;
+        for (let i = 0; i < 80; i++) {
+            const duck = (await lit()) || (await coming());
+            if (duck !== low) { await (duck ? g.down("D") : g.up("D")); low = duck; }
+            if ((await beeb.read("obj_spr", 12))[3] === 255 && !duck) break;
+            await g.gf(1);
+        }
+        if (low) await g.up("D");
+    };
 
     // 1 FIRST FACET, the lesson: Bore Nine's cage brings Ash in, in the Blue,
     // where two Slivers wake. Along the Blue's floor to the seam where it
@@ -894,15 +916,24 @@ try {
     await shiftTo(1, "the Refractor");
     await cross("R", 2); await settle();
     // 3 CRITICAL ANGLE: a Gadfly between two walls of the Red's that hang
-    // short of the floor. Under its ghost along the Blue's floor; into the
-    // Red behind the second wall, where it can't come, and shoot it under the
-    // wall; out through the Blue's wall.
+    // short of the floor, and the floor between them half the Blue's, half
+    // the Red's. Under its ghost along the Blue's floor to the seam; into the
+    // Red there once it's at the far wall, and shoot it as it comes; along
+    // the Red's floor for the cell, into the Blue on the Prism's floor
+    // before the second wall, under it, and out through the Blue's wall in
+    // the Red.
     await expectRoom(2, "CRITICAL ANGLE");
-    await g.walkTo(104);
-    await shiftTo(0, "the Critical Angle");
-    await face("L");
+    await g.walkTo(44);
+    await until(async () => (await thing(4)).x >= 76, 300);
+    await shiftTo(0, "the Critical Angle's seam");
+    await face("R");
     await mark("critical");
     if (!(await fireUntilDead(4, 300))) throw new Error("the Critical Angle's Gadfly lived");
+    await g.walkTo(86);
+    if (await alive(5)) throw new Error("the Critical Angle's cell wasn't taken");
+    await shiftTo(1, "the Critical Angle's far floor");
+    await g.walkTo(104);
+    await shiftTo(0, "the Critical Angle's way out");
     await cross("R", 3); await settle();
     // 4 DOUBLE IMAGE: the Red's bay with a Drill Sergeant, the Blue's with the
     // swarm. Up onto the block at the way in for its charges, and one lobbed
@@ -943,7 +974,8 @@ try {
     // 6 INTERFERENCE: the whole floor turns phase on the beat, run by run.
     // Across in the Red, a run at a time, to the island for its cell; into
     // the Blue at the Red's wall there; across again in the Blue, up onto the
-    // far ledge, and back to the Red at the Blue's wall.
+    // far ledge, which holds Ash in the Blue, and back to the Red at the
+    // Blue's wall.
     await expectRoom(5, "INTERFERENCE");
     await g.walkTo(8);
     await frameRate("the interference's floor turning");
@@ -951,45 +983,52 @@ try {
     if (await alive(4)) throw new Error("the Interference's cell wasn't taken");
     await mark("interference");
     await shiftTo(1, "the Interference");
-    await onBeat(0, 80); await onBeat(1, 96); await onBeat(0, 110);
+    await onBeat(0, 80); await onBeat(1, 96); await onBeat(0, 104);
     await g.jump("R", 6);
+    await beatTurns(1);
+    if ((await g.st()).y !== 96) throw new Error("the Interference's far ledge didn't hold Ash in the Blue");
     await shiftTo(0, "the Interference's far ledge");
     await cross("R", 6); await settle();
-    // 7 FOCAL LENGTH: the swarm hangs over the Prism's floor, still in the
-    // Red. The Trundler, shot crouching from the step at the way in, where it
-    // can't come; along under the swarm's ghosts, where a shift is refused,
-    // to the floor's far end; into the Blue there, and the swarm comes in a
-    // line.
+    // 7 FOCAL LENGTH: the swarm hangs where the beams meet, and a pair of it
+    // over the Blue's floor at the far end, still in the Red. The Trundler,
+    // shot standing from the Red's blocks at the way in, where the pit holds
+    // it off; over the pit and along under the swarm's ghosts, where a shift
+    // is refused, onto the Prism's floor; into the Blue there, between the
+    // two, and the swarm comes from both sides.
     await expectRoom(6, "FOCAL LENGTH");
-    await g.walkTo(4);
     await face("R");
-    if (!(await fireUntilDead(4, 300, true))) throw new Error("the Focal Length's Trundler lived");
+    if (!(await fireUntilDead(4, 300))) throw new Error("the Focal Length's Trundler lived");
+    await g.walkTo(12); await g.jump("R", 12);
     await g.walkTo(50);
     await shift();
     if ((await g.st()).phase !== 0) throw new Error("a shift under the Focal Length's swarm wasn't refused");
     await mark("focal");
-    await g.walkTo(86);
+    await g.walkTo(78);
     await shiftTo(1, "the Focal Length");
-    await face("L");
-    await fight("the Focal Length's swarm", 5, 6, 7, 8);
+    await fight("the Focal Length's swarm", 5, 6, 7, 8, 9);
     await cross("R", 7); await settle();
     // 8 THE DARK FRINGE: the Hinge's fight before the Hinge, and the bands go
     // dark. The Slivers from the way in, along the Blue's floor; up the
-    // pillar; into the Red there, out of the sergeant's fire, and a charge
-    // lobbed at it; along the Red's floor and up the step.
+    // pillar, where the pair held under its face come up it at Ash, shot
+    // crouching; into the Red there, in the fire of the sergeant on the
+    // tower, and a charge lobbed at it between its shots, crouching under
+    // them; along the Red's floor, up the tower and out.
     await expectRoom(7, "THE DARK FRINGE");
     await face("R");
     await fight("the Dark Fringe's Slivers", 5, 6);
-    await g.walkTo(42);
-    await g.jump("R", 8);
-    if ((await g.st()).y !== 80) throw new Error("Ash missed the Dark Fringe's pillar");
+    await g.walkTo(44);
+    await g.jump("R", 10);
+    if ((await g.st()).y !== 72) throw new Error("Ash missed the Dark Fringe's pillar");
+    await face("R");
+    if (!(await fireUntilDead(7, 150, true)) || !(await fireUntilDead(8, 150, true))) throw new Error("the Dark Fringe's pair lived");
     await shiftTo(0, "the Dark Fringe");
     await face("R");
     await mark("fringe");
-    await g.tap("G", 2); await g.gf(40);
+    // (Its warning look shows from SENTRY_GAP - SENTRY_WARN on its clock.)
+    await lobUnder(async () => (await beeb.read("th_t", 12))[4] >= 48 - 12 && (await thing(4)).alive);
     await dead(4, "the Dark Fringe");
-    await g.walkTo(104);
-    await g.jump("R", 10);
+    await g.walkTo(86);
+    await g.jump("R", 12);
     await cross("R", 8); await settle();
 
     // 9 THE HINGE: the Drill Sergeant the size of a house in the Red, the
@@ -1009,28 +1048,9 @@ try {
     if ((await g.st()).cells < 8 || (await beeb.peek("grenades")) < 9) throw new Error("the fight started short of cells or charges");
     if ((await g.st()).phase !== 0) throw new Error("Ash came into the Hinge in the Blue");
     const round = async () => beeb.peek("hg_round");
-    // The gun read off the screen: a muzzle lit, or its bolt still coming.
+    // The gun read off the screen: a muzzle lit.
     const lit = async () => ((await beeb.peek("hg_warn")) & 3) !== 0;
-    const coming = async () => {
-        const spr = (await beeb.read("obj_spr", 12)).slice(10), xs = (await beeb.read("obj_x", 12)).slice(10);
-        const x = (await g.st()).x;
-        return spr.some((s, i) => s !== 255 && xs[i] + 4 > x);
-    };
-    // A charge lobbed from where Ash stands, once no bolt is coming and the
-    // gun isn't about to fire, and a crouch under its shots while it flies.
-    const lob = async () => {
-        let litFor = 0;
-        await until(async () => { litFor = (await lit()) ? litFor + 1 : 0; return litFor < 4 && !(await coming()); }, 200);
-        await g.tap("G", 1);
-        let low = false;
-        for (let i = 0; i < 80; i++) {
-            const duck = (await lit()) || (await coming());
-            if (duck !== low) { await (duck ? g.down("D") : g.up("D")); low = duck; }
-            if ((await beeb.read("obj_spr", 12))[3] === 255 && !duck) break;
-            await g.gf(1);
-        }
-        if (low) await g.up("D");
-    };
+    const lob = () => lobUnder(lit);
     await g.walkTo(24); await g.jump("R", 12);
     if ((await g.st()).y !== 72) throw new Error("Ash missed the Hinge's pillar");
     let hingeFrames = 0, hingeVsyncs = 0;
