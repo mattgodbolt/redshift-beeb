@@ -277,6 +277,7 @@ FLASH_FRAMES = 16               ; a refused shift's red, in frames
 \ the music under play. The card doesn't step the game's sounds, so they
 \ stop: one left playing (the cage's) would keep its channel from the sting.
 CARD_TIME = 150                     ; a card's VSyncs, unless a key's pressed
+WORDS_TIME = 250                    ; half an ending page's VSyncs (cards waits twice)
 .show_card
 {
     PHA
@@ -346,7 +347,9 @@ CARD_TIME = 150                     ; a card's VSyncs, unless a key's pressed
 .ok
     PLA : JSR card_lines
     LDY #0 : LDA (text_ptr),Y : BEQ last
-    LDA #CARD_TIME : JSR card_wait
+    \ A page of the story's words: long enough to read, or a key.
+    LDA #WORDS_TIME : JSR card_wait : BNE card
+    LDA #WORDS_TIME : JSR card_wait
     JMP card
 .last
     RTS

@@ -40,6 +40,7 @@ WHITE_VSYNCS = 100                  ; the white, before the words
     ASSERT PL = 0
     JSR render
     JSR sound_boom
+    JSR hide_phase
     \ It folds shut: its cells (a look that's another thing in each phase)
     \ gone, a column at a time, from the far side to its heart's column.
     LDA #MAP_W - 1 : STA hw_col

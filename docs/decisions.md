@@ -1135,3 +1135,18 @@ Matt was away is marked *provisional* until reviewed.
     - The fight's victory is the last thing in the game for now: there's
       no score table, and the new game starts from Sector 1.
 
+61. **2026-11-01: a Sliver comes at a crouched Ash where a crouched bolt
+    meets it; the ending's pages wait to be read** (*provisional*). From
+    the Hinge's newcomer playtest:
+    - **Slivers and crouching.** A Sliver aimed where a standing bolt meets
+      it (decision 51) still reached a crouched Ash, whose box starts lower,
+      but sat over the crouched bolt's line: it could kill a crouched Ash
+      that couldn't shoot it. Against a crouched Ash it now aims
+      `SHARD_CROUCH_DY` lines lower, and the build asserts that every aim
+      meets the crouched bolt and the crouched box as well as the standing
+      ones.
+    - **The ending's pages** held for a sector card's time, too short for a
+      page of the story's words. They hold twice `WORDS_TIME` now, and a
+      key still turns them.
+    - **The phase word** comes off the status bar once the Hinge is shut.
+

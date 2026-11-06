@@ -70,6 +70,14 @@ COL_PHASE = 14
 }
 ASSERT COL_PHASE + 4 <= COL_CELL
 
+\ No phase word: once the Hinge is shut, there's only one mine again.
+.hide_phase
+{
+    PRINT_AT COL_PHASE, 0, none_text
+    RTS
+.none_text EQUS "    ", 0
+}
+
 \ Cells, grenades and lives: a digit each, after its icon.
 .show_counts
 {
