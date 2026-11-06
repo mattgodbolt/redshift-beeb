@@ -1282,3 +1282,85 @@ Matt was away is marked *provisional* until reviewed.
       (the playthrough clears the swarm from the pillar, level with it);
       ESCAPE as the refill of charges.
 
+63. **2026-11-05: the last pass on the Prism: the Hinge points at the
+    Blue, and the sector builds to it** (*provisional*). From a newcomer's
+    playtest of Sector 5 and the Hinge, the build's last pass.
+    - **The open plate points at the Blue.** Two charges cracked the plate,
+      but a bolt on it in the Red sparked like a wall and the crack grew
+      back, so it read as a shield that regenerates, and try after try went
+      on it. Now, while it's open, in the Red, the band of colour over
+      the plate pulses to the Blue's colour for that band, the core's light
+      leaking through, and a bolt on the open plate doesn't fly back but
+      sounds the shift into the Blue and holds the band blue. The Blue's
+      colour appears nowhere else in the Red, so the screen says where to go
+      with no words. The band is found when the room is read (the last of
+      logical 1 at or above the plate's top line), and changed as the
+      ending changes them, in `band_red`, with `set_colours`.
+    - **The Hinge is harder once it's understood**: the newcomer's clean
+      kill had no deaths, which isn't a finale. Each round is quicker now
+      (`HG_GUN`, `HG_SHED`, `HG_SWARM`, `HG_CRACK`): the gun's shots 42, 36
+      and 32 frames apart (from 50, 40, 32), the bud's Slivers 40, 32 and 26
+      (from 50, 40, 32), the swarm 3, 4 and 5 at most (from 2, 3, 4), and
+      the crack open 120, 95 and 75 frames (from 150, 125, 100), its last
+      round's window a slit for most of it. The lamps stay out across a
+      death (decision 62), so a round lost is only that round.
+    - **The last round's gun stays where it was.** At 28 frames apart a bolt
+      at the pillar was still coming when the next warning lit, so a player
+      who ducks while the muzzle is lit, as the game teaches, never had a
+      moment to stand and lob. At 32 there's a short quiet between.
+    - **INTERFERENCE's far ledge holds Ash in the Blue.** It was one cell
+      beside the Blue's wall, narrower than a foot could find, and the run
+      under it fell away on the beat. It's a cell wider, over the last run's
+      end, which is the Prism's floor now: three blocks turn, not four.
+    - **CRITICAL ANGLE isn't a free pass.** Its Gadfly flew between the
+      walls while Ash walked under its ghost in the Blue and shot it from
+      behind the second wall, where it never came. The floor between the
+      walls is half the Blue's and half the Red's now, each too long to hop:
+      across the Blue's to the seam, into the Red once the Gadfly's at the
+      far wall, and it's shot as it comes; a cell on the Red's floor; then
+      into the Blue on the Prism's floor before the second wall, and out
+      through the Blue's wall in the Red. The Blue's floor is a way back if
+      the shot misses.
+    - **FOCAL LENGTH: the swarm comes from both sides.** Its Trundler sat
+      under standing bolts from the step at the way in, and was walked into.
+      The step is gone: Ash comes in on the Red's blocks, level with it, and
+      a pit holds it off them, so a standing bolt meets it from where Ash
+      lands. The floor under the beams' focus is the Red's blocks, where a
+      shift drops Ash, and the Prism's floor starts under the swarm's edge,
+      where a shift is refused; a pair of the swarm hangs over the Blue's
+      floor at the far end. So wherever the shift can be made, the swarm
+      comes from both sides: five Slivers and a Trundler, a full room.
+    - **THE DARK FRINGE: the Hinge's fight before the Hinge.** Its pillar
+      was out of the sergeant's fire, and it was cleared first time. The
+      sergeant stands on a tower now, level with the pillar, as the Hinge's
+      upper muzzle is: Ash comes up the pillar in the Blue, where a pair
+      held under its far face comes up it at them (a crouched bolt meets
+      them: decision 61), shifts there, and lobs between the sergeant's
+      shots, crouching under them. A lob from every x of the pillar kills
+      it (decision 41); the Red's floor under the tower is out of its line.
+      Then up the tower to the way out.
+    - **Rays that recede.** The light rays on the back wall were solid lines
+      and read as lasers. They're dotted, a pixel in two, as the back wall's
+      seams are.
+    - **A ghost is never white, in any room.** A ghost drew its white as
+      colour 2, which the Prism's rooms make white, so DOUBLE IMAGE's
+      Slivers looked live in the Red. A ghost is drawn all in the body
+      colour, 1, now: its outline, its sparse fill and a small thing's eyes,
+      the same shapes as before. This changes every ghost in the game.
+    - **DOUBLE IMAGE's doorway** was Ash's height, so a jump did nothing in
+      it. It's a row taller, as the sector's other doorways are.
+
+    Calls made in building it (*provisional*):
+    - The hint is the Blue's colour and the shift's sound, not the plate's
+      Blue picture in the Red: the colour is the thing that's only ever the
+      Blue's, and it costs no looks.
+    - A Gadfly at a doorway's height bobs above a standing bolt for part of
+      its beat, as everywhere in the game; CRITICAL ANGLE gives it room to
+      come, so it's met across the floor, and the Blue to step back into.
+    - CRITICAL ANGLE takes three shifts now, so it has a cell, on the Red's
+      floor, where the Gadfly is fought.
+    - THE DARK FRINGE's pair under the pillar can be left as ghosts by a
+      shift on landing; the sergeant and the climb are the room's test.
+    - Left as they were, as the playtest asked: the timing rooms' beats, the
+      warnings before every change, and the foot's width at a block's edge.
+

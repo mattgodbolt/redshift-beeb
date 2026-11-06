@@ -19,6 +19,11 @@
 \ as off a Drill Sergeant, and a charge that bursts on it rings it and the
 \ plate flickers to how a charge there would leave it.
 \
+\ While it's cracked, the Red points at the Blue (decision 63): the band of
+\ colour over the plate pulses to the Blue's colour, the core's light
+\ leaking through; and a bolt on the open plate in the Red doesn't fly
+\ back, but sounds the shift into the Blue, and holds the band blue.
+\
 \ Its gun has two muzzles, one level with Ash's head on the walkway and one
 \ with it on the pillar. It fires along the line of whichever Ash is in,
 \ that muzzle lit first, while Ash is in the Red; a crouch ducks either, as
@@ -42,12 +47,15 @@ HG_SHUT = 50                    ; the crack's last frames: a slit, closing
 HG_FLASH = 16                   ; frames the plate flickers after a blast on the armour
 HG_FLICK = 2                    ; ... each way (a bit of hg_flash: a power of two)
 ASSERT (HG_FLICK - 1 AND HG_FLICK) = 0 AND HG_FLICK < HG_FLASH
+HG_PULSE = 8                    ; frames the open plate's band is each colour (a bit of hg_open)
+ASSERT (HG_PULSE - 1 AND HG_PULSE) = 0
+HG_RING = 16                    ; frames the band holds the Blue's colour after a bolt on the plate
 \ Each round's: frames between the gun's shots, and the bud's Slivers; the
 \ most Slivers out at once; and frames the crack stays open.
-HG_GUN = {50, 40, 32}
-HG_SHED = {50, 40, 32}
-HG_SWARM = {2, 3, 4}
-HG_CRACK = {150, 125, 100}
+HG_GUN = {42, 36, 32}
+HG_SHED = {40, 32, 26}
+HG_SWARM = {3, 4, 5}
+HG_CRACK = {120, 95, 75}
 ASSERT LEN(HG_GUN) = HG_ROUNDS AND LEN(HG_SHED) = HG_ROUNDS
 ASSERT LEN(HG_SWARM) = HG_ROUNDS AND LEN(HG_CRACK) = HG_ROUNDS
 ASSERT MIN(HG_GUN) > HG_WARN AND MIN(HG_SHED) > HG_WARN AND MIN(HG_CRACK) > HG_SHUT
@@ -90,8 +98,21 @@ ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD
     STA hg_gun_t : STA hg_shed_t : STA hg_warn : STA hg_lamps
     ASSERT HP_WHOLE = 0
     STA hg_shown
+    STA hg_glow : STA hg_ring
     LDA #&FF : STA hg_wy : STA hg_wy + 1 : STA hg_wy + HG_BUD
     INC hinge_on
+    \ The band that colours the plate's body (logical 1) at its top line:
+    \ the last of logical 1 at or above it, the room read afresh.
+    LDA hg_hy : ASL A : ASL A : ASL A : STA hp_row
+    LDX band_n
+.band
+    DEX : BMI banded                ; (none: no glow)
+    LDA band_line,X : CMP hp_row : BEQ at : BCS band
+.at
+    LDY band_log,X : CPY #1 : BNE band
+    LDA band_red,X : STA hg_band_red
+.banded
+    STX hg_band
     \ What a round needs, at the least.
     LDA cells : CMP #HG_CELLS : BCS cells_ok
     LDA #HG_CELLS : STA cells
@@ -167,6 +188,7 @@ ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD
     LDA #0 : STA hg_gun_t
 .looks
     JSR hg_plate_look
+    JSR hg_glow_look
     JMP hg_warn_look
 .done
     RTS
@@ -314,14 +336,15 @@ ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD
 \ Bolt X has struck look Y, at ta_c0, ta_r0 (shots_update: test_area's Y).
 \ A wall sparks. The Hinge's core, through the crack, in the Blue, takes
 \ it; the rest of the Hinge is armour, and the spark flies back, as off a
-\ Drill Sergeant (decision 62). X kept.
+\ Drill Sergeant (decision 62). The open plate in the Red is neither: the
+\ spark stays, and it sounds the shift into the Blue (decision 63). X kept.
 .hinge_struck
 {
     LDA tile_attr,Y : AND #TF_RED OR TF_BLUE : CMP #TF_RED OR TF_BLUE : BNE wall
-    LDA phase : BEQ armour          ; (the core's in the Blue's crystal)
     LDA hg_open : BEQ armour
     LDA ta_c0 : SEC : SBC hg_hx : CMP #HP_W : BCS armour
     LDA ta_r0 : SEC : SBC hg_hy : CMP #HP_H : BCS armour
+    LDA phase : BEQ hint            ; (the core's in the Blue's crystal)
     \ The core takes it: the crack snaps shut, a lamp goes out.
     JSR spark
     STX hs_x
@@ -344,9 +367,43 @@ ASSERT T_HINGE_MUZZLE_LIT = T_HINGE_MUZZLE + 1 AND T_HINGE_BUD_LIT = T_HINGE_BUD
     JSR spark                       ; (which stops it)
     PLA : EOR #&FF : CLC : ADC #1 : CMP #&80 : ROR A : STA shot_dx,X
     JMP sound_ping
+.hint
+    LDA #HG_RING : STA hg_ring
+    LDA #SFX_SHIFT_BLUE : JSR sound_play
 .wall
     JMP spark
 .hs_x EQUB 0
+}
+
+\ While the plate's open, in the Red, the band over it pulses between the
+\ Red's colour and the Blue's, or holds the Blue's after a bolt on it; at
+\ any other time it's the Red's (decision 63).
+.hg_glow_look
+{
+    LDA #0
+    LDX hg_open : BNE open
+    STA hg_ring                     ; (shut: what it held is over)
+    BEQ got                         ; (always)
+.open
+    LDX phase : BNE got             ; (the Blue's colour is there already)
+    LDX hg_ring : BEQ pulse
+    DEC hg_ring
+    LDA #1 : BNE got                ; (always)
+.pulse
+    LDA hg_open : AND #HG_PULSE
+.got
+    CMP hg_glow : BEQ done
+    STA hg_glow
+    LDX hg_band : BMI done          ; (no band)
+    TAY : BEQ red
+    LDA band_blue,X : JMP set
+.red
+    LDA hg_band_red
+.set
+    STA band_red,X
+    JMP set_colours
+.done
+    RTS
 }
 HG_SCORE = &50                      ; (hundreds, in BCD: add_score's)
 

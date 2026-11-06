@@ -1329,13 +1329,14 @@ map
     R                   R    B  
                              B  
                              B  
-ϟϟϟϟBBBBBBBBBBBBBBBBBBBBϟϟϟϟϟϟϟϟ
-ϟϟϟϟ                    ϟϟϟϟϟϟϟϟ
-ϟϟϟϟ                    ϟϟϟϟϟϟϟϟ
-ϟϟϟϟ                    ϟϟϟϟϟϟϟϟ
-ϟϟϟϟ                    ϟϟϟϟϟϟϟϟ
-ϟϟϟϟ^^^^^^^^^^^^^^^^^^^^ϟϟϟϟϟϟϟϟ
+ϟϟϟϟBBBBBBBBRRRRRRRRRRϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟ                  ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟ                  ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟ                  ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟ                  ϟϟϟϟϟϟϟϟϟϟ
+ϟϟϟϟ^^^^^^^^^^^^^^^^^^ϟϟϟϟϟϟϟϟϟϟ
 thing drone 14 13
+thing cell 17 15
 
 room double
 name DOUBLE IMAGE
@@ -1356,9 +1357,9 @@ map
 ϟ                              ϟ
 ϟ                              ϟ
 ϟ                              ϟ
-ϟ                 ϟϟ           ϟ
-                  ϟϟ            
-   ϟϟϟ            ϟϟ      BBB   
+                  ϟϟ           ϟ
+                  ϟϟ
+   ϟϟϟ            ϟϟ      BBB
    ϟϟϟ            ϟϟ      BBB   
 ϟϟϟϟϟϟRRRRRRRRRRRRϟϟBBBBBBBBBBϟϟ
 ϟϟϟϟϟϟ            ϟϟ          ϟϟ
@@ -1434,19 +1435,19 @@ map
 ϟ               R             B 
                 R             B 
                 R             B 
-                R            ϟϟϟ
-ϟϟϟρρρρββββρρρρϟϟββββρρρρββββϟϟϟ
-ϟϟϟ            ϟϟ            ϟϟϟ
-ϟϟϟ            ϟϟ            ϟϟϟ
-ϟϟϟ            ϟϟ            ϟϟϟ
-ϟϟϟ            ϟϟ            ϟϟϟ
-ϟϟϟ^^^^^^^^^^^^ϟϟ^^^^^^^^^^^^ϟϟϟ
+                R           ϟϟϟϟ
+ϟϟϟρρρρββββρρρρϟϟββββρρρρβββϟϟϟϟ
+ϟϟϟ            ϟϟ           ϟϟϟϟ
+ϟϟϟ            ϟϟ           ϟϟϟϟ
+ϟϟϟ            ϟϟ           ϟϟϟϟ
+ϟϟϟ            ϟϟ           ϟϟϟϟ
+ϟϟϟ^^^^^^^^^^^^ϟϟ^^^^^^^^^^^ϟϟϟϟ
 thing cell 15 15
 
 room focal
 name FOCAL LENGTH
 exits left=- right=fringe up=- down=-
-start 0 14
+start 0 15
 colours yellow/blue white white
 band 56 1 red/cyan
 band 104 1 magenta/blue
@@ -1467,18 +1468,19 @@ map
                                ϟ
                                 
                                 
-ϟϟϟ                             
-ϟϟϟRRRRRRRϟϟϟϟϟϟϟϟϟϟϟϟϟϟBBBBBBBϟ
-ϟϟϟ                            ϟ
-ϟϟϟ                            ϟ
-ϟϟϟ                            ϟ
-ϟϟϟ                            ϟ
-ϟϟϟ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ϟ
-thing crawler 20 14 1
+
+RRRRR  RRRRRRϟϟϟϟϟϟϟϟϟϟϟBBBBBBBϟ
+                               ϟ
+                               ϟ
+                               ϟ
+                               ϟ
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ϟ
+thing crawler 18 14 1
 thing shard 11 13
-thing shard 13 11
-thing shard 14 13
-thing shard 12 9
+thing shard 13 10
+thing shard 14 12
+thing shard 27 11
+thing shard 29 10
 
 room fringe
 name THE DARK FRINGE
@@ -1504,19 +1506,21 @@ map
 ϟ                              ϟ
 ϟ                              ϟ
 ϟ                              ϟ
-ϟ                               
-             ϟϟ                 
-             ϟϟ                 
-             ϟϟ             ϟϟϟϟ
-ϟϟBBBBBBBBBBBϟϟRRRRRRRRRRRϟϟϟϟϟϟ
-ϟϟ           ϟϟ           ϟϟϟϟϟϟ
-ϟϟ           ϟϟ           ϟϟϟϟϟϟ
-ϟϟ           ϟϟ           ϟϟϟϟϟϟ
-ϟϟ           ϟϟ           ϟϟϟϟϟϟ
-ϟϟ^^^^^^^^^^^ϟϟ^^^^^^^^^^^ϟϟϟϟϟϟ
-thing sentry 26 14 1
+ϟ            ϟϟ         ϟϟϟ
+             ϟϟ         ϟϟϟ
+             ϟϟ         ϟϟϟ
+             ϟϟ         ϟϟϟϟϟϟϟϟ
+ϟϟBBBBBBBBBBBϟϟRRRRRRRRRϟϟϟϟϟϟϟϟ
+ϟϟ           ϟϟ         ϟϟϟϟϟϟϟϟ
+ϟϟ           ϟϟ         ϟϟϟϟϟϟϟϟ
+ϟϟ           ϟϟ         ϟϟϟϟϟϟϟϟ
+ϟϟ           ϟϟ         ϟϟϟϟϟϟϟϟ
+ϟϟ^^^^^^^^^^^ϟϟ^^^^^^^^^ϟϟϟϟϟϟϟϟ
+thing sentry 24 10 1
 thing shard 9 13
 thing shard 11 12
+thing shard 18 13
+thing shard 20 14
 
 # THE HINGE (decision 58), at the Prism's focus: the Drill Sergeant the
 # size of a house in the Red, the crystal bloom in the Blue, one heart. Its

@@ -198,6 +198,10 @@ HG_BUD = HG_MUZZLES
 .hg_lamps   SKIP 1          ; lamps in its visor, HG_ROUNDS at most
 .hg_lx      SKIP HG_ROUNDS  ; each lamp's cell
 .hg_ly      SKIP HG_ROUNDS
+.hg_band    SKIP 1          ; the band of colour over its plate, &FF if none
+.hg_band_red SKIP 1         ; that band's colour in the Red, as the room has it
+.hg_glow    SKIP 1          ; non-zero: that band shows the Blue's colour in the Red
+.hg_ring    SKIP 1          ; frames left of the glow held: a bolt on the open plate in the Red
 
 \ The compose buffer (render.6502): a rectangle of the screen is put
 \ together here, then copied out, so each screen byte is written once.
