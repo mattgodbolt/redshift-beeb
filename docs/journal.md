@@ -842,3 +842,34 @@ beams meeting at a focus.
 - The playthrough plays all eight from the cage into the Hinge, the fight
   and the ending, on the B and the Master, without losing a life.
 
+## 2026-11-05: the Hinge, a second look
+
+A newcomer beat the Hinge and called it learnable, but only after many
+deaths spent finding the way in. Grenades only hurt the plate, which looked
+like trim, and only from the pillar; every other hit on the boss sparked
+or burst as a wall would, so shooting and lobbing at it taught nothing.
+And a slip in the last round cost the whole fight (decision 62).
+
+- The plate is a white-framed hatch two cells by two, and the Blue's core a
+  white diamond the same size. The dent scorches the hatch's left half, the
+  side the charges burst on, so the dented and closing states share the
+  right half's looks.
+- The armour answers now. Bolts fly back off it, as off a sergeant. A
+  charge that bursts on it rings it, and the plate flickers to the look a
+  charge would give it: the machinery's warning, pointing at the target.
+  The game knows a Hinge cell by its two-phase bits, and the struck look
+  was already in Y from `test_area`.
+- Lobs from every x of the pillar and of the Red block at its foot dent the
+  plate; the next block along rings the armour, and the ledge falls short.
+  The blocks right of the pillar swapped phases to make the foot Red.
+- A second muzzle at the visor's end covers the pillar, so neither lob
+  place is free; the gun fires along whichever line Ash is in, lit first.
+- The lamps stay out across a death: `hg_round` is cleared by a new game,
+  not by the room. Scripted deaths to the gun, the spikes, a Sliver and
+  ESCAPE each came back to the ledge with the plate whole and the lamps out.
+- A column of air keeps the Red's striped body off the wall's crosses.
+- The playthrough lobs from the pillar in two rounds and from its foot in
+  the second, crouching under the lit muzzle, and clears each swarm from
+  the pillar, where the Slivers come level with Ash: from the Blue's block
+  they dive in over the bolt's line.
+

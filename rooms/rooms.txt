@@ -1520,10 +1520,12 @@ thing shard 11 12
 
 # THE HINGE (decision 58), at the Prism's focus: the Drill Sergeant the
 # size of a house in the Red, the crystal bloom in the Blue, one heart. Its
-# gun covers the walkway, a patchwork of the Red's and the Blue's blocks
-# over white spikes; the pillar stands above its line, the place to lob at
-# the plate from. Its core is shot from the walkway in the Blue, through
-# the crack. Ash comes in from THE DARK FRINGE onto the ledge.
+# gun's two muzzles cover the walkway, a patchwork of the Red's and the
+# Blue's blocks over white spikes, and the pillar's top; a lob from the
+# pillar or the Red block at its foot reaches the plate (decision 62). Its
+# core is shot from the walkway in the Blue, through the crack. The ledge,
+# behind the pillar, is out of the gun's reach. A column of air keeps it off
+# the right wall. Ash comes in from THE DARK FRINGE onto the ledge.
 room hinge
 name THE HINGE
 exits left=- right=- up=- down=-
@@ -1539,20 +1541,20 @@ band 168 1 magenta/cyan
 map
 ϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟ
 ϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟϟ
-ϟ                            ϟϟϟ
-ϟ                            ϟϟϟ
-ϟ                            ϟϟϟ
-ϟ                            ϟϟϟ
-ϟ                       ԱԲԳ  ϟϟϟ
-ϟ                      ԱԸՒԸԳ ϟϟϟ
-ϟ                     ԱՒԸՒԸՒԳϟϟϟ
-ϟ                     ԹԼԺԼԺԼԺϟϟϟ
-ϟ                     ՌՒԸՒԸՒԸϟϟϟ
-ϟ                     ԾՒԸՒԸՒԸϟϟϟ
-         ϟϟ           ՀՒԸՒԸՒԸϟϟϟ
-         ϟϟ           ՂՒԸՒԸՒԸϟϟϟ
-         ϟϟ           ՃՒԸՒԸՒԸϟϟϟ
-ϟϟϟϟϟRRBBϟϟBBRRBBRR   ՊՋՋՋՋՋՋϟϟϟ
+ϟ                             ϟϟ
+ϟ                             ϟϟ
+ϟ                             ϟϟ
+ϟ                             ϟϟ
+ϟ                       ԱԲԳ   ϟϟ
+ϟ                      ԱԸՒԸԳ  ϟϟ
+ϟ                     ԱՒԸՒԸՒԳ ϟϟ
+ϟ                     ՀԼԺԼԺԼԺ ϟϟ
+ϟ                     ՌՒԸՒԸՒԸ ϟϟ
+ϟ                     ԾՒԸՒԸՒԸ ϟϟ
+         ϟϟ           ՀՒԸՒԸՒԸ ϟϟ
+         ϟϟ           ՂქԸՒԸՒԸ ϟϟ
+         ϟϟ           ՃყԸՒԸՒԸ ϟϟ
+ϟϟϟϟϟRRBBϟϟRRBBRRBB   ՊՋՋՋՋՋՋϟϟϟ
 ϟϟϟϟϟ    ϟϟ           ϟϟϟϟϟϟϟϟϟϟ
 ϟϟϟϟϟ    ϟϟ           ϟϟϟϟϟϟϟϟϟϟ
 ϟϟϟϟϟ    ϟϟ           ϟϟϟϟϟϟϟϟϟϟ

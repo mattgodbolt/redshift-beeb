@@ -249,6 +249,17 @@ outline and its eyes.
 <td><img src="docs/media/hinge_blue.png" alt="The Hinge in the Blue Phase"></td></tr>
 </table>
 
+<<<<<<< HEAD
+Past Bore Nine the rock stops: white faces, true angles, and bands of every
+colour the Prism splits light into. For now the sector is its last room,
+**THE HINGE**, at the Prism's focus: the one thing in the mine that's in
+both phases at once, and what it is depends on which phase you're standing
+in. Its floor is a patchwork of the Red's blocks and the Blue's, so every
+shift is also a choice of where you'll be standing. It warns before it
+fires, wherever you stand to fight it, and what you take from it stays
+taken when you fall. How it dies is for you to find out; the end of the story is behind
+it. The sector's other eight rooms come next.
+=======
 Past Bore Nine the rock stops: white faces, true angles, rays of light,
 and bands of every colour the Prism splits light into. The floors are the
 Red's blocks and the Blue's over white spikes, so you shift to stay
@@ -274,6 +285,7 @@ the seam holds you in both: that's where to shift.
    both phases at once, and what it is depends on which phase you're
    standing in. It warns before it fires. How it dies is for you to find
    out; the end of the story is behind it.
+>>>>>>> main
 
 ## The idea
 

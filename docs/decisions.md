@@ -1231,3 +1231,54 @@ Matt was away is marked *provisional* until reviewed.
       under FOCAL LENGTH's swarm and fails if it isn't refused, and times
       the frames across both rooms' pulse.
 
+62. **2026-11-05: the Hinge's design pass: a plate that reads, armour that
+    answers, a gun for the pillar, and lamps that stay out**
+    (*provisional*). From the Hinge's newcomer playtest, which won after
+    many deaths and found the way in hidden:
+    - **The plate is the target, and looks it.** It's two cells by two now,
+      a hatch framed in white (what matters, in the colour rules), riveted,
+      with a port at its middle; a charge buckles and scorches its left
+      half, the crack splits it with the core's light. In the Blue the
+      crack opens a diamond on a white core the plate's size. A dent and
+      the closing crack change only the left half, where the charge
+      bursts, so `hp_looks` lists each state's four looks and the right
+      half's are shared.
+    - **The armour answers.** A bolt that strikes any of the Hinge but the
+      open core flies back, as off a Drill Sergeant (decision 40), in both
+      phases. A charge that bursts on it in the Red, off the plate, pings,
+      and the plate flickers between how it is and how a charge would leave
+      it, the machinery's warning language (decision 48), so a wasted charge
+      shows where the next should go.
+    - **Lobs reach the plate from two places, all along each.** The
+      walkway's blocks right of the pillar swap phases, so the pillar's foot
+      is a Red block. A lob from anywhere on the pillar, or anywhere on the
+      block at its foot, bursts close enough to dent the plate; from the
+      next Red block it comes in high and rings the armour; from the ledge
+      it falls short. Each was tried from every x (decision 41).
+    - **The gun has a muzzle for the pillar.** A second muzzle ends the
+      visor, level with Ash's head on the pillar. The gun fires along
+      whichever muzzle's line Ash is in, that one lit first, as before; a
+      crouch ducks either. Both lob places are under fire, and the ledge
+      behind the pillar is the one safe place, which lobs can't reach from.
+      The lit muzzle flares larger, so it's clear which line is coming.
+    - **The lamps put out stay out across a death** (an exception to
+      decision 30, for the Hinge only). `hg_round` lasts until a new game;
+      a death or ESCAPE starts the round again (the plate whole, the crack
+      shut, the clocks from the start) with Ash back on the ledge, as before.
+    - **The Red stands apart from the wall.** A column of air between the
+      Hinge and the Prism's right wall; the right wall is a column thinner.
+      The Blue form is otherwise as it was.
+
+    Calls made in building it (*provisional*):
+    - The gun fires at the pillar whenever Ash is level with that muzzle,
+      not some of the time: one rule, the sergeants' (decision 47), learned
+      once for both places.
+    - With the Blue's block next to the pillar gone, stepping off the
+      pillar's right side in the Blue drops Ash into the pit; it's dotted,
+      as every block of the other phase is. The seam beside the pillar's
+      foot, a Red block against a Blue one, holds Ash in both phases.
+    - Left as they were, as the playtest asked: a shift on a one-phase block
+      drops Ash onto the spikes; the late Sliver dive over the Blue's block
+      (the playthrough clears the swarm from the pillar, level with it);
+      ESCAPE as the refill of charges.
+

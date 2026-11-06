@@ -235,24 +235,32 @@ turns one into next (the plate whole, dented, cracked open on the core,
 closing; the gun's muzzle and the bud lit; a lamp out), and its looks go
 wherever that tile's do. `mkgfx.py` names those looks (`T_HINGE_...`), the
 sector's own, so they mean them only while Sector 5 is loaded; the code
-uses them only while the Hinge is in the room (`hinge_on`), and `ASSERT`s
-that each chain's looks follow each other in number.
+uses them only while the Hinge is in the room (`hinge_on`). The plate is
+two cells by two, and `hp_looks` lists each state's look for each cell
+(a dent and the closing crack change only its left half).
 
 - The room's thing `hinge` marks its heart, and takes no slot:
-  `spawn_things` hands it to `hinge_spawn`, which finds the gun's muzzle,
-  the bud and the visor's lamps on the map by their looks, and starts the
-  fight (with at least `HG_CELLS` cells and `HG_GRENADES` charges).
+  `spawn_things` hands it to `hinge_spawn`, which finds the gun's two
+  muzzles, the bud and the visor's lamps on the map by their looks, puts
+  out the lamps already won, and starts the round (with at least
+  `HG_CELLS` cells and `HG_GRENADES` charges).
 - Each frame, after the things, `hinge_update` runs the crack's time, the
-  gun (in the Red: it fires along its row while Ash is in it, its muzzle
-  lit first) or the bud (in the Blue: it sheds a Sliver in front of it,
-  lit first, into a free slot), and writes any look that changed into the
-  map, listing its cell for `render` as the machinery's parts are listed.
-- A charge's blast reaches it through `grenade_bang` (`hinge_blast`): on
-  the plate, in the Red, it dents it, and the last cracks it. A bolt that
-  strikes a tile reaches it through `shots_update` (`hinge_struck`): the
-  core, through the crack, in the Blue, puts out a lamp, and the last ends
-  it.
-- A death reads the room again, so the fight starts again with it.
+  gun (in the Red: it fires along the line of whichever muzzle Ash is
+  level with, that muzzle lit first) or the bud (in the Blue: it sheds a
+  Sliver in front of it, lit first, into a free slot), and writes any look
+  that changed into the map, listing its cell for `render` as the
+  machinery's parts are listed.
+- A charge's blast reaches it through `grenade_bang` (`hinge_blast`): in
+  the Red, a charge that burst on one of its cells (both phases' bits in
+  `tile_attr`) dents the plate if the blast reaches it, and the last
+  cracks it; anywhere else on it, it pings and the plate flickers to how a
+  charge would leave it (`hg_flash`). A bolt that strikes a tile reaches it
+  through `shots_update` (`hinge_struck`, with `test_area`'s look in Y):
+  the core, through the crack, in the Blue, puts out a lamp, and the last
+  ends it; the rest of the Hinge is armour, and the spark flies back.
+- A death reads the room again, so the round starts again with it, but
+  `hg_round` lasts until a new game (`game_start` clears it), so the
+  lamps put out stay out (decision 62).
 
 ## The endings
 

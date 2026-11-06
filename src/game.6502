@@ -19,6 +19,7 @@
     DEX : BPL clear
     LDA #0 : STA phase : STA pl_dead : STA pl_safe : STA pl_hold : STA pl_air : STA fire_cool : STA shift_flash
     STA score : STA score+1 : STA score+2
+    STA hg_round                    ; (the Hinge's lamps, out across deaths: decision 62)
     JSR music_phase
     LDX #MAX_ROOMS - 1
 .gone
