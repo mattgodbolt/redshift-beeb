@@ -925,3 +925,17 @@ each phase, and two endings. It started as a brief for a game in the genre
 of Exolon that borrowed nothing from it, and every room, picture, tune and
 rule in it is its own.
 
+## 2026-11-06: a retrospective, and the press it would have had
+
+- `retrospective.md` looks back over the build.
+- Matt asked for the launch the game would have had in 1988. An agent drew
+  three adverts for a made-up publisher, Doppler Software, from the game's
+  own stills (`tools/mkads.py`). Three more agents, each briefed as one
+  magazine's reviewer, played it in the emulator and wrote reviews
+  (`docs/press/`).
+- Their gripes are the same as the newcomers' had been:
+  - how far a lob carries has to be learnt;
+  - the ghosts are faint against the darker blues;
+  - the Prism and the Hinge are steep;
+  - there's no saved place.
+

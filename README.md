@@ -282,6 +282,26 @@ room by room, all the way down.
    taken when you fall. How it dies is for you to find out; the end of the
    story is behind it.
 
+## In the press, 1988 (imagined)
+
+<a href="docs/press/README.md"><img src="docs/press/adverts/quarter-page.png" alt="A 1988-style advert for REDSHIFT" width="240" align="right"></a>
+
+If REDSHIFT had come out when the BBC Micro was in its prime, it would
+have been advertised and reviewed in the monthly magazines. So it has
+been, in pastiche. The publisher and the reviewers are fictional, and the
+reviews were written by agents who each played the game as one
+magazine's reviewer would have:
+
+- [the adverts](docs/press/README.md), a full page, a half and a quarter;
+- [Acorn User](docs/press/acorn-user.md): "SEEING DOUBLE";
+- [The Micro User](docs/press/micro-user.md): "Seeing red, feeling blue";
+- [A&B Computing](docs/press/ab-computing.md): "Seeing Red (and Blue)".
+
+The [retrospective](docs/retrospective.md) looks back at how the game was
+made: what worked, what didn't, and what's still open.
+
+<br clear="right">
+
 ## The idea
 
 - **SHIFT flips the phase.** Every palette band on the screen swaps at
@@ -322,7 +342,9 @@ make run        # boot it in jsbeeb, screenshot to shots/run.png
 
 - `BRIEF.md`: where it started.
 - `docs/journal.md`: what's been done, in order. `docs/decisions.md`:
-  every design call, numbered.
+  every design call, numbered. `docs/retrospective.md`: a look back.
+- `docs/press/`: the imagined adverts and reviews (`tools/mkads.py` draws
+  the adverts).
 - `gfx/tiles.txt`, `gfx/sprites.txt`: the art, as text.
 - `rooms/rooms.txt`: the rooms, as text.
 - `music/`: the music, as text (`music/instruments.txt` says how it's
